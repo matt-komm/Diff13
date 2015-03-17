@@ -1,3 +1,8 @@
+#!/bin/bash
+
+#kills the script if any commands fail
+set -e 
+
 export SCRAM_ARCH=slc6_amd64_gcc491
 cmsrel CMSSW_7_3_4
 cd CMSSW_7_3_4/src
