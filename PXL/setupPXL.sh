@@ -28,7 +28,7 @@ function execute
 
 BASE=`pwd`
 
-#execute hg clone -u pxl-3.5.1 https://forge.physik.rwth-aachen.de/hg/pxl
+execute hg clone -u pxl-3.5.1 https://forge.physik.rwth-aachen.de/hg/pxl
 
 cd pxl
 PXLBASEDIR=`pwd`/release
@@ -36,7 +36,14 @@ addVar PXLBASEDIR $PXLBASEDIR
 execute mkdir build
 cd build
 
-execute cmake .. -DCMAKE_INSTALL_PREFIX=$PXLBASEDIR -DSWIG_DIR=$SWIGBASEDIR -DSWIG_EXECUTABLE=$SWIGBASEDIR/bin/swig 
+execute cmake .. \
+    -DCMAKE_INSTALL_PREFIX=$PXLBASEDIR \
+    -DSWIG_DIR=$SWIGBASEDIR \
+    -DSWIG_EXECUTABLE=$SWIGBASEDIR/bin/swig \
+    -DENABLE_NUMPY=OFF \
+    -DUSE_HEALPIX=OFF \
+    -DENABLETESTING=OFF \
+    -DENABLESWIGDOCSTRINGS=OFF
 execute make -j8
 execute make install
 
