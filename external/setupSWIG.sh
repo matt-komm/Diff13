@@ -46,5 +46,5 @@ cd $BASE
 
 echo $STOP
 
-echo $VARS > swig-vars.txt
+echo $VARS > ../swig-vars.txt
 

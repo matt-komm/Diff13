@@ -6,7 +6,7 @@ for file in `find $PWD -name "*-vars.txt"`
     for l in `cat $file`
         do
         echo "setting up ... "$l
-        export `echo $l`
+        eval "export" $l
         done
     done
 

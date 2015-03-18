@@ -32,8 +32,12 @@ execute wget https://forge.physik.rwth-aachen.de/attachments/download/391/pxl-3.
 execute tar -zxvf pxl-3.5.1.tar.gz
 
 cd pxl-3.5.1
+
 PXLBASEDIR=`pwd`/release
 addVar PXLBASEDIR $PXLBASEDIR
+addVar PATH $PXLBASEDIR/bin:"$"PATH
+addVar LD_LIBRARY_PATH $PXLBASEDIR/lib:"$"LD_LIBRARY_PATH
+
 execute mkdir build
 cd build
 
@@ -52,4 +56,5 @@ cd $BASE
 
 echo $STOP
 
-echo $VARS > pxl-vars.txt
+echo $VARS > ../pxl-vars.txt
+
