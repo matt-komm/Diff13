@@ -28,9 +28,10 @@ function execute
 
 BASE=`pwd`
 
-execute hg clone -u pxl-3.5.1 https://forge.physik.rwth-aachen.de/hg/pxl
+execute wget https://forge.physik.rwth-aachen.de/attachments/download/391/pxl-3.5.1.tar.gz
+execute tar -zxvf pxl-3.5.1.tar.gz
 
-cd pxl
+cd pxl-3.5.1
 PXLBASEDIR=`pwd`/release
 addVar PXLBASEDIR $PXLBASEDIR
 execute mkdir build
