@@ -26,13 +26,13 @@ function execute
 }
 
 
-BASE=`pwd`
+cd $BASEDIR/external
 
 execute wget http://sourceforge.net/projects/swig/files/swig/swig-2.0.12/swig-2.0.12.tar.gz
 execute tar -zxvf swig-2.0.12.tar.gz
 
 cd swig-2.0.12
-SWIGBASEDIR=`pwd`/release
+SWIGBASEDIR=$BASEDIR/external/swig-2.0.12/release
 
 addVar SWIGBASEDIR $SWIGBASEDIR
 
@@ -42,9 +42,9 @@ execute ./configure --prefix=$SWIGBASEDIR --without-go --without-java --without-
 execute make -j8
 execute make install
 
-cd $BASE
+cd $BASEDIR
 
 echo $STOP
 
-echo $VARS > ../swig-vars.txt
+echo $VARS > swig-vars.txt
 

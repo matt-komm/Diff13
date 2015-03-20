@@ -25,7 +25,7 @@ function execute
     fi
 }
 
-BASE=`pwd`
+cd $BASEDIR/CMSSW
 
 export SCRAM_ARCH=slc6_amd64_gcc491
 addVar SCRAM_ARCH $SCRAM_ARCH
@@ -46,4 +46,6 @@ execute echo "Pxl" >> .git/info/sparse-checkout
 execute git read-tree -mu HEAD
 
 execute "scram b -j10"
+
+cd $BASEDIR
 

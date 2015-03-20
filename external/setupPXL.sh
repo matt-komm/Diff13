@@ -25,18 +25,19 @@ function execute
     fi
 }
 
-
-BASE=`pwd`
+cd $BASEDIR/external
 
 execute wget https://forge.physik.rwth-aachen.de/attachments/download/391/pxl-3.5.1.tar.gz
 execute tar -zxvf pxl-3.5.1.tar.gz
 
 cd pxl-3.5.1
 
-PXLBASEDIR=`pwd`/release
+PXLBASEDIR=$BASEDIR/external/pxl-3.5.1/release
 addVar PXLBASEDIR $PXLBASEDIR
 addVar PATH $PXLBASEDIR/bin:"$"PATH
 addVar LD_LIBRARY_PATH $PXLBASEDIR/lib:"$"LD_LIBRARY_PATH
+addVar PYTHONPATH $PXLBASEDIR/lib/python2.7/site-packages:"$"PYTHONPATH
+addVar PKG_CONFIG_PATH $PXLBASEDIR/lib/pkgconfig:"$"PKG_CONFIG_PATH
 
 execute mkdir build
 cd build
@@ -46,15 +47,14 @@ execute cmake .. \
     -DSWIG_DIR=$SWIGBASEDIR \
     -DSWIG_EXECUTABLE=$SWIGBASEDIR/bin/swig \
     -DENABLE_NUMPY=OFF \
-    -DUSE_HEALPIX=OFF \
     -DENABLETESTING=OFF \
     -DENABLESWIGDOCSTRINGS=OFF
 execute make -j8
 execute make install
 
-cd $BASE
+cd $BASEDIR
 
 echo $STOP
 
-echo $VARS > ../pxl-vars.txt
+echo $VARS > pxl-vars.txt
 
