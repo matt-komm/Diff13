@@ -5,58 +5,58 @@
 #include "pxl/modules/Module.hh"
 #include "pxl/modules/ModuleFactory.hh"
 
-static pxl::Logger logger("MuonSelection");
+static pxl::Logger logger("ElectronSelection");
 
-class MuonSelection:
+class ElectronSelection:
     public pxl::Module
 {
     private:
         pxl::Source* _outputSource;
         pxl::Source* _outputVetoSource;
         
-        std::string _inputMuonName;
+        std::string _inputElectronName;
         std::string _inputEventViewName;
-        std::string _tightMuonName;
-        std::string _looseMuonName;
+        std::string _tightElectronName;
+        std::string _looseElectronName;
         
         bool _cleanEvent;
         
-        int64_t _numTightMuons;
-        int64_t _numLooseMuons;
+        int64_t _numTightElectrons;
+        int64_t _numLooseElectrons;
 
     public:
-        MuonSelection():
+        ElectronSelection():
             Module(),
-            _inputMuonName("Muon"),
+            _inputElectronName("Electron"),
             _inputEventViewName("Reconstructed"),
-            _tightMuonName("TightMuon"),
-            _looseMuonName("LooseMuon"),
+            _tightElectronName("TightElectron"),
+            _looseElectronName("LooseElectron"),
             _cleanEvent(true),
-            _numTightMuons(1),
-            _numLooseMuons(0)
+            _numTightElectrons(1),
+            _numLooseElectrons(0)
         {
             addSink("input", "input");
             _outputSource = addSource("selected", "selected");
             _outputVetoSource = addSource("veto", "veto");
 
-            addOption("event view","name of the event view where muons are selected",_inputEventViewName);
-            addOption("input muon name","name of particles to consider for selection",_inputMuonName);
-            addOption("name of selected tight muons","",_tightMuonName);
-            addOption("name of selected loose muons","",_looseMuonName);
-            addOption("clean event","this option will clean the event of all muons falling tight or loose criteria",_cleanEvent);
+            addOption("event view","name of the event view where Electrons are selected",_inputEventViewName);
+            addOption("input electron name","name of particles to consider for selection",_inputElectronName);
+            addOption("name of selected tight electrons","",_tightElectronName);
+            addOption("name of selected loose electrons","",_looseElectronName);
+            addOption("clean event","this option will clean the event of all electrons falling tight or loose criteria",_cleanEvent);
             
-            addOption("numTightMuons","number of tight muons",_numTightMuons);
-            addOption("numLooseMuons","number of loose muons",_numLooseMuons);
+            addOption("numTightElectrons","number of tight electrons",_numTightElectrons);
+            addOption("numLooseElectrons","number of loose electrons",_numLooseElectrons);
         }
 
-        ~MuonSelection()
+        ~ElectronSelection()
         {
         }
 
         // every Module needs a unique type
         static const std::string &getStaticType()
         {
-            static std::string type ("MuonSelection");
+            static std::string type ("ElectronSelection");
             return type;
         }
 
@@ -79,55 +79,21 @@ class MuonSelection:
         void beginJob() throw (std::runtime_error)
         {
             getOption("event view",_inputEventViewName);
-            getOption("input muon name",_inputMuonName);
-            getOption("name of selected tight muons",_tightMuonName);
-            getOption("name of selected loose muons",_looseMuonName);
+            getOption("input electron name",_inputElectronName);
+            getOption("name of selected tight electrons",_tightElectronName);
+            getOption("name of selected loose electrons",_looseElectronName);
             getOption("clean event",_cleanEvent);
             
-            getOption("numTightMuons",_numTightMuons);
-            getOption("numLooseMuons",_numLooseMuons);
+            getOption("numTightElectrons",_numTightElectrons);
+            getOption("numLooseElectrons",_numLooseElectrons);
         }
 
         bool passTightCriteria(pxl::Particle* particle)
         {
-            //TODO: need to be extended to recommendation            
             if (not (particle->getPt()>26.0)) {
                 return false;
             }
             if (not (fabs(particle->getEta())<2.1)) {
-                return false;
-            }
-            //check if combined track, tracker track & PV had been found
-            if (not (particle->hasUserRecord("chi2") and particle->hasUserRecord("isTightMuon")))
-            {
-                return false;
-            }
-            
-            if (not particle->getUserRecord("isPFMuon").toBool()) {
-                return false;
-            }
-            if (not particle->getUserRecord("isGlobalMuon").toBool()) {
-                return false;
-            }
-            if (not ((particle->getUserRecord("chi2").toFloat()/particle->getUserRecord("ndof").toFloat())<10.0)) {
-                return false;
-            }
-            if (not (particle->getUserRecord("numberOfValidPixelHits").toInt32()>0)) {
-                return false;
-            }
-            if (not (particle->getUserRecord("numberOfMatchedStations").toInt32()>1)) {
-                return false;
-            }
-            if (not (fabs(particle->getUserRecord("dxy").toFloat())<0.2)) {
-                return false;
-            }
-            if (not (fabs(particle->getUserRecord("dz").toFloat())<0.5)) {
-                return false;
-            }
-            if (not (particle->getUserRecord("numberOfValidPixelHits").toInt32()>0)) {
-                return false;
-            }
-            if (not (particle->getUserRecord("trackerLayersWithMeasurement").toInt32()>5)) {
                 return false;
             }
             
@@ -136,24 +102,21 @@ class MuonSelection:
 
         bool passLooseCriteria(pxl::Particle* particle)
         {
+            //TODO: need to be extended to recommendation
             if (not (particle->getPt()>10.0)) {
                 return false;
             }
             if (not (fabs(particle->getEta())<2.5)) {
                 return false;
             }
-
-            /*
-            if (not (particle->getUserRecord("relIso").toFloat()<0.2)) {
+            if (particle->getUserRecord("isInEB-EE").toBool())
+            {
                 return false;
             }
-            if (not (fabs(particle->getUserRecord("dxy").toFloat())<0.2)) {
+            if (particle->getUserRecord("lostHits").toInt32()==0)
+            {
                 return false;
             }
-            if (not (fabs(particle->getUserRecord("dz").toFloat())<0.5)) {
-                return false;
-            }
-            */
             return true;
         }
 
@@ -164,8 +127,8 @@ class MuonSelection:
                 pxl::Event *event  = dynamic_cast<pxl::Event *> (sink->get());
                 if (event)
                 {
-                    unsigned int numTightMuons=0;
-                    unsigned int numLooseMuons=0;
+                    unsigned int numTightElectrons=0;
+                    unsigned int numLooseElectrons=0;
                     std::vector<pxl::EventView*> eventViews;
                     event->getObjectsOfType(eventViews);
                     for (unsigned ieventView=0; ieventView<eventViews.size();++ieventView)
@@ -180,15 +143,15 @@ class MuonSelection:
                             {
                                 pxl::Particle* particle = particles[iparticle];
 
-                                if (particle->getName()==_inputMuonName)
+                                if (particle->getName()==_inputElectronName)
                                 {
                                     if (passTightCriteria(particle))
                                     {
-                                        particle->setName(_tightMuonName);
-                                        ++numTightMuons;
+                                        particle->setName(_tightElectronName);
+                                        ++numTightElectrons;
                                     } else if (passLooseCriteria(particle)) {
-                                        particle->setName(_looseMuonName);
-                                        ++numLooseMuons;
+                                        particle->setName(_looseElectronName);
+                                        ++numLooseElectrons;
                                     } else if (_cleanEvent) {
                                         eventView->removeObject(particle);
                                     }
@@ -198,7 +161,7 @@ class MuonSelection:
 
                         }
                     }
-                    if (numTightMuons==_numTightMuons && numLooseMuons==_numLooseMuons)
+                    if (numTightElectrons==_numTightElectrons && numLooseElectrons==_numLooseElectrons)
                     {
                         _outputSource->setTargets(event);
                         return _outputSource->processTargets();
@@ -233,5 +196,5 @@ class MuonSelection:
         }
 };
 
-PXL_MODULE_INIT(MuonSelection)
+PXL_MODULE_INIT(ElectronSelection)
 PXL_PLUGIN_INIT
