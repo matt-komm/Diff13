@@ -136,6 +136,7 @@ class MuonSelection:
 
         bool passLooseCriteria(pxl::Particle* particle)
         {
+            //TODO: need to be extended to recommendation
             if (not (particle->getPt()>10.0)) {
                 return false;
             }
@@ -164,10 +165,13 @@ class MuonSelection:
                 pxl::Event *event  = dynamic_cast<pxl::Event *> (sink->get());
                 if (event)
                 {
-                    unsigned int numTightMuons=0;
-                    unsigned int numLooseMuons=0;
                     std::vector<pxl::EventView*> eventViews;
                     event->getObjectsOfType(eventViews);
+                    
+                    std::vector<pxl::Particle*> tightMuons;
+                    std::vector<pxl::Particle*> looseMuons;
+                    std::vector<pxl::Particle*> otherMuons;
+                    
                     for (unsigned ieventView=0; ieventView<eventViews.size();++ieventView)
                     {
                         pxl::EventView* eventView = eventViews[ieventView];
@@ -184,29 +188,38 @@ class MuonSelection:
                                 {
                                     if (passTightCriteria(particle))
                                     {
-                                        particle->setName(_tightMuonName);
-                                        ++numTightMuons;
+                                        tightMuons.push_back(particle);
                                     } else if (passLooseCriteria(particle)) {
-                                        particle->setName(_looseMuonName);
-                                        ++numLooseMuons;
-                                    } else if (_cleanEvent) {
-                                        eventView->removeObject(particle);
+                                        looseMuons.push_back(particle);
+                                    } else {
+                                        otherMuons.push_back(particle);
                                     }
-
                                 }
                             }
-
                         }
-                    }
-                    if (numTightMuons==_numTightMuons && numLooseMuons==_numLooseMuons)
-                    {
-                        _outputSource->setTargets(event);
-                        return _outputSource->processTargets();
-                    }
-                    else
-                    {
-                        _outputVetoSource->setTargets(event);
-                        return _outputVetoSource->processTargets();
+                    
+                        if (tightMuons.size()==_numTightMuons && looseMuons.size()==_numLooseMuons)
+                        {
+                            for (unsigned int i=0; i < tightMuons.size(); ++i)
+                            {
+                                tightMuons[i]->setName(_tightMuonName);
+                            }
+                            for (unsigned int i=0; i < looseMuons.size(); ++i)
+                            {
+                                looseMuons[i]->setName(_looseMuonName);
+                            }
+                            for (unsigned int i=0; _cleanEvent && (i < otherMuons.size()); ++i)
+                            {
+                                eventView->removeObject(otherMuons[i]);
+                            }
+                            _outputSource->setTargets(event);
+                            return _outputSource->processTargets();
+                        }
+                        else
+                        {
+                            _outputVetoSource->setTargets(event);
+                            return _outputVetoSource->processTargets();
+                        }
                     }
                 }
             }

@@ -39,7 +39,7 @@ class ElectronSelection:
             _outputSource = addSource("selected", "selected");
             _outputVetoSource = addSource("veto", "veto");
 
-            addOption("event view","name of the event view where Electrons are selected",_inputEventViewName);
+            addOption("event view","name of the event view where electrons are selected",_inputEventViewName);
             addOption("input electron name","name of particles to consider for selection",_inputElectronName);
             addOption("name of selected tight electrons","",_tightElectronName);
             addOption("name of selected loose electrons","",_looseElectronName);
@@ -90,18 +90,6 @@ class ElectronSelection:
 
         bool passTightCriteria(pxl::Particle* particle)
         {
-            if (not (particle->getPt()>26.0)) {
-                return false;
-            }
-            if (not (fabs(particle->getEta())<2.1)) {
-                return false;
-            }
-            
-            return true;
-        }
-
-        bool passLooseCriteria(pxl::Particle* particle)
-        {
             //TODO: need to be extended to recommendation
             if (not (particle->getPt()>10.0)) {
                 return false;
@@ -120,6 +108,30 @@ class ElectronSelection:
             return true;
         }
 
+        bool passLooseCriteria(pxl::Particle* particle)
+        {
+            //TODO: need to be extended to recommendation
+            if (not (particle->getPt()>10.0)) {
+                return false;
+            }
+            if (not (fabs(particle->getEta())<2.5)) {
+                return false;
+            }
+
+            /*
+            if (not (particle->getUserRecord("relIso").toFloat()<0.2)) {
+                return false;
+            }
+            if (not (fabs(particle->getUserRecord("dxy").toFloat())<0.2)) {
+                return false;
+            }
+            if (not (fabs(particle->getUserRecord("dz").toFloat())<0.5)) {
+                return false;
+            }
+            */
+            return true;
+        }
+
         bool analyse(pxl::Sink *sink) throw (std::runtime_error)
         {
             try
@@ -127,10 +139,13 @@ class ElectronSelection:
                 pxl::Event *event  = dynamic_cast<pxl::Event *> (sink->get());
                 if (event)
                 {
-                    unsigned int numTightElectrons=0;
-                    unsigned int numLooseElectrons=0;
                     std::vector<pxl::EventView*> eventViews;
                     event->getObjectsOfType(eventViews);
+                    
+                    std::vector<pxl::Particle*> tightElectrons;
+                    std::vector<pxl::Particle*> looseElectrons;
+                    std::vector<pxl::Particle*> otherElectrons;
+                    
                     for (unsigned ieventView=0; ieventView<eventViews.size();++ieventView)
                     {
                         pxl::EventView* eventView = eventViews[ieventView];
@@ -147,29 +162,38 @@ class ElectronSelection:
                                 {
                                     if (passTightCriteria(particle))
                                     {
-                                        particle->setName(_tightElectronName);
-                                        ++numTightElectrons;
+                                        tightElectrons.push_back(particle);
                                     } else if (passLooseCriteria(particle)) {
-                                        particle->setName(_looseElectronName);
-                                        ++numLooseElectrons;
-                                    } else if (_cleanEvent) {
-                                        eventView->removeObject(particle);
+                                        looseElectrons.push_back(particle);
+                                    } else {
+                                        otherElectrons.push_back(particle);
                                     }
-
                                 }
                             }
-
                         }
-                    }
-                    if (numTightElectrons==_numTightElectrons && numLooseElectrons==_numLooseElectrons)
-                    {
-                        _outputSource->setTargets(event);
-                        return _outputSource->processTargets();
-                    }
-                    else
-                    {
-                        _outputVetoSource->setTargets(event);
-                        return _outputVetoSource->processTargets();
+                    
+                        if (tightElectrons.size()==_numTightElectrons && looseElectrons.size()==_numLooseElectrons)
+                        {
+                            for (unsigned int i=0; i < tightElectrons.size(); ++i)
+                            {
+                                tightElectrons[i]->setName(_tightElectronName);
+                            }
+                            for (unsigned int i=0; i < looseElectrons.size(); ++i)
+                            {
+                                looseElectrons[i]->setName(_looseElectronName);
+                            }
+                            for (unsigned int i=0; _cleanEvent && (i < otherElectrons.size()); ++i)
+                            {
+                                eventView->removeObject(otherElectrons[i]);
+                            }
+                            _outputSource->setTargets(event);
+                            return _outputSource->processTargets();
+                        }
+                        else
+                        {
+                            _outputVetoSource->setTargets(event);
+                            return _outputVetoSource->processTargets();
+                        }
                     }
                 }
             }
