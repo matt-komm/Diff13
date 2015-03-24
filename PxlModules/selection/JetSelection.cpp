@@ -23,8 +23,8 @@ class JetSelection:
         
         bool _cleanEvent;
         
-        double _pT;
-        double _eta;
+        double _pTmin;
+        double _etamax;
         
         bool _dRInvert;
         double _dR;
@@ -37,8 +37,8 @@ class JetSelection:
             _inputEventViewName("Reconstructed"),
             _selectedJetName("SelectedJet"),
             _cleanEvent(true),
-            _pT(40),
-            _eta(4.5),
+            _pTmin(40),
+            _etamax(4.5),
             _dRInvert(false),
             _dR(0.4)
         {
@@ -54,8 +54,8 @@ class JetSelection:
             addOption("name of selected jets","",_selectedJetName);
             addOption("clean event","this option will clean the event of all jets falling cuts",_cleanEvent);
             
-            addOption("pT cut","",_pT);
-            addOption("eta cut","",_eta);
+            addOption("Jet min pT cut","",_pTmin);
+            addOption("Get max eta cut","",_etamax);
             
             addOption("invert dR","inverts dR cleaning",_dRInvert);
             
@@ -97,8 +97,8 @@ class JetSelection:
             getOption("name of selected jets",_selectedJetName);
             getOption("clean event",_cleanEvent);
             
-            getOption("pT cut",_pT);
-            getOption("eta cut",_eta);
+            getOption("pT cut",_pTmin);
+            getOption("eta cut",_etamax);
             
             getOption("invert dR",_dRInvert);
             getOption("dR cut",_dR);
@@ -113,10 +113,10 @@ class JetSelection:
         bool passJetSelection(pxl::Particle* particle)
         {
             //TODO: need to be extended to recommendation
-            if (not (particle->getPt()>_pT)) {
+            if (not (particle->getPt()>_pTmin)) {
                 return false;
             }
-            if (not (fabs(particle->getEta())<_eta)) {
+            if (not (fabs(particle->getEta())<_etamax)) {
                 return false;
             }
             return true;
