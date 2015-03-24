@@ -1,3 +1,4 @@
+
 #include "pxl/hep.hh"
 #include "pxl/core.hh"
 #include "pxl/core/macros.hh"
@@ -20,7 +21,10 @@ class MuonSelection:
         std::string _looseMuonName;
         
         bool _cleanEvent;
-        
+
+        double _pTmin;
+        double _etamax;
+
         int64_t _numTightMuons;
         int64_t _numLooseMuons;
 
@@ -32,6 +36,8 @@ class MuonSelection:
             _tightMuonName("TightMuon"),
             _looseMuonName("LooseMuon"),
             _cleanEvent(true),
+	    _pTmin(26),
+            _etamax(2.1),
             _numTightMuons(1),
             _numLooseMuons(0)
         {
@@ -45,6 +51,8 @@ class MuonSelection:
             addOption("name of selected loose muons","",_looseMuonName);
             addOption("clean event","this option will clean the event of all muons falling tight or loose criteria",_cleanEvent);
             
+	    addOption("Jet min pT cut","",_pTmin);
+            addOption("Get max eta cut","",_etamax);
             addOption("numTightMuons","number of tight muons",_numTightMuons);
             addOption("numLooseMuons","number of loose muons",_numLooseMuons);
         }
@@ -84,6 +92,8 @@ class MuonSelection:
             getOption("name of selected loose muons",_looseMuonName);
             getOption("clean event",_cleanEvent);
             
+	    getOption("pT cut",_pTmin);
+            getOption("eta cut",_etamax);
             getOption("numTightMuons",_numTightMuons);
             getOption("numLooseMuons",_numLooseMuons);
         }
@@ -91,10 +101,10 @@ class MuonSelection:
         bool passTightCriteria(pxl::Particle* particle)
         {
             //TODO: need to be extended to recommendation            
-            if (not (particle->getPt()>26.0)) {
+            if (not (particle->getPt()>_pTmin)) {
                 return false;
             }
-            if (not (fabs(particle->getEta())<2.1)) {
+            if (not (fabs(particle->getEta())<_etamax)) {
                 return false;
             }
             //check if combined track, tracker track & PV had been found
@@ -248,3 +258,4 @@ class MuonSelection:
 
 PXL_MODULE_INIT(MuonSelection)
 PXL_PLUGIN_INIT
+
