@@ -51,8 +51,8 @@ class MuonSelection:
             addOption("name of selected loose muons","",_looseMuonName);
             addOption("clean event","this option will clean the event of all muons falling tight or loose criteria",_cleanEvent);
             
-	    addOption("Jet min pT cut","",_pTmin);
-            addOption("Get max eta cut","",_etamax);
+	    addOption("Muon min pT cut","",_pTmin);
+            addOption("Muon max eta cut","",_etamax);
             addOption("numTightMuons","number of tight muons",_numTightMuons);
             addOption("numLooseMuons","number of loose muons",_numLooseMuons);
         }
