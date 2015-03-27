@@ -20,3 +20,5 @@ install(
     TARGETS JetSelection
     LIBRARY DESTINATION ${PXL_PLUGIN_INSTALL_PATH}
 )
+
+
