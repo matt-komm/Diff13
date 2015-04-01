@@ -34,12 +34,12 @@ class MuonSelection:
         double _etaMaxtMuon; //Maximum pseudorapidity
         std::string _idstMuon; //Muon Conditions as provided by the user e.g. PF Muon ID, Muon Reconstruction Alghoritm ID
         std::vector<std::string> _idtMuon; //Vector to store each Muon Condition sepately
-        double _normChi2tMuon; //Chi2/nDoFs of muon track
-        int64_t _numberOfValidPixelHitstMuon; //Number of Pixel Hits
-        int64_t _numberOfMatchedStationstMuon; //Number of Matched Muon Stations
+        double _normChi2tMuon; //(Maximum) Chi2/nDoFs of muon track
+        int64_t _numberOfValidPixelHitstMuon; //(Minimum) number of Pixel Hits
+        int64_t _numberOfMatchedStationstMuon; //(Minimum) number of Matched Muon Stations
         double _dxyMaxtMuon; //Maximum transverse impact parameter 
         double _dzMaxtMuon; //Maximum longitudinal impact parameter  
-        int64_t _trackerLayersWithMeasurementtMuon; //NUumber of tracker layers recorded a hit
+        int64_t _trackerLayersWithMeasurementtMuon; //(Minimum) number of tracker layers recorded a hit
         std::string _pfIsoMethodstMuon; //Particle Flow (pf) Isolation (Iso) Method(s) as provided by the user 
         std::vector<std::string> _pfIsoMethodtMuon; //Vector to store each Muon Isolation method
         double _pfRelIsoCorDbtMuon; //Muon Isolation:Relative(Rel) Isolation Correction (Cor) Delta beta (Db) 
@@ -102,7 +102,7 @@ class MuonSelection:
             addOption("Clean event","this option will clean the event of all muons falling tight or loose criteria",_cleanEvent);
             
 	    addOption("TightMuon Minimum pT","",_pTMintMuon);
-            addOption("TightMuon Maximum eta","",_etaMaxtMuon);
+            addOption("TightMuon Maximum Eta","",_etaMaxtMuon);
 	    addOption("TightMuon ID","",_idstMuon);
 	    addOption("TightMuon Chi2/nDoFs", "",_normChi2tMuon); 
             addOption("TightMuon Number Of Valid Pixel Hits", "",_numberOfValidPixelHitstMuon);
@@ -116,7 +116,7 @@ class MuonSelection:
             addOption("Number of TightMuons to Select","",_numtMuons);
 
 	    addOption("LooseMuon Minimum pT","",_pTminlMuon);
-	    addOption("LooseMuon Maximum eta","",_etamaxlMuon);
+	    addOption("LooseMuon Maximum Eta","",_etamaxlMuon);
 	    addOption("LooseMuon ID","", _idslMuon);
 	    addOption("LooseMuon PF Iso","",_pfIsoMethodslMuon);
 	    addOption("LooseMuon Minimum Relative Iso DeltaBeta","",_pfRelIsoCorDblMuon);
@@ -160,7 +160,7 @@ class MuonSelection:
             getOption("Clean event",_cleanEvent);
             
 	    getOption("TightMuon Minimum pT",_pTMintMuon);
-            getOption("TightMuon Maximum eta",_etaMaxtMuon);
+            getOption("TightMuon Maximum Eta",_etaMaxtMuon);
 	    getOption("TightMuon ID",_idstMuon);
 	    getOption("TightMuon Chi2/nDoFs", _normChi2tMuon); 
             getOption("TightMuon Number Of Valid Pixel Hits", _numberOfValidPixelHitstMuon);
@@ -174,7 +174,7 @@ class MuonSelection:
             getOption("Number of TightMuons to Select",_numtMuons);
 	    
 	    getOption("LooseMuon Minimum pT",_pTminlMuon);
-	    getOption("LooseMuon Maximum eta",_etamaxlMuon);
+	    getOption("LooseMuon Maximum Eta",_etamaxlMuon);
 	    getOption("LooseMuon ID",_idslMuon);
 	    getOption("LooseMuon PF Iso",_pfIsoMethodslMuon);
 	    getOption("LooseMuon Minimum Relative Iso DeltaBeta",_pfRelIsoCorDblMuon);
@@ -184,7 +184,7 @@ class MuonSelection:
 	    try
 	      {
 		std::set<char> token;
-		IdentifyToken(token, _idstMuon);
+		identifyToken(token, _idstMuon);
 		std::istringstream idstMuon(_idstMuon);
 		std::string idtMuon;
 				
@@ -202,7 +202,7 @@ class MuonSelection:
 	    try
 	      {
 		std::set<char> token;
-		IdentifyToken(token, _pfIsoMethodstMuon);
+		identifyToken(token, _pfIsoMethodstMuon);
 		std::istringstream pfIsoMethodstMuon(_pfIsoMethodstMuon);
 		std::string pfIsoMethodtMuon;
 				
@@ -220,7 +220,7 @@ class MuonSelection:
 	    try
 	      {
 		std::set<char> token;
-		IdentifyToken(token, _idslMuon);
+		identifyToken(token, _idslMuon);
 		std::istringstream idslMuon(_idslMuon);
 		std::string idlMuon;
 				
@@ -238,7 +238,7 @@ class MuonSelection:
 	    try
 	      {
 		std::set<char> token;
-		IdentifyToken(token, _pfIsoMethodslMuon);
+		identifyToken(token, _pfIsoMethodslMuon);
 		std::istringstream pfIsoMethodslMuon(_pfIsoMethodslMuon);
 		std::string pfIsoMethodlMuon;
 				
@@ -417,7 +417,7 @@ class MuonSelection:
             delete this;
         }
   
-       void IdentifyToken (std::set<char> & token, std::string tokenize )
+       void identifyToken (std::set<char> & token, std::string tokenize )
         {
 
 	  //Token could be everything other than a letter, i.e. everything with ASCII code outside the [65,90] and [97,122] range
@@ -426,7 +426,7 @@ class MuonSelection:
 	    if ( ( (int) tokenize[count]>=65 && (int) tokenize[count]<=90 ) || ( (int) tokenize[count]>=97 && (int) tokenize[count]<=122 ))
 	      continue;
 	    else
-	      if ( (int) tokenize[count]!=32)
+	      if ( (int) tokenize[count]!=32 )
 		token.insert(tokenize[count]);
 
 

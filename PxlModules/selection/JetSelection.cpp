@@ -22,10 +22,25 @@ class JetSelection:
         std::string _selectedJetName;
         
         bool _cleanEvent;
-        
-        double _pTmin;
-        double _etamax;
-        
+
+        double _eTMinJet; //Minimum transverse energy
+        double _etaMaxJet; //Maximum pseudorapidity
+        int64_t _numOfPFJetConstituents; //PF Jet ID: Number of Jet Constituents 
+        double _neutralHadronFracOfPFJet; //PF Jet ID: (Maximum) neutral Hadron Energy Fraction
+        double _chargedHadronFracOfPFJet; //PF Jet ID: (Minimum) charged Hadron Energy Fraction (currently not used!)
+        double _neutralEmFracOfPFJet; //PF Jet: (Maximum) neutral Electromagnetic Energy Fraction
+        double _chargedEmFracOfPFJet; //PF Jet ID: (Maximum) charged Electromagnetic Energy Fraction 
+        double _muonFracOfPFJet; //PF Jet ID: (Maximum) Muon Energy Fraction 
+    
+        /* Additional Requirements for Jets reconstructed in the cental region */
+        double _neutralHadronFracOfPFCentJet; //PF Cental* Jet ID: (Maximum) neutral Hadron Energy Fraction
+        double _chargedHadronFracOfPFCentJet; //PF Cental* Jet ID: (Minimum) charged Hadron Energy Fraction
+        double _neutralEmFracOfPFCentJet; //PF Cental* Jet ID: (Maximum) neutral Electromagnetic Energy Fraction
+        double _chargedEmFracOfPFCentJet; //PF Cental* Jet ID: (Maximum) charged Electromagnetic Energy Fraction
+        double _chargedMultOfPFCentJet;  //PF Cental* Jet ID: (Minimum) charged Particle Multiplicity 
+  
+        /* *Cental--> within the tracker acceptance |eta|<2.4 */
+      
         bool _dRInvert;
         double _dR;
         std::vector<std::string> _dRObjects;
@@ -37,13 +52,26 @@ class JetSelection:
             _inputEventViewName("Reconstructed"),
             _selectedJetName("SelectedJet"),
             _cleanEvent(true),
-            _pTmin(40),
-            _etamax(4.5),
+	    _eTMinJet(40.),
+	    _etaMaxJet(4.7),
+	    _numOfPFJetConstituents(1),
+	    _neutralHadronFracOfPFJet(0.99),
+	    _chargedHadronFracOfPFJet(999),
+	    _neutralEmFracOfPFJet(0.99),
+	    _chargedEmFracOfPFJet(0.9),
+	    _muonFracOfPFJet(0.8),
+	    _neutralHadronFracOfPFCentJet(0.99), 
+	    _chargedHadronFracOfPFCentJet(0.),  
+	    _neutralEmFracOfPFCentJet(0.99),
+	    _chargedEmFracOfPFCentJet(0.99), 
+	    _chargedMultOfPFCentJet(0),  
             _dRInvert(false),
             _dR(0.4)
+	    /*Initial Values taken from TOP JetMET Analysis (Run2) */
+	    /*https://twiki.cern.ch/twiki/bin/view/CMS/TopJME#General_Information */
         {
             addSink("input", "input");
-            _output1JetsSource = addSource("1 jets", "1 jets");
+            _output1JetsSource = addSource("1 jet", "1 jet");
             _output2JetsSource = addSource("2 jets", "2 jets");
             _output3JetsSource = addSource("3 jets", "3 jets");
             _output4JetsSource = addSource("4 jets", "4 jets");
@@ -54,13 +82,24 @@ class JetSelection:
             addOption("name of selected jets","",_selectedJetName);
             addOption("clean event","this option will clean the event of all jets falling cuts",_cleanEvent);
             
-            addOption("Jet min pT cut","",_pTmin);
-            addOption("Get max eta cut","",_etamax);
-            
+            addOption("PF Jet Minimum pT","",_eTMinJet);
+            addOption("PF Jet Maximum Eta","",_etaMaxJet);
+	    addOption("PF Jet Number of Constituents","",_numOfPFJetConstituents);
+            addOption("PF Jet ID: Neutral Hadr. Frac.","",_neutralHadronFracOfPFJet);
+	    addOption("PF Jet ID: Charged Hadr. Frac. (NOT IMPLEMENTED)","",_chargedHadronFracOfPFJet);
+	    addOption("PF Jet ID: Charged Em. Frac.","",_chargedEmFracOfPFJet);
+	    addOption("PF Jet ID: Neutral Em. Frac.","",_neutralEmFracOfPFJet);
+	    addOption("PF Jet ID: Muon Frac.","",_muonFracOfPFJet);
+	    addOption("PF Central Jet ID: Neutral Hadr. Frac. (UNCHANGED)","",_neutralHadronFracOfPFCentJet); 
+	    addOption("PF Central Jet ID: Charged Hadr. Frac.","",_chargedHadronFracOfPFCentJet);  
+	    addOption("PF Central Jet ID: Neutral Em. Frac. (UNCHANGED)","",_neutralEmFracOfPFCentJet);
+	    addOption("PF Central Jet ID: Charged Em. Frac.","",_chargedEmFracOfPFCentJet);
+	    addOption("PF Central Jet ID: Charged Multiplicity","",_chargedMultOfPFCentJet); 
+
             addOption("invert dR","inverts dR cleaning",_dRInvert);
             
             addOption("dR cut","remove jets close to other objects, e.g. leptons",_dR);
-            addOption("dR objects","object names to which the jets should not be close to",_dRObjects);
+            addOption("dR objects","object names to which the jets should NOT be close to",_dRObjects);
         }
 
         ~JetSelection()
@@ -97,9 +136,23 @@ class JetSelection:
             getOption("name of selected jets",_selectedJetName);
             getOption("clean event",_cleanEvent);
             
-            getOption("pT cut",_pTmin);
-            getOption("eta cut",_etamax);
-            
+            getOption("PF Jet Minimum pT",_eTMinJet);
+            getOption("PF Jet Maximum Eta",_etaMaxJet);
+	    
+	    getOption("PF Jet Minimum pT",_eTMinJet);
+            getOption("PF Jet Maximum Eta",_etaMaxJet);
+	    getOption("PF Jet Number of Constituents",_numOfPFJetConstituents);
+            getOption("PF Jet ID: Neutral Hadr. Frac.",_neutralHadronFracOfPFJet);
+	    getOption("PF Jet ID: Charged Hadr. Frac. (NOT IMPLEMENTED)",_chargedHadronFracOfPFJet);
+	    getOption("PF Jet ID: Charged Em. Frac.",_chargedEmFracOfPFJet);
+	    getOption("PF Jet ID: Neutral Em. Frac.",_neutralEmFracOfPFJet);
+	    getOption("PF Jet ID: Muon Frac.",_muonFracOfPFJet);
+	    getOption("PF Central Jet ID: Neutral Hadr. Frac. (UNCHANGED)",_neutralHadronFracOfPFCentJet); 
+	    getOption("PF Central Jet ID: Charged Hadr. Frac.",_chargedHadronFracOfPFCentJet);  
+	    getOption("PF Central Jet ID: Neutral Em. Frac. (UNCHANGED)",_neutralEmFracOfPFCentJet);
+	    getOption("PF Central Jet ID: Charged Em. Frac.",_chargedEmFracOfPFCentJet);
+	    getOption("PF Central Jet ID: Charged Multiplicity",_chargedMultOfPFCentJet); 
+
             getOption("invert dR",_dRInvert);
             getOption("dR cut",_dR);
             getOption("dR objects",_dRObjects);
@@ -110,18 +163,89 @@ class JetSelection:
             
         }
 
-        bool passJetSelection(pxl::Particle* particle)
+        bool passesPFJetSelection(pxl::Particle* particle)
         {
-            //TODO: need to be extended to recommendation
-            if (not (particle->getPt()>_pTmin)) {
+            //TODO: need to be extended to recommendation?
+            if (not (particle->getPt()>_eTMinJet)) {
                 return false;
             }
-            if (not (fabs(particle->getEta())<_etamax)) {
+	    if (not (fabs(particle->getEta())<_etaMaxJet)) {
                 return false;
             }
-            return true;
-        }
-        
+	    if (not (particle->getUserRecord("nConstituents").toFloat()>_numOfPFJetConstituents)) {
+	      return false;
+	    }
+	    if (particle->hasUserRecord("neutralHadronEnergyFraction")) {
+	       if (not (particle->getUserRecord("neutralHadronEnergyFraction").toFloat()<_neutralHadronFracOfPFJet)) {
+		 return false;
+	       }
+	     }
+	    if (particle->hasUserRecord("neutralEmEnergyFraction")) {
+	      if (not (particle->getUserRecord("neutralEmEnergyFraction").toFloat()<_neutralEmFracOfPFJet)) {
+		return false;
+	      }
+	    }
+	    if (particle->hasUserRecord("electronEnergyFraction")) {
+	      if (not (particle->getUserRecord("electronEnergyFraction").toFloat()<_chargedEmFracOfPFJet)) {
+		return false;
+	      }
+	    }
+	    if (particle->hasUserRecord("muonEnergyFraction")) {
+	      if (not (particle->getUserRecord("muonEnergyFraction").toFloat()<_muonFracOfPFJet)) {
+		return false;
+	      }
+	    }
+	    
+	    return true;
+	}
+	 
+        bool passesPFCentralJetSelection(pxl::Particle* particle)
+        {
+            //TODO: need to be extended to recommendation?
+            if (not (particle->getPt()>_eTMinJet)) {
+                return false;
+            }
+	   
+            if (not (fabs(particle->getEta())<2.4)) { //Hardcoded!
+                return false;
+            }
+	    if (particle->hasUserRecord("chargedHadronEnergyFraction")) {
+	      if (not (particle->getUserRecord("chargedHadronEnergyFraction").toFloat()>_chargedHadronFracOfPFCentJet)) {
+		return false;
+	      }
+	    }
+	    
+	    if (not (particle->getUserRecord("chargedMultiplicity").toFloat()>_chargedMultOfPFCentJet)) {
+	      return false;
+	    }
+	    if (particle->hasUserRecord("electronEnergyFraction")) {
+	      if (not (particle->getUserRecord("electronEnergyFraction").toFloat()<_chargedEmFracOfPFCentJet)) {
+		return false;
+	      }
+	    }
+	    if (not (particle->getUserRecord("nConstituents").toFloat()>_numOfPFJetConstituents)) {
+	      return false;
+	    }
+	    if (particle->hasUserRecord("neutralHadronEnergyFraction")) {
+	      if (not (particle->getUserRecord("neutralHadronEnergyFraction").toFloat()<_neutralHadronFracOfPFCentJet)) {
+		return false;
+	      }
+	    }
+	    if (particle->hasUserRecord("neutralEmEnergyFraction")) {
+	      if (not (particle->getUserRecord("neutralEmEnergyFraction").toFloat()<_neutralEmFracOfPFCentJet)) {
+		return false;
+	      }
+	    }
+	    if (particle->hasUserRecord("muonEnergyFraction")) {
+	      if (not (particle->getUserRecord("muonEnergyFraction").toFloat()<_muonFracOfPFJet)) {
+		return false;
+	      }
+	    }
+	   
+	    return true;
+	}
+  
+	            
         void applyDRcleaning(pxl::EventView* eventView, std::vector<pxl::Particle*>& selectedJets, std::vector<pxl::Particle*>& dRCleaningObjects)
         {
             for (std::vector<pxl::Particle*>::iterator it = selectedJets.begin(); it != selectedJets.end(); )
@@ -158,7 +282,7 @@ class JetSelection:
         {
             try
             {
-                pxl::Event *event  = dynamic_cast<pxl::Event*>(sink->get());
+	        pxl::Event *event  = dynamic_cast<pxl::Event*>(sink->get());
                 if (event)
                 {
                     std::vector<pxl::EventView*> eventViews;
@@ -182,11 +306,19 @@ class JetSelection:
 
                                 if (particle->getName()==_inputJetName)
                                 {
-                                    if (passJetSelection(particle))
-                                    {
-                                        particle->setName(_selectedJetName);
-                                        selectedJets.push_back(particle);
-                                    } else if (_cleanEvent) {
+                                    if (passesPFJetSelection(particle))
+				      {
+					if (fabs(particle->getEta())<2.4)
+				      {
+					if (passesPFCentralJetSelection(particle))
+					{
+					  particle->setName(_selectedJetName);
+					  selectedJets.push_back(particle);
+					}
+				      }
+				      particle->setName(_selectedJetName);
+				      selectedJets.push_back(particle);
+				    } else if (_cleanEvent) {
                                         eventView->removeObject(particle);
                                     }
                                 }
@@ -202,10 +334,10 @@ class JetSelection:
                         }
                         
                         applyDRcleaning(eventView,selectedJets,dRCleaningObjects);
-                        
+			
                         switch (selectedJets.size())
                         {
-                            case 1:
+			    case 1:
                                 _output1JetsSource->setTargets(event);
                                 return _output1JetsSource->processTargets();
                             case 2:
