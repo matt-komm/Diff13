@@ -164,9 +164,15 @@ class JetSelection:
             
         }
 
-        bool passesJetSelection(pxl::Particle* particle)
+        bool passesPFJetSelection(pxl::Particle* particle)
         {
-            if (not (particle->getPt()>_pTMinJet))
+            //TODO: need to be extended to recommendation?
+            if (fabs(particle->getEta())<2.4)
+            {//Hardcoded!
+              //inspect non-central jets
+              return false;
+            }
+            if (not (particle->getPt()>_eTMinJet))
             {
                 return false;
             }
@@ -211,7 +217,7 @@ class JetSelection:
             return true;
         }
 
-        bool passesCentralJetSelection(pxl::Particle* particle)
+        bool passesPFCentralJetSelection(pxl::Particle* particle)
         {
             //TODO: need to be extended to recommendation?
             if (not fabs(particle->getEta())<2.4)
@@ -334,10 +340,13 @@ class JetSelection:
                                 {
                                     if (passesPFCentralJetSelection(particle))
                                     {
-                                        particle->setName(_selectedJetName); //same _selectedJetName for central & non-central?
-                                        selectedJets.push_back(particle);
+                                      particle->setName(_selectedJetName); //same _selectedJetName for central & non-central?
+                                      selectedJets.push_back(particle);
+                                    } else if (passesPFJetSelection(particle)) {
+                                      particle->setName(_selectedJetName);
+                                      selectedJets.push_back(particle);
                                     } else if (_cleanEvent) {
-                                        eventView->removeObject(particle);
+                                      eventView->removeObject(particle);
                                     }
                                 }
                                 for (unsigned int iname = 0; iname < _dRObjects.size(); ++iname)
