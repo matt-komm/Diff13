@@ -31,12 +31,12 @@ cd $BASEDIR/CMSSW
 export SCRAM_ARCH=slc6_amd64_gcc481
 addVar SCRAM_ARCH $SCRAM_ARCH
 
-CMSSWVERSION="CMSSW_7_2_4"
+CMSSWVERSION="CMSSW_7_2_3_patch1"
 
 execute "scramv1 project CMSSW $CMSSWVERSION"
 cd $CMSSWVERSION/src
 
-execute "eval cmsenv"
+eval `scramv1 runtime -sh`
 execute "git cms-init"
 
 #execute "wget -q -O - https://github.com/matt-komm/Pxl/archive/3.5.1.tar.gz | tar xvzf -"
