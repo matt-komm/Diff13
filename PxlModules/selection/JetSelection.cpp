@@ -38,7 +38,7 @@ class JetSelection:
         double _neutralEmFracOfPFCentJet; //PF Cental* Jet ID: (Maximum) neutral Electromagnetic Energy Fraction
         double _chargedEmFracOfPFCentJet; //PF Cental* Jet ID: (Maximum) charged Electromagnetic Energy Fraction
         double _chargedMultOfPFCentJet;  //PF Cental* Jet ID: (Minimum) charged Particle Multiplicity 
-  
+
         /* *Cental--> within the tracker acceptance |eta|<2.4 */
       
         bool _dRInvert;
@@ -71,10 +71,10 @@ class JetSelection:
 	    /*https://twiki.cern.ch/twiki/bin/view/CMS/TopJME#General_Information */
         {
             addSink("input", "input");
-            _output1JetsSource = addSource("1 jet", "1 jet");
-            _output2JetsSource = addSource("2 jets", "2 jets");
-            _output3JetsSource = addSource("3 jets", "3 jets");
-            _output4JetsSource = addSource("4 jets", "4 jets");
+            _output1JetsSource = addSource("1 Jet", "1 Jet");
+            _output2JetsSource = addSource("2 Jets", "2 Jets");
+            _output3JetsSource = addSource("3 Jets", "3 Jets");
+            _output4JetsSource = addSource("4 Jets", "4 Jets");
             _outputOtherJetsSource = addSource("other", "other");
             
             addOption("event view","name of the event view where jets are selected",_inputEventViewName);
@@ -95,7 +95,6 @@ class JetSelection:
 	    addOption("PF Central Jet ID: Neutral Em. Frac. (UNCHANGED)","",_neutralEmFracOfPFCentJet);
 	    addOption("PF Central Jet ID: Charged Em. Frac.","",_chargedEmFracOfPFCentJet);
 	    addOption("PF Central Jet ID: Charged Multiplicity","",_chargedMultOfPFCentJet); 
-
             addOption("invert dR","inverts dR cleaning",_dRInvert);
             
             addOption("dR cut","remove jets close to other objects, e.g. leptons",_dR);
@@ -166,6 +165,10 @@ class JetSelection:
         bool passesPFJetSelection(pxl::Particle* particle)
         {
             //TODO: need to be extended to recommendation?
+	    if (fabs(particle->getEta())<2.4) {//Hardcoded!
+	      //inspect non-central jets
+	      return false;
+	    }
             if (not (particle->getPt()>_eTMinJet)) {
                 return false;
             }
@@ -196,17 +199,18 @@ class JetSelection:
 	      }
 	    }
 	    
+	    
 	    return true;
 	}
 	 
         bool passesPFCentralJetSelection(pxl::Particle* particle)
         {
             //TODO: need to be extended to recommendation?
+	    if (not fabs(particle->getEta())<2.4) { //Hardcoded!
+	      //inspect central jets
+	      return false;
+	    }
             if (not (particle->getPt()>_eTMinJet)) {
-                return false;
-            }
-	   
-            if (not (fabs(particle->getEta())<2.4)) { //Hardcoded!
                 return false;
             }
 	    if (particle->hasUserRecord("chargedHadronEnergyFraction")) {
@@ -214,7 +218,6 @@ class JetSelection:
 		return false;
 	      }
 	    }
-	    
 	    if (not (particle->getUserRecord("chargedMultiplicity").toFloat()>_chargedMultOfPFCentJet)) {
 	      return false;
 	    }
@@ -294,6 +297,7 @@ class JetSelection:
                     
                     for (unsigned ieventView=0; ieventView<eventViews.size();++ieventView)
                     {
+
                         pxl::EventView* eventView = eventViews[ieventView];
                         if (eventView->getName()==_inputEventViewName)
                         {
@@ -303,24 +307,20 @@ class JetSelection:
                             for (unsigned iparticle=0; iparticle<particles.size();++iparticle)
                             {
                                 pxl::Particle* particle = particles[iparticle];
-
-                                if (particle->getName()==_inputJetName)
+				
+				if (particle->getName()==_inputJetName)
                                 {
-                                    if (passesPFJetSelection(particle))
-				      {
-					if (fabs(particle->getEta())<2.4)
-				      {
-					if (passesPFCentralJetSelection(particle))
-					{
-					  particle->setName(_selectedJetName);
-					  selectedJets.push_back(particle);
-					}
-				      }
+				  
+				    if (passesPFCentralJetSelection(particle))
+				    {
+				      particle->setName(_selectedJetName); //same _selectedJetName for central & non-central?
+				      selectedJets.push_back(particle);
+				    } else if (passesPFJetSelection(particle)) {
 				      particle->setName(_selectedJetName);
 				      selectedJets.push_back(particle);
 				    } else if (_cleanEvent) {
-                                        eventView->removeObject(particle);
-                                    }
+				      eventView->removeObject(particle);
+				    }
                                 }
                                 for (unsigned int iname = 0; iname < _dRObjects.size(); ++iname)
                                 {

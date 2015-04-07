@@ -20,3 +20,11 @@ install(
     TARGETS JetSelection
     LIBRARY DESTINATION ${PXL_PLUGIN_INSTALL_PATH}
 )
+
+add_library( BJetTagSelection MODULE  BJetTagSelection.cpp)
+target_link_libraries(BJetTagSelection ${PXL_LIBRARIES})
+install(
+    TARGETS BJetTagSelection
+    LIBRARY DESTINATION ${PXL_PLUGIN_INSTALL_PATH}
+)
+
