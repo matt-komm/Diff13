@@ -7,7 +7,119 @@
 
 #include "OutputStore.hpp"
 
+#include <vector>
+#include <string>
+#include <iostream>
+
 static pxl::Logger logger("RootTreeWriter");
+
+
+class SyntaxTree
+{
+    private:
+        SyntaxTree* _parent;
+        
+        std::map<std::string,SyntaxTree*> _children;
+        
+        const std::string _field;
+    public:
+        SyntaxTree(const std::string& field="", SyntaxTree* parent=nullptr):
+            _field(field),
+            _parent(parent)
+        {
+        }
+        
+        inline const std::string& getField() const
+        {
+            return _field;
+        }
+        
+        inline void print(unsigned int ident=0) const
+        {
+            for (unsigned int i = 0; i < ident; ++i)
+            {
+                std::cout<<" - ";
+            }
+            std::cout<<_field<<std::endl;
+            for (std::map<std::string,SyntaxTree*>::const_iterator it = _children.cbegin(); it != _children.cend(); ++it)
+            {
+                it->second->print(ident+1);
+            }
+        }
+        
+        void buildTree(const std::string& s)
+        {
+            std::string::size_type pos = s.find(".");
+            std::string childField = "";
+            if (pos!=std::string::npos)
+            {
+                childField = s.substr(0,pos);
+            }
+            else
+            {
+                childField=s;
+            }
+            auto it = _children.find(childField);
+            if (it==_children.end())
+            {
+                SyntaxTree* parser = new SyntaxTree(childField,this);
+                _children[childField]=parser;
+            }
+            if (pos!=std::string::npos)
+            {
+                _children[childField]->buildTree(s.substr(pos+1));
+            }
+        }
+        
+        template<class TYPE>
+        void evaluateChildren(TYPE* obj, Tree* tree, const std::string& prefix)
+        {
+            for (std::pair<std::string,SyntaxTree*> child: _children)
+            {
+                child.second->evaluate(obj,tree, prefix+"__"+_field);
+            }
+        }
+        
+        void evaluate(pxl::Event* event, Tree* tree, const std::string& prefix)
+        {
+            std::vector<pxl::EventView*> eventViews;
+            event->getObjectsOfType(eventViews);
+            unsigned int multiplicity = 1;
+            for (pxl::EventView* eventView: eventViews)
+            {
+                if (eventView->getName()==_field)
+                {
+                    evaluateChildren(eventView,tree,prefix+"_"+std::to_string(multiplicity));
+                    ++multiplicity;
+                }
+            }
+        }
+        
+        void evaluate(pxl::EventView* eventView, Tree* tree, const std::string& prefix)
+        {
+            std::vector<pxl::Particle*> particles;
+            eventView->getObjectsOfType(particles);
+            unsigned int multiplicity = 1;
+            for (pxl::Particle* particle: particles)
+            {
+                if (particle->getName()==_field)
+                {
+                    evaluateChildren(particle,tree,prefix+"_"+std::to_string(multiplicity));
+                    ++multiplicity;
+                }
+            }
+        }
+        
+        void evaluate(pxl::Particle* particle, Tree* tree, const std::string& prefix)
+        {
+            if (_field=="pt")
+            {
+                tree->storeVariable(prefix+"__pt",particle->getPt());
+            }
+            
+        }
+        
+};
 
 class RootTreeWriter:
     public pxl::Module
@@ -19,15 +131,22 @@ class RootTreeWriter:
         
         OutputStore* _store;
         
+        std::vector<std::string> _selections;
+        
+        SyntaxTree* _syntaxTree;
+        
     public:
         RootTreeWriter():
             Module(),
-            _store(nullptr)
+            _store(nullptr),
+            _syntaxTree(nullptr)
         {
             addSink("input", "input");
             _outputSource = addSource("output", "output");
             
             addOption("root file","",_outputFileName,pxl::OptionDescription::USAGE_FILE_SAVE);
+            
+            addOption("variables","",_selections);
         }
 
         ~RootTreeWriter()
@@ -61,6 +180,14 @@ class RootTreeWriter:
         {
             getOption("root file",_outputFileName);
             _store = new OutputStore(_outputFileName);
+            _syntaxTree = new SyntaxTree();
+            
+            getOption("variables",_selections);
+            for (const std::string& selection: _selections)
+            {
+                _syntaxTree->buildTree(selection);
+            }
+            _syntaxTree->print();
         }
 
         bool analyse(pxl::Sink *sink) throw (std::runtime_error)
@@ -72,8 +199,8 @@ class RootTreeWriter:
                 {
                     Tree* tree = _store->getTree(event->getUserRecord("Process"));
 
-                    tree->storeVariable("event_number",(int)event->getUserRecord("Event number").asUInt64());
-                
+                    //tree->storeVariable("event_number",(int)event->getUserRecord("Event number").asUInt64());
+                    _syntaxTree->evaluateChildren(event,tree,"");
                     tree->fill();
                     
                      _outputSource->setTargets(event);
