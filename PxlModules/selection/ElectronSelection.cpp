@@ -24,8 +24,8 @@ class ElectronSelection:
         /*Tight Electron Related Criteria*/
         double _pTmintElectron;  //Minimum transverse momentum
         double _etamaxtElectron; //Maximum pseudorapidity
-        std::string _idstElectron; //Electron Conditions as provided by the user 
-        std::vector<std::string> _idtElectron; //Vector to store each Electron Condition sepately
+        std::string _idstElectron; //Electron Conditions as provided by the user (USED ONLY FOR ONE ELECTRON ID for the moment)
+        //std::vector<std::string> _idtElectron; //Vector to store each Electron Condition sepately (IDLE for the moment)
         int64_t _losthitstElectron; // Number of lost hits 
   
         int64_t _numtElectrons; //Number of selected tight muons
@@ -46,7 +46,7 @@ class ElectronSelection:
             _cleanEvent(true),
 	    _pTmintElectron(10),
 	    _etamaxtElectron(2.5),
-	    _idstElectron("isInEB-EE"),
+	    _idstElectron("phys14eleIDVeto"),
 	    _losthitstElectron(0),
 	    _numtElectrons(1),
 	    _pTminlElectron(10),
@@ -124,11 +124,11 @@ class ElectronSelection:
 
         bool passTightCriteria(pxl::Particle* particle)
         {
-            //TODO: need to be extended to recommendation
-            if (not (particle->getPt()>10.0)) {
+            //TODO: need to be extended to recommendation!
+            if (not (particle->getPt()>_pTmintElectron)) {
                 return false;
             }
-            if (not (fabs(particle->getEta())<2.5)) {
+            if (not (fabs(particle->getEta())<_etamaxtElectron)) {
                 return false;
             }
             if (particle->getUserRecord("isInEB-EE").toBool())
@@ -145,17 +145,19 @@ class ElectronSelection:
         bool passLooseCriteria(pxl::Particle* particle)
         {
             //TODO: need to be extended to recommendation
-            if (not (particle->getPt()>10.0)) {
+            if (not (particle->getPt()>_pTminlElectron)) {
                 return false;
             }
-            if (not (fabs(particle->getEta())<2.5)) {
+            if (not (fabs(particle->getEta())<_etamaxlElectron)) {
                 return false;
             }
+	    if (particle->hasUserRecord(_idstElectron.data())) {
+	        if (not (particle->getUserRecord(_idstElectron.data()).toBool())) {
+		    return false;
+		}
+	    }
 
-            /*
-            if (not (particle->getUserRecord("relIso").toFloat()<0.2)) {
-                return false;
-            }
+	    /*
             if (not (fabs(particle->getUserRecord("dxy").toFloat())<0.2)) {
                 return false;
             }
@@ -163,6 +165,7 @@ class ElectronSelection:
                 return false;
             }
             */
+
             return true;
         }
 
@@ -179,7 +182,7 @@ class ElectronSelection:
                     std::vector<pxl::Particle*> tElectrons;
                     std::vector<pxl::Particle*> lElectrons;
                     std::vector<pxl::Particle*> otherElectrons;
-                    
+
                     for (unsigned ieventView=0; ieventView<eventViews.size();++ieventView)
                     {
                         pxl::EventView* eventView = eventViews[ieventView];
@@ -194,6 +197,7 @@ class ElectronSelection:
 
                                 if (particle->getName()==_inputElectronName)
                                 {
+
                                     if (passTightCriteria(particle))
                                     {
                                         tElectrons.push_back(particle);

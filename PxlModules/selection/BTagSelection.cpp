@@ -100,11 +100,11 @@ class BTagSelection:
 
         bool isBtagged(pxl::Particle* particle)
         {
-            if (not fabs(particle->getEta())<_maxEtaBJet)
+            if (not (fabs(particle->getEta())<_maxEtaBJet))
             {
                 return false;
             }
-            if (not (particle->getUserRecord(_bTaggingAlgorithmName).toFloat()<_bTaggingWorkingPoint))
+            if (not (particle->getUserRecord(_bTaggingAlgorithmName).toFloat()>_bTaggingWorkingPoint))
             {
                 return false;
             }

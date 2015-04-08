@@ -11,7 +11,7 @@ class JetSelection:
     public pxl::Module
 {
     private:
-        pxl::Source* _output1JetsSource;
+        pxl::Source* _output1JetSource;
         pxl::Source* _output2JetsSource;
         pxl::Source* _output3JetsSource;
         pxl::Source* _output4JetsSource;
@@ -38,7 +38,7 @@ class JetSelection:
         double _neutralEmFracOfPFCentJet; //PF Cental* Jet ID: (Maximum) neutral Electromagnetic Energy Fraction
         double _chargedEmFracOfPFCentJet; //PF Cental* Jet ID: (Maximum) charged Electromagnetic Energy Fraction
         double _chargedMultOfPFCentJet;  //PF Cental* Jet ID: (Minimum) charged Particle Multiplicity 
-
+  double _dummy;
         /* *Cental--> within the tracker acceptance |eta|<2.4 */
       
         bool _dRInvert;
@@ -66,14 +66,15 @@ class JetSelection:
             _chargedEmFracOfPFCentJet(0.99),
             _chargedMultOfPFCentJet(0),
             _dRInvert(false),
-            _dR(0.4)
+            _dR(0.4), 
+	    _dummy(2.4)
         /*Initial Values taken from TOP JetMET Analysis (Run2) */
         /*https://twiki.cern.ch/twiki/bin/view/CMS/TopJME#General_Information */
         {
             addSink("input", "input");
             _outputOtherJetsSource = addSource("other", "other");
 
-            _output1JetsSource = addSource("1 Jet", "1 Jet");
+            _output1JetSource = addSource("1 Jet", "1 Jet");
             _output2JetsSource = addSource("2 Jets", "2 Jets");
             _output3JetsSource = addSource("3 Jets", "3 Jets");
             _output4JetsSource = addSource("4 Jets", "4 Jets");
@@ -219,11 +220,13 @@ class JetSelection:
 
         bool passesPFCentralJetSelection(pxl::Particle* particle)
         {
-            //TODO: need to be extended to recommendation?
-            if (not fabs(particle->getEta())<2.4)
+	    //TODO: need to be extended to recommendation?
+	  if (not (fabs(particle->getEta())<_dummy))
             { //Hardcoded!
-              //inspect central jets
-                return false;
+              //inspect central jet
+	      //bool t = not (fabs(particle->getEta())<2.4);
+	      //std::cout<<particle->getEta()<<" "<< fabs(particle->getEta())<<" "<<t<<std::endl;
+	      return false;
             }
             if (not (particle->getPt()>_eTMinJet))
             {
@@ -365,8 +368,8 @@ class JetSelection:
                         switch (selectedJets.size())
                         {
                             case 1:
-                                _output1JetsSource->setTargets(event);
-                                return _output1JetsSource->processTargets();
+                                _output1JetSource->setTargets(event);
+                                return _output1JetSource->processTargets();
                             case 2:
                                 _output2JetsSource->setTargets(event);
                                 return _output2JetsSource->processTargets();
