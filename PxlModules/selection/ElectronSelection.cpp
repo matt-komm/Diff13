@@ -144,6 +144,7 @@ class ElectronSelection:
 
         bool passLooseCriteria(pxl::Particle* particle)
         {
+	  
             //TODO: need to be extended to recommendation
             if (not (particle->getPt()>_pTminlElectron)) {
                 return false;
@@ -156,15 +157,6 @@ class ElectronSelection:
 		    return false;
 		}
 	    }
-
-	    /*
-            if (not (fabs(particle->getUserRecord("dxy").toFloat())<0.2)) {
-                return false;
-            }
-            if (not (fabs(particle->getUserRecord("dz").toFloat())<0.5)) {
-                return false;
-            }
-            */
 
             return true;
         }

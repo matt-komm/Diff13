@@ -35,6 +35,7 @@ class MuonSelection:
         std::string _idstMuon; //Muon Conditions as provided by the user e.g. PF Muon ID, Muon Reconstruction Alghoritm ID
         std::vector<std::string> _idtMuon; //Vector to store each Muon Condition sepately
         double _normChi2tMuon; //(Maximum) Chi2/nDoFs of muon track
+        int64_t _numberOfValidMuonHitstMuon; //(Minimum) number of Muon Hits
         int64_t _numberOfValidPixelHitstMuon; //(Minimum) number of Pixel Hits
         int64_t _numberOfMatchedStationstMuon; //(Minimum) number of Matched Muon Stations
         double _dxyMaxtMuon; //Maximum transverse impact parameter 
@@ -72,8 +73,9 @@ class MuonSelection:
             _etaMaxtMuon(2.1),
             _idstMuon("isPFMuon, isGlobalMuon"),
             _normChi2tMuon(10),
+	    _numberOfValidMuonHitstMuon(0),
             _numberOfValidPixelHitstMuon(1),
-            _numberOfMatchedStationstMuon(2),
+            _numberOfMatchedStationstMuon(1),
             _dxyMaxtMuon(0.2),
             _dzMaxtMuon(0.5),
             _trackerLayersWithMeasurementtMuon(5),
@@ -88,8 +90,12 @@ class MuonSelection:
             _pfRelIsoCorDblMuon(0.2),
             _pfRelIsoCorDbBetalMuon(0.5),
             _numlMuons(0)
-        /*Initial Values taken from single t-quark cross section at 8 TeV
-        /*http://cms.cern.ch/iCMS/jsp/openfile.jsp?tp=draft&files=AN2013_032_v8.pdf */
+	    /*Initial Values for tight Muons taken TOP Muon Information for Analysis (Run2) 
+	      https://twiki.cern.ch/twiki/bin/view/CMS/TopMUO#Signal */
+
+	    /*Initial Values for loose Muons taken from single t-quark cross section at 8 TeV 
+	      http://cms.cern.ch/iCMS/jsp/openfile.jsp?tp=draft&files=AN2013_032_v8.pdf */
+
         {
             addSink("input", "input");
             _outputSource = addSource("selected", "selected");
@@ -105,6 +111,7 @@ class MuonSelection:
             addOption("TightMuon Maximum Eta","",_etaMaxtMuon);
             addOption("TightMuon ID","",_idstMuon);
             addOption("TightMuon Chi2/nDoFs", "",_normChi2tMuon);
+	    addOption("TightMuon Number Of Valid Muon Hits", "",_numberOfValidMuonHitstMuon);
             addOption("TightMuon Number Of Valid Pixel Hits", "",_numberOfValidPixelHitstMuon);
             addOption("TightMuon Number Of Matched Stations","", _numberOfMatchedStationstMuon);
             addOption("TightMuon Transverse Impact Parameter","", _dxyMaxtMuon);
@@ -163,6 +170,7 @@ class MuonSelection:
             getOption("TightMuon Maximum Eta",_etaMaxtMuon);
             getOption("TightMuon ID",_idstMuon);
             getOption("TightMuon Chi2/nDoFs", _normChi2tMuon);
+	    getOption("TightMuon Number Of Valid Muon Hits", _numberOfValidMuonHitstMuon);
             getOption("TightMuon Number Of Valid Pixel Hits", _numberOfValidPixelHitstMuon);
             getOption("TightMuon Number Of Matched Stations", _numberOfMatchedStationstMuon);
             getOption("TightMuon Transverse Impact Parameter", _dxyMaxtMuon);
@@ -283,6 +291,9 @@ class MuonSelection:
             if (not ((particle->getUserRecord("chi2").toFloat()/particle->getUserRecord("ndof").toFloat())<_normChi2tMuon)) {
                 return false;
             }
+	    if (not (particle->getUserRecord("numberOfValidMuonHits").toInt32()>_numberOfValidMuonHitstMuon)) {
+                return false;
+            }
             if (not (particle->getUserRecord("numberOfValidPixelHits").toInt32()>_numberOfValidPixelHitstMuon)) {
                 return false;
             }
@@ -300,12 +311,15 @@ class MuonSelection:
             }
             for (unsigned i=0; i<_pfIsoMethodtMuon.size(); ++i)
             {
-                if (not (pfRelIsoCorDb (particle))>_pfRelIsoCorDbtMuon)
+	        if (not (pfRelIsoCorDb (particle)<_pfRelIsoCorDbtMuon))
+		  
                 {
                     return false;
                 }
-                return true;
             }
+	    
+	    return true;
+
         }
 
         bool passesLooseCriteria(pxl::Particle* particle)
@@ -320,7 +334,7 @@ class MuonSelection:
             }
             for (unsigned i=0; i<_pfIsoMethodlMuon.size(); ++i)
             {
-                if (not (pfRelIsoCorDb (particle))>_pfRelIsoCorDblMuon)
+	        if (not (pfRelIsoCorDb (particle)<_pfRelIsoCorDblMuon))
                 {
                     return false;
                 }
@@ -347,7 +361,7 @@ class MuonSelection:
                     {
                         pxl::EventView* eventView = eventViews[ieventView];
                         if (eventView->getName()==_inputEventViewName)
-                        {
+			  {
                             std::vector<pxl::Particle*> particles;
                             eventView->getObjectsOfType(particles);
 
@@ -363,12 +377,12 @@ class MuonSelection:
                                     } else if (passesLooseCriteria(particle)) {
                                         lMuons.push_back(particle);
                                     } else {
-                                        otherMuons.push_back(particle);
+				        otherMuons.push_back(particle);
                                     }
                                 }
                             }
                         }
-                    
+			
                         if (tMuons.size()==_numtMuons && lMuons.size()==_numlMuons)
                         {
                             for (unsigned int i=0; i < tMuons.size(); ++i)

@@ -11,14 +11,21 @@ class BTagSelection:
     public pxl::Module
 {
     private:
+        //Exact N B Tagged Jet(s) 
         pxl::Source* _output0BTagsSource;
         pxl::Source* _output1BTagsSource;
         pxl::Source* _output2BTagsSource;
-        pxl::Source* _outputOtherBTagsSource;
-
+        pxl::Source* _outputOtherExactNBTagsSource;
+  
+        //At least N Jet(s) selection
+        pxl::Source* _outputAtLeast1BTagsSource;
+        pxl::Source* _outputOtherAtLeastNBTagsSource;
+  
         std::string _inputJetName;
         std::string _inputEventViewName;
         std::string _bTaggedJetName;
+ 
+        bool _exactJetSection; //Flag of selection exactly or at least N Jets
         
         std::string _bTaggingAlgorithmName; //b-tag algorithm out of the ones implemented in CMSSW
 
@@ -35,6 +42,7 @@ class BTagSelection:
             _inputJetName("SelectedJet"),
             _inputEventViewName("Reconstructed"),
             _bTaggedJetName("SelectedBJetTag"),
+	    _exactJetSection(true),
             _bTaggingAlgorithmName("combinedInclusiveSecondaryVertexV2BJetTags"),
             _maxEtaBJet(2.4),
             _bTaggingWorkingPoint(0.941)
@@ -44,11 +52,15 @@ class BTagSelection:
             _output0BTagsSource = addSource("0 b-Tags", "0 b-Tags");
             _output1BTagsSource = addSource("1 b-Tags", "1 b-Tags");
             _output2BTagsSource = addSource("2 b-Tags", "2 b-Tags");
-            _outputOtherBTagsSource = addSource("other", "other");
+            _outputOtherExactNBTagsSource = addSource("other (Exact N B-Tagged Jet(s))", "other (Exact N B-Tagged Jet(s))");
             
+	    _outputAtLeast1BTagsSource = addSource("At least 1 b-Tags", "At least 1 b-Tags");
+	    _outputOtherAtLeastNBTagsSource = addSource("other (At least B-Tagged Jet(s))", "other (At least B-Tagged Jet(s))");
+
             addOption("event view","name of the event view where jets are selected",_inputEventViewName);
             addOption("input jet name","name of particles to consider for b-tagging",_inputJetName);
             addOption("name of selected b-jets","",_bTaggedJetName);
+	    addOption("Exclusive B Jet Selection","this option will determine the B jet selection if exlusive or not", _exactJetSection);
 
             addOption("b Tagging Algorithm","",_bTaggingAlgorithmName);
 
@@ -89,7 +101,7 @@ class BTagSelection:
             getOption("event view",_inputEventViewName);
             getOption("input jet name",_inputJetName);
             getOption("name of selected b-jets",_bTaggedJetName);
-
+	    getOption("Exclusive B Jet Selection", _exactJetSection);
             getOption("b Tagging Algorithm",_bTaggingAlgorithmName);
 
             getOption("maximum b-jet eta",_maxEtaBJet);
@@ -148,22 +160,36 @@ class BTagSelection:
                                 }
                             }
                         }
-
-                        switch (selectedBJets.size())
-                        {
-                            case 0:
-                                _output0BTagsSource->setTargets(event);
-                                return _output0BTagsSource->processTargets();
-                            case 1:
-                                _output1BTagsSource->setTargets(event);
-                                return _output1BTagsSource->processTargets();
-                            case 2:
-                                _output2BTagsSource->setTargets(event);
-                                return _output2BTagsSource->processTargets();
-                            default:
-                                _outputOtherBTagsSource->setTargets(event);
-                                return _outputOtherBTagsSource->processTargets();
-                        }
+			if (_exactJetSection)
+			{
+                            switch (selectedBJets.size())
+			    {
+                                case 0:
+                                    _output0BTagsSource->setTargets(event);
+				    return _output0BTagsSource->processTargets();
+                                case 1:
+                                    _output1BTagsSource->setTargets(event);
+				    return _output1BTagsSource->processTargets();
+                                case 2:
+                                    _output2BTagsSource->setTargets(event);
+				    return _output2BTagsSource->processTargets();
+                                default:
+                                    _outputOtherExactNBTagsSource->setTargets(event);
+				    return _outputOtherExactNBTagsSource->processTargets();
+			    }
+			} else
+			  {
+			      if (selectedBJets.size()>=1) 
+			      {
+			           _outputAtLeast1BTagsSource->setTargets(event);
+				   return _outputAtLeast1BTagsSource->processTargets();
+			      } 
+			      else
+			      {
+			          _outputOtherAtLeastNBTagsSource->setTargets(event);
+				  return _outputOtherAtLeastNBTagsSource->processTargets();
+			      }
+			  }
                     }
                 }
             }
@@ -178,7 +204,7 @@ class BTagSelection:
 
             logger(pxl::LOG_LEVEL_ERROR , "Analysed event is not an pxl::Event !");
             return false;
-    }
+	}
 
         void shutdown() throw(std::runtime_error)
         {
