@@ -21,75 +21,75 @@ class MuonSelection:
         pxl::Source* _outputSource;
         pxl::Source* _outputVetoSource;
         
-        std::string _inputMuonName;
+        std::string _inputightMuonName;
         std::string _inputEventViewName;
-        std::string _tMuonName;
-        std::string _lMuonName;
+        std::string _tightMuonName;
+        std::string _looseMuonName;
         
 
         bool _cleanEvent;
   
         /*Tight Muon Related Criteria*/
-        double _pTMintMuon;  //Minimum transverse momentum
-        double _etaMaxtMuon; //Maximum pseudorapidity
-        std::string _idstMuon; //Muon Conditions as provided by the user e.g. PF Muon ID, Muon Reconstruction Alghoritm ID
-        std::vector<std::string> _idtMuon; //Vector to store each Muon Condition sepately
-        double _normChi2tMuon; //(Maximum) Chi2/nDoFs of muon track
-        int64_t _numberOfValidMuonHitstMuon; //(Minimum) number of Muon Hits
-        int64_t _numberOfValidPixelHitstMuon; //(Minimum) number of Pixel Hits
-        int64_t _numberOfMatchedStationstMuon; //(Minimum) number of Matched Muon Stations
-        double _dxyMaxtMuon; //Maximum transverse impact parameter 
-        double _dzMaxtMuon; //Maximum longitudinal impact parameter  
-        int64_t _trackerLayersWithMeasurementtMuon; //(Minimum) number of tracker layers recorded a hit
-        std::string _pfIsoMethodstMuon; //Particle Flow (pf) Isolation (Iso) Method(s) as provided by the user 
-        std::vector<std::string> _pfIsoMethodtMuon; //Vector to store each Muon Isolation method
-        double _pfRelIsoCorDbtMuon; //Muon Isolation:Relative(Rel) Isolation Correction (Cor) Delta beta (Db)
-        double _pfRelIsoCorDbBetatMuon; //Muon Isolation:Relative Isolation Correction (Cor) Delta beta (Db)- Beta parameter
+        double _pTMintightMuon;  //Minimum transverse momentum
+        double _etaMaxtightMuon; //Maximum pseudorapidity
+        std::string _idstightMuon; //Muon Conditions as provided by the user e.g. PF Muon ID, Muon Reconstruction Alghoritm ID
+        std::vector<std::string> _idtightMuon; //Vector to store each Muon Condition sepately
+        double _normChi2tightMuon; //(Maximum) Chi2/nDoFs of muon track
+        int64_t _numberOfValidMuonHitstightMuon; //(Minimum) number of Muon Hits
+        int64_t _numberOfValidPixelHitstightMuon; //(Minimum) number of Pixel Hits
+        int64_t _numberOfMatchedStationstightMuon; //(Minimum) number of Matched Muon Stations
+        double _dxyMaxtightMuon; //Maximum transverse impact parameter 
+        double _dzMaxtightMuon; //Maximum longitudinal impact parameter  
+        int64_t _trackerLayersWithMeasurementtightMuon; //(Minimum) number of tracker layers recorded a hit
+        std::string _pfIsoMethodstightMuon; //Particle Flow (pf) Isolation (Iso) Method(s) as provided by the user 
+        std::vector<std::string> _pfIsoMethodtightMuon; //Vector to store each Muon Isolation method
+        double _pfRelIsoCorDbtightMuon; //Muon Isolation:Relative(Rel) Isolation Correction (Cor) Delta beta (Db)
+        double _pfRelIsoCorDbBetatightMuon; //Muon Isolation:Relative Isolation Correction (Cor) Delta beta (Db)- Beta parameter
 
-        int64_t _numtMuons; //Number of selected tight muons
+        int64_t _numtightMuons; //Number of selected tight muons
 
         /*Loose Muon Related Criteria*/
-        double _pTminlMuon;  //Minimum transverse momentum
-        double _etamaxlMuon; //Maximum pseudorapidity
-        std::string _idslMuon; //Muon Conditions as provided by the user e.g. Tracker Muon 
-        std::vector<std::string> _idlMuon; //Vector to store each Muon Condition sepately
-        std::string _pfIsoMethodslMuon; //Particle Flow (pf) Isolation (Iso) Method(s) as provided by the user 
-        std::vector<std::string> _pfIsoMethodlMuon; //Vector to store each Muon Isolation method
-        double _pfRelIsoCorDblMuon; //Muon Isolation:Relative(Rel) Isolation Correction (Cor) Delta beta (Db) 
-        double _pfRelIsoCorDbBetalMuon; //Muon Isolation:Relative Isolation Correction (Cor) Delta beta (Db)- Beta parameter
+        double _pTminlooseMuon;  //Minimum transverse momentum
+        double _etamaxlooseMuon; //Maximum pseudorapidity
+        std::string _idslooseMuon; //Muon Conditions as provided by the user e.g. Tracker Muon 
+        std::vector<std::string> _idlooseMuon; //Vector to store each Muon Condition sepately
+        std::string _pfIsoMethodslooseMuon; //Particle Flow (pf) Isolation (Iso) Method(s) as provided by the user 
+        std::vector<std::string> _pfIsoMethodlooseMuon; //Vector to store each Muon Isolation method
+        double _pfRelIsoCorDblooseMuon; //Muon Isolation:Relative(Rel) Isolation Correction (Cor) Delta beta (Db) 
+        double _pfRelIsoCorDbBetalooseMuon; //Muon Isolation:Relative Isolation Correction (Cor) Delta beta (Db)- Beta parameter
 
-        int64_t _numlMuons; //Number of selected loose muons
+        int64_t _numlooseMuons; //Number of selected loose muons
       
     public:
         MuonSelection():
 
             Module(),
-            _inputMuonName("Muon"),
+            _inputightMuonName("Muon"),
             _inputEventViewName("Reconstructed"),
-            _tMuonName("TightMuon"),
-            _lMuonName("LooseMuon"),
+            _tightMuonName("TightMuon"),
+            _looseMuonName("LooseMuon"),
             _cleanEvent(true),
-            _pTMintMuon(26.),
-            _etaMaxtMuon(2.1),
-            _idstMuon("isPFMuon, isGlobalMuon"),
-            _normChi2tMuon(10),
-	    _numberOfValidMuonHitstMuon(0),
-            _numberOfValidPixelHitstMuon(1),
-            _numberOfMatchedStationstMuon(1),
-            _dxyMaxtMuon(0.2),
-            _dzMaxtMuon(0.5),
-            _trackerLayersWithMeasurementtMuon(5),
-            _pfIsoMethodstMuon("DeltaBeta"),
-            _pfRelIsoCorDbtMuon(0.12),
-            _pfRelIsoCorDbBetatMuon(0.5),
-            _numtMuons(1),
-            _pTminlMuon(10),
-            _etamaxlMuon(2.5),
-            _idslMuon("isGlobalMuon"),
-            _pfIsoMethodslMuon("DeltaBeta"),
-            _pfRelIsoCorDblMuon(0.2),
-            _pfRelIsoCorDbBetalMuon(0.5),
-            _numlMuons(0)
+            _pTMintightMuon(26.),
+            _etaMaxtightMuon(2.1),
+            _idstightMuon("isPFMuon, isGlobalMuon"),
+            _normChi2tightMuon(10),
+	    _numberOfValidMuonHitstightMuon(0),
+            _numberOfValidPixelHitstightMuon(1),
+            _numberOfMatchedStationstightMuon(1),
+            _dxyMaxtightMuon(0.2),
+            _dzMaxtightMuon(0.5),
+            _trackerLayersWithMeasurementtightMuon(5),
+            _pfIsoMethodstightMuon("DeltaBeta"),
+            _pfRelIsoCorDbtightMuon(0.12),
+            _pfRelIsoCorDbBetatightMuon(0.5),
+            _numtightMuons(1),
+            _pTminlooseMuon(10),
+            _etamaxlooseMuon(2.5),
+            _idslooseMuon("isGlobalMuon"),
+            _pfIsoMethodslooseMuon("DeltaBeta"),
+            _pfRelIsoCorDblooseMuon(0.2),
+            _pfRelIsoCorDbBetalooseMuon(0.5),
+            _numlooseMuons(0)
 	    /*Initial Values for tight Muons taken TOP Muon Information for Analysis (Run2) 
 	      https://twiki.cern.ch/twiki/bin/view/CMS/TopMUO#Signal */
 
@@ -102,33 +102,33 @@ class MuonSelection:
             _outputVetoSource = addSource("veto", "veto");
 
             addOption("Event view","name of the event view where muons are selected",_inputEventViewName);
-            addOption("Input muon name","name of particles to consider for selection",_inputMuonName);
-            addOption("Name of selected tight muons","",_tMuonName);
-            addOption("Name of selected loose muons","",_lMuonName);
+            addOption("Input muon name","name of particles to consider for selection",_inputightMuonName);
+            addOption("Name of selected tight muons","",_tightMuonName);
+            addOption("Name of selected loose muons","",_looseMuonName);
             addOption("Clean event","this option will clean the event of all muons falling tight or loose criteria",_cleanEvent);
             
-            addOption("TightMuon Minimum pT","",_pTMintMuon);
-            addOption("TightMuon Maximum Eta","",_etaMaxtMuon);
-            addOption("TightMuon ID","",_idstMuon);
-            addOption("TightMuon Chi2/nDoFs", "",_normChi2tMuon);
-	    addOption("TightMuon Number Of Valid Muon Hits", "",_numberOfValidMuonHitstMuon);
-            addOption("TightMuon Number Of Valid Pixel Hits", "",_numberOfValidPixelHitstMuon);
-            addOption("TightMuon Number Of Matched Stations","", _numberOfMatchedStationstMuon);
-            addOption("TightMuon Transverse Impact Parameter","", _dxyMaxtMuon);
-            addOption("TightMuon Longitudinal Impact Parameter","", _dzMaxtMuon);
-            addOption("TightMuon Tracker Layers With Measurement","", _trackerLayersWithMeasurementtMuon);
-            addOption("TightMuon PF Iso","",_pfIsoMethodstMuon);
-            addOption("TightMuon Minimum Relative Iso DeltaBeta","",_pfRelIsoCorDbtMuon);
-            addOption("TightMuon Relative Iso DeltaBeta; Beta Parameter","",_pfRelIsoCorDbBetatMuon);
-            addOption("Number of TightMuons to Select","",_numtMuons);
+            addOption("TightMuon Minimum pT","",_pTMintightMuon);
+            addOption("TightMuon Maximum Eta","",_etaMaxtightMuon);
+            addOption("TightMuon ID","",_idstightMuon);
+            addOption("TightMuon Chi2/nDoFs", "",_normChi2tightMuon);
+	    addOption("TightMuon Number Of Valid Muon Hits", "",_numberOfValidMuonHitstightMuon);
+            addOption("TightMuon Number Of Valid Pixel Hits", "",_numberOfValidPixelHitstightMuon);
+            addOption("TightMuon Number Of Matched Stations","", _numberOfMatchedStationstightMuon);
+            addOption("TightMuon Transverse Impact Parameter","", _dxyMaxtightMuon);
+            addOption("TightMuon Longitudinal Impact Parameter","", _dzMaxtightMuon);
+            addOption("TightMuon Tracker Layers With Measurement","", _trackerLayersWithMeasurementtightMuon);
+            addOption("TightMuon PF Iso","",_pfIsoMethodstightMuon);
+            addOption("TightMuon Minimum Relative Iso DeltaBeta","",_pfRelIsoCorDbtightMuon);
+            addOption("TightMuon Relative Iso DeltaBeta; Beta Parameter","",_pfRelIsoCorDbBetatightMuon);
+            addOption("Number of TightMuons to Select","",_numtightMuons);
 
-            addOption("LooseMuon Minimum pT","",_pTminlMuon);
-            addOption("LooseMuon Maximum Eta","",_etamaxlMuon);
-            addOption("LooseMuon ID","", _idslMuon);
-            addOption("LooseMuon PF Iso","",_pfIsoMethodslMuon);
-            addOption("LooseMuon Minimum Relative Iso DeltaBeta","",_pfRelIsoCorDblMuon);
-            addOption("LooseMuon Relative Iso DeltaBeta; Beta Parameter","",_pfRelIsoCorDbBetalMuon);
-            addOption("Number of LooseMuons to Select","",_numlMuons);
+            addOption("LooseMuon Minimum pT","",_pTminlooseMuon);
+            addOption("LooseMuon Maximum Eta","",_etamaxlooseMuon);
+            addOption("LooseMuon ID","", _idslooseMuon);
+            addOption("LooseMuon PF Iso","",_pfIsoMethodslooseMuon);
+            addOption("LooseMuon Minimum Relative Iso DeltaBeta","",_pfRelIsoCorDblooseMuon);
+            addOption("LooseMuon Relative Iso DeltaBeta; Beta Parameter","",_pfRelIsoCorDbBetalooseMuon);
+            addOption("Number of LooseMuons to Select","",_numlooseMuons);
         }
 
         ~MuonSelection()
@@ -161,45 +161,45 @@ class MuonSelection:
         void beginJob() throw (std::runtime_error)
         {
             getOption("Event view",_inputEventViewName);
-            getOption("Input muon name",_inputMuonName);
-            getOption("Name of selected tight muons",_tMuonName);
-            getOption("Name of selected loose muons",_lMuonName);
+            getOption("Input muon name",_inputightMuonName);
+            getOption("Name of selected tight muons",_tightMuonName);
+            getOption("Name of selected loose muons",_looseMuonName);
             getOption("Clean event",_cleanEvent);
             
-            getOption("TightMuon Minimum pT",_pTMintMuon);
-            getOption("TightMuon Maximum Eta",_etaMaxtMuon);
-            getOption("TightMuon ID",_idstMuon);
-            getOption("TightMuon Chi2/nDoFs", _normChi2tMuon);
-	    getOption("TightMuon Number Of Valid Muon Hits", _numberOfValidMuonHitstMuon);
-            getOption("TightMuon Number Of Valid Pixel Hits", _numberOfValidPixelHitstMuon);
-            getOption("TightMuon Number Of Matched Stations", _numberOfMatchedStationstMuon);
-            getOption("TightMuon Transverse Impact Parameter", _dxyMaxtMuon);
-            getOption("TightMuon Longitudinal Impact Parameter", _dzMaxtMuon);
-            getOption("TightMuon Tracker Layers With Measurement", _trackerLayersWithMeasurementtMuon);
-            getOption("TightMuon PF Iso",_pfIsoMethodstMuon);
-            getOption("TightMuon Minimum Relative Iso DeltaBeta",_pfRelIsoCorDbtMuon);
-            getOption("TightMuon Relative Iso DeltaBeta; Beta Parameter",_pfRelIsoCorDbBetatMuon);
-            getOption("Number of TightMuons to Select",_numtMuons);
+            getOption("TightMuon Minimum pT",_pTMintightMuon);
+            getOption("TightMuon Maximum Eta",_etaMaxtightMuon);
+            getOption("TightMuon ID",_idstightMuon);
+            getOption("TightMuon Chi2/nDoFs", _normChi2tightMuon);
+	    getOption("TightMuon Number Of Valid Muon Hits", _numberOfValidMuonHitstightMuon);
+            getOption("TightMuon Number Of Valid Pixel Hits", _numberOfValidPixelHitstightMuon);
+            getOption("TightMuon Number Of Matched Stations", _numberOfMatchedStationstightMuon);
+            getOption("TightMuon Transverse Impact Parameter", _dxyMaxtightMuon);
+            getOption("TightMuon Longitudinal Impact Parameter", _dzMaxtightMuon);
+            getOption("TightMuon Tracker Layers With Measurement", _trackerLayersWithMeasurementtightMuon);
+            getOption("TightMuon PF Iso",_pfIsoMethodstightMuon);
+            getOption("TightMuon Minimum Relative Iso DeltaBeta",_pfRelIsoCorDbtightMuon);
+            getOption("TightMuon Relative Iso DeltaBeta; Beta Parameter",_pfRelIsoCorDbBetatightMuon);
+            getOption("Number of TightMuons to Select",_numtightMuons);
 
-            getOption("LooseMuon Minimum pT",_pTminlMuon);
-            getOption("LooseMuon Maximum Eta",_etamaxlMuon);
-            getOption("LooseMuon ID",_idslMuon);
-            getOption("LooseMuon PF Iso",_pfIsoMethodslMuon);
-            getOption("LooseMuon Minimum Relative Iso DeltaBeta",_pfRelIsoCorDblMuon);
-            getOption("LooseMuon Relative Iso DeltaBeta; Beta Parameter",_pfRelIsoCorDbBetalMuon);
-            getOption("Number of LooseMuons to Select",_numlMuons);
+            getOption("LooseMuon Minimum pT",_pTminlooseMuon);
+            getOption("LooseMuon Maximum Eta",_etamaxlooseMuon);
+            getOption("LooseMuon ID",_idslooseMuon);
+            getOption("LooseMuon PF Iso",_pfIsoMethodslooseMuon);
+            getOption("LooseMuon Minimum Relative Iso DeltaBeta",_pfRelIsoCorDblooseMuon);
+            getOption("LooseMuon Relative Iso DeltaBeta; Beta Parameter",_pfRelIsoCorDbBetalooseMuon);
+            getOption("Number of LooseMuons to Select",_numlooseMuons);
 
             try
             {
                 std::set<char> token;
-                identifyToken(token, _idstMuon);
-                std::istringstream idstMuon(_idstMuon);
-                std::string idtMuon;
+                identifyToken(token, _idstightMuon);
+                std::istringstream idstightMuon(_idstightMuon);
+                std::string idtightMuon;
 
-                while (std::getline(idstMuon, idtMuon, (*token.begin())))
+                while (std::getline(idstightMuon, idtightMuon, (*token.begin())))
                 {
-                    removeWhiteSpaces(idtMuon);
-                    _idtMuon.push_back(idtMuon);
+                    removeWhiteSpaces(idtightMuon);
+                    _idtightMuon.push_back(idtightMuon);
                 }
 
             }
@@ -211,14 +211,14 @@ class MuonSelection:
             try
             {
                 std::set<char> token;
-                identifyToken(token, _pfIsoMethodstMuon);
-                std::istringstream pfIsoMethodstMuon(_pfIsoMethodstMuon);
-                std::string pfIsoMethodtMuon;
+                identifyToken(token, _pfIsoMethodstightMuon);
+                std::istringstream pfIsoMethodstightMuon(_pfIsoMethodstightMuon);
+                std::string pfIsoMethodtightMuon;
 
-                while (std::getline(pfIsoMethodstMuon, pfIsoMethodtMuon, (*token.begin())))
+                while (std::getline(pfIsoMethodstightMuon, pfIsoMethodtightMuon, (*token.begin())))
                 {
-                    removeWhiteSpaces(pfIsoMethodtMuon);
-                    _pfIsoMethodtMuon.push_back(pfIsoMethodtMuon);
+                    removeWhiteSpaces(pfIsoMethodtightMuon);
+                    _pfIsoMethodtightMuon.push_back(pfIsoMethodtightMuon);
                 }
 
             }
@@ -230,14 +230,14 @@ class MuonSelection:
             try
             {
                 std::set<char> token;
-                identifyToken(token, _idslMuon);
-                std::istringstream idslMuon(_idslMuon);
-                std::string idlMuon;
+                identifyToken(token, _idslooseMuon);
+                std::istringstream idslooseMuon(_idslooseMuon);
+                std::string idlooseMuon;
 
-                while (std::getline(idslMuon, idlMuon, (*token.begin())))
+                while (std::getline(idslooseMuon, idlooseMuon, (*token.begin())))
                 {
-                    removeWhiteSpaces(idlMuon);
-                    _idlMuon.push_back(idlMuon);
+                    removeWhiteSpaces(idlooseMuon);
+                    _idlooseMuon.push_back(idlooseMuon);
                 }
 
             }
@@ -249,14 +249,14 @@ class MuonSelection:
             try
             {
                 std::set<char> token;
-                identifyToken(token, _pfIsoMethodslMuon);
-                std::istringstream pfIsoMethodslMuon(_pfIsoMethodslMuon);
-                std::string pfIsoMethodlMuon;
+                identifyToken(token, _pfIsoMethodslooseMuon);
+                std::istringstream pfIsoMethodslooseMuon(_pfIsoMethodslooseMuon);
+                std::string pfIsoMethodlooseMuon;
 
-                while (std::getline(pfIsoMethodslMuon, pfIsoMethodlMuon, (*token.begin())))
+                while (std::getline(pfIsoMethodslooseMuon, pfIsoMethodlooseMuon, (*token.begin())))
                 {
-                    removeWhiteSpaces(pfIsoMethodlMuon);
-                    _pfIsoMethodlMuon.push_back(pfIsoMethodlMuon);
+                    removeWhiteSpaces(pfIsoMethodlooseMuon);
+                    _pfIsoMethodlooseMuon.push_back(pfIsoMethodlooseMuon);
                 }
 
             }
@@ -274,67 +274,68 @@ class MuonSelection:
               //check if combined track, tracker track & PV had been found
                 return false;
             }
-            for (unsigned i=0; i<_idtMuon.size(); ++i)
+            for (unsigned i=0; i<_idtightMuon.size(); ++i)
             {
                   //check Muon ID(s)
-                if (not particle->getUserRecord(_idtMuon[i]).toBool())
+                if (not particle->getUserRecord(_idtightMuon[i]).toBool())
                 {
                     return false;
                 }
             }
-            if (not (particle->getPt()>_pTMintMuon)) {
+            if (not (particle->getPt()>_pTMintightMuon)) {
                 return false;
             }
-            if (not (fabs(particle->getEta())<_etaMaxtMuon)) {
+            if (not (fabs(particle->getEta())<_etaMaxtightMuon)) {
                 return false;
             }
-            if (not ((particle->getUserRecord("chi2").toFloat()/particle->getUserRecord("ndof").toFloat())<_normChi2tMuon)) {
+            if (not ((particle->getUserRecord("chi2").toFloat()/particle->getUserRecord("ndof").toFloat())<_normChi2tightMuon)) {
                 return false;
             }
-	    if (not (particle->getUserRecord("numberOfValidMuonHits").toInt32()>_numberOfValidMuonHitstMuon)) {
+	    if (not (particle->getUserRecord("numberOfValidMuonHits").toInt32()>_numberOfValidMuonHitstightMuon)) {
                 return false;
             }
-            if (not (particle->getUserRecord("numberOfValidPixelHits").toInt32()>_numberOfValidPixelHitstMuon)) {
+            if (not (particle->getUserRecord("numberOfValidPixelHits").toInt32()>_numberOfValidPixelHitstightMuon)) {
                 return false;
             }
-            if (not (particle->getUserRecord("numberOfMatchedStations").toInt32()>_numberOfMatchedStationstMuon)) {
+            if (not (particle->getUserRecord("numberOfMatchedStations").toInt32()>_numberOfMatchedStationstightMuon)) {
                 return false;
             }
-            if (not (fabs(particle->getUserRecord("dxy").toFloat())<_dxyMaxtMuon)) {
+            if (not (fabs(particle->getUserRecord("dxy").toFloat())<_dxyMaxtightMuon)) {
                 return false;
             }
-            if (not (fabs(particle->getUserRecord("dz").toFloat())<_dzMaxtMuon)) {
+            if (not (fabs(particle->getUserRecord("dz").toFloat())<_dzMaxtightMuon)) {
                 return false;
             }
-            if (not (particle->getUserRecord("trackerLayersWithMeasurement").toInt32()>_trackerLayersWithMeasurementtMuon)) {
+            if (not (particle->getUserRecord("trackerLayersWithMeasurement").toInt32()>_trackerLayersWithMeasurementtightMuon)) {
                 return false;
             }
-            for (unsigned i=0; i<_pfIsoMethodtMuon.size(); ++i)
+            for (unsigned i=0; i<_pfIsoMethodtightMuon.size(); ++i)
             {
-	        if (not (pfRelIsoCorDb (particle)<_pfRelIsoCorDbtMuon))
+	        if (not (pfRelIsoCorDb (particle)<_pfRelIsoCorDbtightMuon))
 		  
                 {
                     return false;
                 }
             }
-	    
+
+	    	    
 	    return true;
 
         }
 
         bool passesLooseCriteria(pxl::Particle* particle)
         {
-            if (not (particle->getPt()>_pTminlMuon))
+            if (not (particle->getPt()>_pTminlooseMuon))
             {
                 return false;
             }
-            if (not (fabs(particle->getEta())<_etamaxlMuon))
+            if (not (fabs(particle->getEta())<_etamaxlooseMuon))
             {
                 return false;
             }
-            for (unsigned i=0; i<_pfIsoMethodlMuon.size(); ++i)
+            for (unsigned i=0; i<_pfIsoMethodlooseMuon.size(); ++i)
             {
-	        if (not (pfRelIsoCorDb (particle)<_pfRelIsoCorDblMuon))
+	        if (not (pfRelIsoCorDb (particle)<_pfRelIsoCorDblooseMuon))
                 {
                     return false;
                 }
@@ -353,8 +354,8 @@ class MuonSelection:
                     std::vector<pxl::EventView*> eventViews;
                     event->getObjectsOfType(eventViews);
                     
-                    std::vector<pxl::Particle*> tMuons;
-                    std::vector<pxl::Particle*> lMuons;
+                    std::vector<pxl::Particle*> tightMuons;
+                    std::vector<pxl::Particle*> looseMuons;
                     std::vector<pxl::Particle*> otherMuons;
                     
                     for (unsigned ieventView=0; ieventView<eventViews.size();++ieventView)
@@ -369,13 +370,13 @@ class MuonSelection:
                             {
                                 pxl::Particle* particle = particles[iparticle];
 
-                                if (particle->getName()==_inputMuonName)
+                                if (particle->getName()==_inputightMuonName)
                                 {
-                                    if (passesTightCriteria(particle))
+				    if (passesTightCriteria(particle))
                                     {
-                                        tMuons.push_back(particle);
+                                        tightMuons.push_back(particle);
                                     } else if (passesLooseCriteria(particle)) {
-                                        lMuons.push_back(particle);
+                                        looseMuons.push_back(particle);
                                     } else {
 				        otherMuons.push_back(particle);
                                     }
@@ -383,15 +384,15 @@ class MuonSelection:
                             }
                         }
 			
-                        if (tMuons.size()==_numtMuons && lMuons.size()==_numlMuons)
+                        if (tightMuons.size()==_numtightMuons && looseMuons.size()==_numlooseMuons)
                         {
-                            for (unsigned int i=0; i < tMuons.size(); ++i)
+                            for (unsigned int i=0; i < tightMuons.size(); ++i)
                             {
-                                tMuons[i]->setName(_tMuonName);
+                                tightMuons[i]->setName(_tightMuonName);
                             }
-                            for (unsigned int i=0; i < lMuons.size(); ++i)
+                            for (unsigned int i=0; i < looseMuons.size(); ++i)
                             {
-                                lMuons[i]->setName(_lMuonName);
+                                looseMuons[i]->setName(_looseMuonName);
                             }
                             for (unsigned int i=0; _cleanEvent && (i < otherMuons.size()); ++i)
                             {
@@ -484,7 +485,7 @@ class MuonSelection:
             {
                 throw "Division by zero pT!";
             }
-            return  (R04PFsumChargedHadronPt + std::max(R04sumNeutralHadronEt+ R04PFsumPhotonEt - _pfRelIsoCorDbBetatMuon*R04PFsumPUPt, 0.0)) / pT;
+            return  (R04PFsumChargedHadronPt + std::max(R04sumNeutralHadronEt+ R04PFsumPhotonEt - _pfRelIsoCorDbBetatightMuon*R04PFsumPUPt, 0.0)) / pT;
         }
   
 };
