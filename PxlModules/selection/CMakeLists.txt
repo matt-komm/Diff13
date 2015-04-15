@@ -21,4 +21,10 @@ install(
     LIBRARY DESTINATION ${PXL_PLUGIN_INSTALL_PATH}
 )
 
+add_library( BTagSelection MODULE  BTagSelection.cpp)
+target_link_libraries(BTagSelection ${PXL_LIBRARIES})
+install(
+    TARGETS BTagSelection
+    LIBRARY DESTINATION ${PXL_PLUGIN_INSTALL_PATH}
+)
 
