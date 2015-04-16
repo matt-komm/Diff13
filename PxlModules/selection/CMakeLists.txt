@@ -1,3 +1,11 @@
+add_library(TriggerSelection MODULE TriggerSelection.cpp)
+target_link_libraries(TriggerSelection ${PXL_LIBRARIES})
+install(
+    TARGETS TriggerSelection
+    LIBRARY DESTINATION ${PXL_PLUGIN_INSTALL_PATH}
+)
+
+
 add_library(MuonSelection MODULE MuonSelection.cpp)
 target_link_libraries(MuonSelection ${PXL_LIBRARIES})
 install(

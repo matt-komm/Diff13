@@ -11,17 +11,23 @@ class JetSelection:
     public pxl::Module
 {
     private:
-        pxl::Source* _output1JetsSource;
+        //Exact N Jet(s) selection
+        pxl::Source* _output1JetSource;
         pxl::Source* _output2JetsSource;
         pxl::Source* _output3JetsSource;
         pxl::Source* _output4JetsSource;
-        pxl::Source* _outputOtherJetsSource;
+        pxl::Source* _outputOtherExactNJetsSource; 
+
+        //At least N Jet(s) selection
+        pxl::Source* _outputAtLeast2JetSource;
+        pxl::Source* _outputOtherAtLeastNJetsSource;
 
         std::string _inputJetName;
         std::string _inputEventViewName;
         std::string _selectedJetName;
         
         bool _cleanEvent;
+        bool _exactJetSection; //Flag of selection exactly or at least N Jets
 
         double _eTMinJet; //Minimum transverse energy
         double _etaMaxJet; //Maximum pseudorapidity
@@ -52,11 +58,12 @@ class JetSelection:
             _inputEventViewName("Reconstructed"),
             _selectedJetName("SelectedJet"),
             _cleanEvent(true),
+	    _exactJetSection(true),
             _eTMinJet(40.),
             _etaMaxJet(4.7),
             _numOfPFJetConstituents(1),
             _neutralHadronFracOfPFJet(0.99),
-            _chargedHadronFracOfPFJet(999),
+            _chargedHadronFracOfPFJet(999.),
             _neutralEmFracOfPFJet(0.99),
             _chargedEmFracOfPFJet(0.9),
             _muonFracOfPFJet(0.8),
@@ -71,30 +78,33 @@ class JetSelection:
         /*https://twiki.cern.ch/twiki/bin/view/CMS/TopJME#General_Information */
         {
             addSink("input", "input");
-            _outputOtherJetsSource = addSource("other", "other");
-
-            _output1JetsSource = addSource("1 Jet", "1 Jet");
+            _outputOtherExactNJetsSource = addSource("other (Exact N Jet(s))", "other (Exact N Jet(s))");
+	    
+            _output1JetSource = addSource("1 Jet", "1 Jet");
             _output2JetsSource = addSource("2 Jets", "2 Jets");
             _output3JetsSource = addSource("3 Jets", "3 Jets");
             _output4JetsSource = addSource("4 Jets", "4 Jets");
-            
+	    
+            _outputAtLeast2JetSource = addSource("At least 2 Jets", "At least 2 Jets");
+	    _outputOtherAtLeastNJetsSource = addSource("other (At least N Jet(s))", "other (At least N Jet(s))");
 
             addOption("event view","name of the event view where jets are selected",_inputEventViewName);
             addOption("input jet name","name of particles to consider for selection",_inputJetName);
             addOption("name of selected jets","",_selectedJetName);
             addOption("clean event","this option will clean the event of all jets falling cuts",_cleanEvent);
-            
+	    addOption("Exact Jet Selection","this option will determine the jet selection if exact or not", _exactJetSection);
+
             addOption("PF Jet Minimum pT","",_eTMinJet);
             addOption("PF Jet Maximum Eta","",_etaMaxJet);
             addOption("PF Jet Number of Constituents","",_numOfPFJetConstituents);
             addOption("PF Jet ID: Neutral Hadr. Frac.","",_neutralHadronFracOfPFJet);
-            addOption("PF Jet ID: Charged Hadr. Frac. (NOT IMPLEMENTED)","",_chargedHadronFracOfPFJet);
+            //addOption("PF Jet ID: Charged Hadr. Frac. (NOT IMPLEMENTED)","",_chargedHadronFracOfPFJet);
             addOption("PF Jet ID: Charged Em. Frac.","",_chargedEmFracOfPFJet);
             addOption("PF Jet ID: Neutral Em. Frac.","",_neutralEmFracOfPFJet);
             addOption("PF Jet ID: Muon Frac.","",_muonFracOfPFJet);
-            addOption("PF Central Jet ID: Neutral Hadr. Frac. (UNCHANGED)","",_neutralHadronFracOfPFCentJet);
+            //addOption("PF Central Jet ID: Neutral Hadr. Frac. (UNCHANGED)","",_neutralHadronFracOfPFCentJet);
             addOption("PF Central Jet ID: Charged Hadr. Frac.","",_chargedHadronFracOfPFCentJet);
-            addOption("PF Central Jet ID: Neutral Em. Frac. (UNCHANGED)","",_neutralEmFracOfPFCentJet);
+            //addOption("PF Central Jet ID: Neutral Em. Frac. (UNCHANGED)","",_neutralEmFracOfPFCentJet);
             addOption("PF Central Jet ID: Charged Em. Frac.","",_chargedEmFracOfPFCentJet);
             addOption("PF Central Jet ID: Charged Multiplicity","",_chargedMultOfPFCentJet);
             addOption("invert dR","inverts dR cleaning",_dRInvert);
@@ -136,7 +146,8 @@ class JetSelection:
             getOption("input jet name",_inputJetName);
             getOption("name of selected jets",_selectedJetName);
             getOption("clean event",_cleanEvent);
-            
+            getOption("Exact Jet Selection",_exactJetSection);
+
             getOption("PF Jet Minimum pT",_eTMinJet);
             getOption("PF Jet Maximum Eta",_etaMaxJet);
 
@@ -144,13 +155,13 @@ class JetSelection:
             getOption("PF Jet Maximum Eta",_etaMaxJet);
             getOption("PF Jet Number of Constituents",_numOfPFJetConstituents);
             getOption("PF Jet ID: Neutral Hadr. Frac.",_neutralHadronFracOfPFJet);
-            getOption("PF Jet ID: Charged Hadr. Frac. (NOT IMPLEMENTED)",_chargedHadronFracOfPFJet);
+            //getOption("PF Jet ID: Charged Hadr. Frac. (NOT IMPLEMENTED)",_chargedHadronFracOfPFJet);
             getOption("PF Jet ID: Charged Em. Frac.",_chargedEmFracOfPFJet);
             getOption("PF Jet ID: Neutral Em. Frac.",_neutralEmFracOfPFJet);
             getOption("PF Jet ID: Muon Frac.",_muonFracOfPFJet);
-            getOption("PF Central Jet ID: Neutral Hadr. Frac. (UNCHANGED)",_neutralHadronFracOfPFCentJet);
+            //getOption("PF Central Jet ID: Neutral Hadr. Frac. (UNCHANGED)",_neutralHadronFracOfPFCentJet);
             getOption("PF Central Jet ID: Charged Hadr. Frac.",_chargedHadronFracOfPFCentJet);
-            getOption("PF Central Jet ID: Neutral Em. Frac. (UNCHANGED)",_neutralEmFracOfPFCentJet);
+            //getOption("PF Central Jet ID: Neutral Em. Frac. (UNCHANGED)",_neutralEmFracOfPFCentJet);
             getOption("PF Central Jet ID: Charged Em. Frac.",_chargedEmFracOfPFCentJet);
             getOption("PF Central Jet ID: Charged Multiplicity",_chargedMultOfPFCentJet);
 
@@ -166,12 +177,8 @@ class JetSelection:
 
         bool passesPFJetSelection(pxl::Particle* particle)
         {
-            //TODO: need to be extended to recommendation?
-            if (fabs(particle->getEta())<2.4)
-            {//Hardcoded!
-              //inspect non-central jets
-              return false;
-            }
+	    //TODO: need to be extended to recommendation?
+            
             if (not (particle->getPt()>_eTMinJet))
             {
                 return false;
@@ -182,14 +189,19 @@ class JetSelection:
             }
             if (not (particle->getUserRecord("nConstituents").toFloat()>_numOfPFJetConstituents))
             {
-              return false;
+                return false;
             }
+	    double HFHadronEnergyFraction = 0;
+	    if (particle->hasUserRecord("HFHadronEnergyFraction"))
+	    {
+	        HFHadronEnergyFraction = particle->getUserRecord("HFHadronEnergyFraction").toFloat();
+	    }
             if (particle->hasUserRecord("neutralHadronEnergyFraction"))
-            {
-                if (not (particle->getUserRecord("neutralHadronEnergyFraction").toFloat()<_neutralHadronFracOfPFJet))
-               {
+	    {
+	        if (not ((particle->getUserRecord("neutralHadronEnergyFraction").toFloat() + HFHadronEnergyFraction)<_neutralHadronFracOfPFJet))
+                {
                     return false;
-               }
+		}
             }
             if (particle->hasUserRecord("neutralEmEnergyFraction"))
             {
@@ -198,14 +210,17 @@ class JetSelection:
                     return false;
                 }
             }
-            if (particle->hasUserRecord("electronEnergyFraction"))
-            {
-                if (not (particle->getUserRecord("electronEnergyFraction").toFloat()<_chargedEmFracOfPFJet))
-                {
-                    return false;
-                }
-            }
-            if (particle->hasUserRecord("muonEnergyFraction"))
+	    if (fabs(particle->getEta())>2.4)
+	    {
+	        if (particle->hasUserRecord("electronEnergyFraction"))
+		{
+		    if (not (particle->getUserRecord("electronEnergyFraction").toFloat()<_chargedEmFracOfPFJet))
+		    {
+		        return false;
+		    }
+		}
+	    }
+	    if (particle->hasUserRecord("muonEnergyFraction"))
             {
                 if (not (particle->getUserRecord("muonEnergyFraction").toFloat()<_muonFracOfPFJet))
                 {
@@ -219,16 +234,11 @@ class JetSelection:
 
         bool passesPFCentralJetSelection(pxl::Particle* particle)
         {
-            //TODO: need to be extended to recommendation?
-            if (not fabs(particle->getEta())<2.4)
-            { //Hardcoded!
-              //inspect central jets
-                return false;
-            }
-            if (not (particle->getPt()>_eTMinJet))
-            {
-                return false;
-            }
+	    //TODO: need to be extended to recommendation?
+	    if (not passesPFJetSelection(particle)) 
+	    {
+	      return false;
+	    }
             if (particle->hasUserRecord("chargedHadronEnergyFraction"))
             {
                 if (not (particle->getUserRecord("chargedHadronEnergyFraction").toFloat()>_chargedHadronFracOfPFCentJet))
@@ -247,32 +257,7 @@ class JetSelection:
                     return false;
                 }
             }
-            if (not (particle->getUserRecord("nConstituents").toFloat()>_numOfPFJetConstituents))
-            {
-                return false;
-            }
-            if (particle->hasUserRecord("neutralHadronEnergyFraction"))
-            {
-                if (not (particle->getUserRecord("neutralHadronEnergyFraction").toFloat()<_neutralHadronFracOfPFCentJet))
-                {
-                  return false;
-                }
-            }
-            if (particle->hasUserRecord("neutralEmEnergyFraction"))
-            {
-                if (not (particle->getUserRecord("neutralEmEnergyFraction").toFloat()<_neutralEmFracOfPFCentJet))
-                {
-                    return false;
-                }
-            }
-            if (particle->hasUserRecord("muonEnergyFraction"))
-            {
-                if (not (particle->getUserRecord("muonEnergyFraction").toFloat()<_muonFracOfPFJet))
-                {
-                    return false;
-                }
-            }
-
+	    
             return true;
         }
   
@@ -338,11 +323,11 @@ class JetSelection:
 
                                 if (particle->getName()==_inputJetName)
                                 {
-                                    if (passesPFCentralJetSelection(particle))
+				    if (fabs(particle->getEta())<2.4 && passesPFCentralJetSelection(particle))
                                     {
                                       particle->setName(_selectedJetName); //same _selectedJetName for central & non-central?
                                       selectedJets.push_back(particle);
-                                    } else if (passesPFJetSelection(particle)) {
+                                    } else if (fabs(particle->getEta())>2.4 && passesPFJetSelection(particle)) {
                                       particle->setName(_selectedJetName);
                                       selectedJets.push_back(particle);
                                     } else if (_cleanEvent) {
@@ -362,27 +347,42 @@ class JetSelection:
                         
                         applyDRcleaning(eventView,selectedJets,dRCleaningObjects);
 
-                        switch (selectedJets.size())
-                        {
-                            case 1:
-                                _output1JetsSource->setTargets(event);
-                                return _output1JetsSource->processTargets();
-                            case 2:
-                                _output2JetsSource->setTargets(event);
-                                return _output2JetsSource->processTargets();
-                            case 3:
-                                _output3JetsSource->setTargets(event);
-                                return _output3JetsSource->processTargets();
-                            case 4:
-                                _output4JetsSource->setTargets(event);
-                                return _output4JetsSource->processTargets();
-                            default:
-                                _outputOtherJetsSource->setTargets(event);
-                                return _outputOtherJetsSource->processTargets();
-                        }
-                    }
-                }
-            }
+			if (_exactJetSection)
+			{
+                            switch (selectedJets.size())
+			      {
+			      case 1:
+                                  _output1JetSource->setTargets(event);
+                                   return _output1JetSource->processTargets();
+			      case 2:
+                                   _output2JetsSource->setTargets(event);
+				   return _output2JetsSource->processTargets();
+			      case 3:
+				  _output3JetsSource->setTargets(event);
+				  return _output3JetsSource->processTargets();
+ 			      case 4:
+    				  _output4JetsSource->setTargets(event);
+				  return _output4JetsSource->processTargets();
+			      default:
+				  _outputOtherExactNJetsSource->setTargets(event);
+				  return _outputOtherExactNJetsSource->processTargets();
+			      }
+			} else 
+			  {
+			      if (selectedJets.size()>=2) 
+			      {
+			          _outputAtLeast2JetSource->setTargets(event);
+				  return _outputAtLeast2JetSource->processTargets();
+			      } 
+			      else
+			      {
+			          _outputOtherAtLeastNJetsSource->setTargets(event);
+				  return _outputOtherAtLeastNJetsSource->processTargets();
+			      }
+			  }
+		    }
+		}
+	    }
             catch(std::exception &e)
             {
                 throw std::runtime_error(getName()+": "+e.what());
