@@ -129,10 +129,12 @@ class ElectronSelection:
             {
                 return false;
             }
+
             if (not particle->getUserRecord("phys14eleIDTight"))
             {
                 return false;
             }
+
             return true;
         }
 
@@ -151,6 +153,7 @@ class ElectronSelection:
             {
                 return false;
             }
+
             if (fabs(particle->getEta())<1.5660 && fabs(particle->getEta())>1.4442)
             {
                 return false;
@@ -159,6 +162,7 @@ class ElectronSelection:
             {
                 return false;
             }
+
             return true;
         }
 

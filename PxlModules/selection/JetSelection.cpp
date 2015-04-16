@@ -79,7 +79,7 @@ class JetSelection:
             _output3JetsSource = addSource("3 Jets", "3 Jets");
             _output2JetsSource = addSource("2 Jets", "2 Jets");
             _output1JetSource = addSource("1 Jet", "1 Jet");
-            _output1JetSource = addSource("0 Jets", "0 Jets");
+            _output0JetSource = addSource("0 Jets", "0 Jets");
 
             addOption("event view","name of the event view where jets are selected",_inputEventViewName);
             addOption("input jet name","name of particles to consider for selection",_inputJetName);
@@ -158,7 +158,7 @@ class JetSelection:
             {
                 _dR=-1;
             }
-            
+
         }
 
         bool passesJetSelection(pxl::Particle* particle)

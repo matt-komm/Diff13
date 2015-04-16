@@ -48,9 +48,6 @@ class MuonSelection:
         /*Loose Muon Related Criteria*/
         double _pTminLooseMuon;  //Minimum transverse momentum
         double _etamaxLooseMuon; //Maximum pseudorapidity
-        std::string _idsLooseMuon; //Muon Conditions as provided by the user e.g. Tracker Muon 
-        std::vector<std::string> _idLooseMuon; //Vector to store each Muon Condition sepately
-        std::string _pfIsoMethodsLooseMuon; //Particle Flow (pf) Isolation (Iso) Method(s) as provided by the user 
         double _pfRelIsoCorDbLooseMuon; //Muon Isolation:Relative(Rel) Isolation Correction (Cor) Delta beta (Db) 
         double _pfRelIsoCorDbBetaLooseMuon; //Muon Isolation:Relative Isolation Correction (Cor) Delta beta (Db)- Beta parameter
 
@@ -119,8 +116,6 @@ class MuonSelection:
 
             addOption("LooseMuon Minimum pT","",_pTminLooseMuon);
             addOption("LooseMuon Maximum Eta","",_etamaxLooseMuon);
-            addOption("LooseMuon ID","", _idsLooseMuon);
-            addOption("LooseMuon PF Iso","",_pfIsoMethodsLooseMuon);
             addOption("LooseMuon Minimum Relative Iso DeltaBeta","",_pfRelIsoCorDbLooseMuon);
             addOption("LooseMuon Relative Iso DeltaBeta; Beta Parameter","",_pfRelIsoCorDbBetaLooseMuon);
 
@@ -160,25 +155,25 @@ class MuonSelection:
             getOption("Name of selected tight muons",_tightMuonName);
             getOption("Name of selected loose muons",_looseMuonName);
             getOption("Clean event",_cleanEvent);
-            
+
             getOption("Number of TightMuons to Select",_numTightMuons);
             getOption("Number of LooseMuons to Select",_numLooseMuons);
 
             getOption("TightMuon Minimum pT",_pTMinTightMuon);
             getOption("TightMuon Maximum Eta",_etaMaxTightMuon);
-            getOption("TightMuon Chi2/nDoFs", _normChi2TightMuon);
-            getOption("TightMuon Number Of Valid Muon Hits", _numberOfValidMuonHitsTightMuon);
-            getOption("TightMuon Number Of Valid Pixel Hits", _numberOfValidPixelHitsTightMuon);
+            getOption("TightMuon Chi2/nDoFs",_normChi2TightMuon);
+            getOption("TightMuon Number Of Valid Muon Hits",_numberOfValidMuonHitsTightMuon);
+            getOption("TightMuon Number Of Valid Pixel Hits",_numberOfValidPixelHitsTightMuon);
             getOption("TightMuon Number Of Matched Stations", _numberOfMatchedStationsTightMuon);
             getOption("TightMuon Transverse Impact Parameter", _dxyMaxTightMuon);
             getOption("TightMuon Longitudinal Impact Parameter", _dzMaxTightMuon);
             getOption("TightMuon Tracker Layers With Measurement", _trackerLayersWithMeasurementTightMuon);
-            getOption("TightMuon Maximum Relative Iso DeltaBeta",_pfRelIsoCorDbTightMuon);
+            getOption("TightMuon Minimum Relative Iso DeltaBeta",_pfRelIsoCorDbTightMuon);
             getOption("TightMuon Relative Iso DeltaBeta; Beta Parameter",_pfRelIsoCorDbBetaTightMuon);
+
 
             getOption("LooseMuon Minimum pT",_pTminLooseMuon);
             getOption("LooseMuon Maximum Eta",_etamaxLooseMuon);
-            getOption("LooseMuon PF Iso",_pfIsoMethodsLooseMuon);
             getOption("LooseMuon Minimum Relative Iso DeltaBeta",_pfRelIsoCorDbLooseMuon);
             getOption("LooseMuon Relative Iso DeltaBeta; Beta Parameter",_pfRelIsoCorDbBetaLooseMuon);
         }
