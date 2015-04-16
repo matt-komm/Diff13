@@ -8,4 +8,10 @@ install(
     LIBRARY DESTINATION ${PXL_PLUGIN_INSTALL_PATH}
 )
 
+add_library(EventWeight MODULE EventWeight.cpp)
+target_link_libraries(EventWeight ${PXL_LIBRARIES} ${ROOT_LIBRARIES})
+install(
+    TARGETS EventWeight
+    LIBRARY DESTINATION ${PXL_PLUGIN_INSTALL_PATH}
+)
 

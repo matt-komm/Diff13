@@ -197,7 +197,7 @@ class RootTreeWriter:
                 pxl::Event *event  = dynamic_cast<pxl::Event *> (sink->get());
                 if (event)
                 {
-                    Tree* tree = _store->getTree(event->getUserRecord("Process"));
+                    Tree* tree = _store->getTree(event->getUserRecord("ProcessName"));
 
                     //tree->storeVariable("event_number",(int)event->getUserRecord("Event number").asUInt64());
                     _syntaxTree->evaluateChildren(event,tree,"");
