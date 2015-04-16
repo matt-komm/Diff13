@@ -20,21 +20,18 @@ class ElectronSelection:
         std::string _looseElectronName;
         
         bool _cleanEvent;
+
+        int64_t _numTightElectrons; //Number of selected tight electrons
+        int64_t _numLooseElectrons; //Number of selected loose electrons
       
         /*Tight Electron Related Criteria*/
         double _pTMinTightElectron;  //Minimum transverse momentum
         double _etaMaxTightElectron; //Maximum pseudorapidity
-        std::string _idsTightElectron; //Electron Conditions as provided by the user (USED ONLY FOR ONE ELECTRON ID for the moment)
-        //std::vector<std::string> _idTightElectron; //Vector to store each Electron Condition sepately (IDLE for the moment)
-        int64_t _lostHitsTightElectron; // Number of lost hits 
-  
-        int64_t _numTightElectrons; //Number of selected tight electrons
 
         /*Loose Electron Related Criteria*/
         double _pTMinLooseElectron;  //Minimum transverse momentum
         double _etaMaxLooseElectron; //Maximum pseudorapidity
 
-        int64_t _numLooseElectrons; //Number of selected loose electrons
       
     public:
         ElectronSelection():
@@ -44,14 +41,15 @@ class ElectronSelection:
             _tightElectronName("TightElectron"),
             _looseElectronName("LooseElectron"),
             _cleanEvent(true),
-            _pTMinTightElectron(10),
-            _etaMaxTightElectron(2.5),
-            _idsTightElectron("phys14eleIDVeto"),
-            _lostHitsTightElectron(0),
+
             _numTightElectrons(1),
-            _pTMinLooseElectron(10),
-            _etaMaxLooseElectron(2.5),
-            _numLooseElectrons(0)
+            _numLooseElectrons(0),
+
+            _pTMinTightElectron(35),
+            _etaMaxTightElectron(2.1),
+
+            _pTMinLooseElectron(20),
+            _etaMaxLooseElectron(2.5)
 
         {
             addSink("input", "input");
@@ -64,15 +62,14 @@ class ElectronSelection:
             addOption("Name of selected loose electrons","",_looseElectronName);
             addOption("Clean event","this option will clean the event of all electrons falling tight or loose criteria",_cleanEvent);
 
+            addOption("Number of TightElectrons to Select","",_numTightElectrons);
+            addOption("Number of LooseElectrons to Select","",_numLooseElectrons);
+
             addOption("TightElectron Minimum pT","",_pTMinTightElectron);
             addOption("TightElectron Maximum eta","",_etaMaxTightElectron);
-            addOption("TightElectron ID","",_idsTightElectron);
-            addOption("TightElectron Lost Hits","",_lostHitsTightElectron);
-            addOption("Number of TightElectrons to Select","",_numTightElectrons);
 
             addOption("LooseElectron Minimum pT","",_pTMinLooseElectron);
             addOption("LooseElectron Maximum eta","",_etaMaxLooseElectron);
-            addOption("Number of LooseElectrons to Select","",_numLooseElectrons);
         }
 
         ~ElectronSelection()
@@ -110,32 +107,29 @@ class ElectronSelection:
             getOption("Name of selected loose electrons",_looseElectronName);
             getOption("Clean event",_cleanEvent);
 
+            getOption("Number of TightElectrons to Select",_numTightElectrons);
+            getOption("Number of LooseElectrons to Select",_numLooseElectrons);
+
             getOption("TightElectron Minimum pT",_pTMinTightElectron);
             getOption("TightElectron Maximum eta",_etaMaxTightElectron);
-            getOption("TightElectron ID",_idsTightElectron);
-            getOption("TightElectron Lost Hits",_lostHitsTightElectron);
-            getOption("Number of TightElectrons to Select",_numTightElectrons);
 
             getOption("LooseElectron Minimum pT",_pTMinLooseElectron);
             getOption("LooseElectron Maximum eta",_etaMaxLooseElectron);
-            getOption("Number of LooseElectrons to Select",_numLooseElectrons);
 
         }
 
         bool passTightCriteria(pxl::Particle* particle)
         {
-            //TODO: need to be extended to recommendation!
-            if (not (particle->getPt()>_pTMinTightElectron)) {
-                return false;
-            }
-            if (not (fabs(particle->getEta())<_etaMaxTightElectron)) {
-                return false;
-            }
-            if (particle->getUserRecord("isInEB-EE").toBool())
+            //TODO: need to be extended to recommendation?
+            if (not (particle->getPt()>_pTMinTightElectron))
             {
                 return false;
             }
-            if (particle->getUserRecord("lostHits").toInt32()==0)
+            if (not (fabs(particle->getEta())<_etaMaxTightElectron))
+            {
+                return false;
+            }
+            if (not particle->getUserRecord("phys14eleIDTight"))
             {
                 return false;
             }
@@ -144,22 +138,27 @@ class ElectronSelection:
 
         bool passLooseCriteria(pxl::Particle* particle)
         {
-	  
-            //TODO: need to be extended to recommendation
-            if (not (particle->getPt()>_pTMinLooseElectron)) {
-                return false;
-            }
-            if (not (fabs(particle->getEta())<_etaMaxLooseElectron)) {
-                return false;
-            }
-            if (particle->hasUserRecord(_idsTightElectron.data()))
+            //TODO: need to be extended to recommendation?
+            if (not (particle->getPt()>_pTMinLooseElectron))
             {
-                if (not (particle->getUserRecord(_idsTightElectron.data()).toBool()))
-                {
-                    return false;
-                }
+                return false;
             }
-
+            if (not (fabs(particle->getEta())<_etaMaxLooseElectron))
+            {
+                return false;
+            }
+            if (not particle->getUserRecord("phys14eleIDVeto"))
+            {
+                return false;
+            }
+            if (fabs(particle->getEta())<1.5660 && fabs(particle->getEta())>1.4442)
+            {
+                return false;
+            }
+            if (not particle->getUserRecord("passConversionVeto"))
+            {
+                return false;
+            }
             return true;
         }
 
