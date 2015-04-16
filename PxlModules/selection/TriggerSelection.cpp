@@ -11,30 +11,30 @@ class TriggerSelection:
     public pxl::Module
 {
     private:
-        pxl::Source* _output1TriggerSource;
-        pxl::Source* _outputOtherTriggerSource;
-
-        std::string _inputEventViewName;
-        std::string _triggerName;
-
-        bool _cleanEvent;
+        pxl::Source* _outputSource;
+        pxl::Source* _outputVetoSource;
         
+        std::string _inputEventViewName;
+        std::vector<std::string> _triggerFlags;
+        bool _requireAllFlags;
+
     public:
         TriggerSelection():
             Module(),
-	    _inputEventViewName("Reconstructed"),
-            _triggerName("HLT_IsoMu24_eta2p1_IterTrk02_v1"),
-            _cleanEvent(true)
-
+            _inputEventViewName("Reconstructed"),
+            _triggerFlags({"HLT_IsoMu24_eta2p1_IterTrk02_v1"}),
+            _requireAllFlags(true)
         {
             addSink("input", "input");
-            _output1TriggerSource = addSource("Isolated Single Lepton", "Isolated Single Lepton");
-            _outputOtherTriggerSource = addSource("other", "other");
+            _outputSource = addSource("selected","selected");
+            _outputVetoSource = addSource("veto", "veto");
 
             addOption("Event view","name of the event view",_inputEventViewName);
-            addOption("Trigger of selected events","",_triggerName);
+            addOption("required trigger flags","",_triggerFlags);
 
-            addOption("Clean event","this option will clean the events falling out of trigger",_cleanEvent);
+
+            addOption("require all","this option requires all triggers (if set to true) or at least one (if set to false) to be fired",_requireAllFlags);
+
         }
 
         ~TriggerSelection()
@@ -67,22 +67,36 @@ class TriggerSelection:
         void beginJob() throw (std::runtime_error)
         {
             getOption("Event view",_inputEventViewName);
-            addOption("Trigger of selected events","",_triggerName);
-            
-	    getOption("Clean event",_cleanEvent);
-            
+            getOption("required trigger flags",_triggerFlags);
+            getOption("require all",_requireAllFlags);
         }
 
-        bool passesSingleIsoLeptonTriggerSelection( pxl::EventView* eventView)
+        bool passTriggerSelection(pxl::EventView* eventView)
         {
-	    if (eventView->hasUserRecord(_triggerName.data())) {
-	        if (not eventView->getUserRecord(_triggerName.data())) {
-	            return false;
-		}
-		
-		return true; 
-	    }
-	}
+            bool accepted = _requireAllFlags; //concatenate with AND if true. Otherwise with OR if false.
+            for (unsigned int itrigger = 0; itrigger<_triggerFlags.size(); ++itrigger)
+            {
+                const std::string& triggerName = _triggerFlags[itrigger];
+                if (eventView->hasUserRecord(triggerName))
+                {
+                    if (_requireAllFlags)
+                    {
+                        accepted = accepted and eventView->getUserRecord(triggerName);
+                    }
+                    else
+                    {
+                        accepted = accepted or eventView->getUserRecord(triggerName);
+                    }
+                }
+                //if true & accepted=false -> return false
+                //if false & accepted=true -> return true
+                if (_requireAllFlags!=accepted)
+                {
+                    return accepted;
+                }
+            }
+            return accepted;
+        }
 
         bool analyse(pxl::Sink *sink) throw (std::runtime_error)
         {
@@ -96,21 +110,23 @@ class TriggerSelection:
                     
                     for (unsigned ieventView=0; ieventView<eventViews.size();++ieventView)
                     {
-
                         pxl::EventView* eventView = eventViews[ieventView];
                         if (eventView->getName()==_inputEventViewName)
                         {
-			    if (passesSingleIsoLeptonTriggerSelection(eventView)) {
-			        _output1TriggerSource->setTargets(event);
-                                return _output1TriggerSource->processTargets();
-			    }else {
-			        _outputOtherTriggerSource->setTargets(event);
-                                return _outputOtherTriggerSource->processTargets();
-			    }
-			}
-		    }
-		}
-	    }
+                            if (passTriggerSelection(eventView))
+                            {
+                                _outputSource->setTargets(event);
+                                return _outputSource->processTargets();
+                            }
+                            else
+                            {
+                                _outputVetoSource->setTargets(event);
+                                return _outputVetoSource->processTargets();
+                            }
+                        }
+                    }
+                }
+            }
             catch(std::exception &e)
             {
                 throw std::runtime_error(getName()+": "+e.what());

@@ -44,12 +44,12 @@ class ElectronSelection:
             _tightElectronName("TightElectron"),
             _looseElectronName("LooseElectron"),
             _cleanEvent(true),
-	    _pTMinTightElectron(10),
-	    _etaMaxTightElectron(2.5),
-	    _idsTightElectron("phys14eleIDVeto"),
-	    _lostHitsTightElectron(0),
-	    _numTightElectrons(1),
-	    _pTMinLooseElectron(10),
+            _pTMinTightElectron(10),
+            _etaMaxTightElectron(2.5),
+            _idsTightElectron("phys14eleIDVeto"),
+            _lostHitsTightElectron(0),
+            _numTightElectrons(1),
+            _pTMinLooseElectron(10),
             _etaMaxLooseElectron(2.5),
             _numLooseElectrons(0)
 
@@ -64,13 +64,13 @@ class ElectronSelection:
             addOption("Name of selected loose electrons","",_looseElectronName);
             addOption("Clean event","this option will clean the event of all electrons falling tight or loose criteria",_cleanEvent);
 
-	    addOption("TightElectron Minimum pT","",_pTMinTightElectron);
+            addOption("TightElectron Minimum pT","",_pTMinTightElectron);
             addOption("TightElectron Maximum eta","",_etaMaxTightElectron);
-	    addOption("TightElectron ID","",_idsTightElectron);
-	    addOption("TightElectron Lost Hits","",_lostHitsTightElectron);
+            addOption("TightElectron ID","",_idsTightElectron);
+            addOption("TightElectron Lost Hits","",_lostHitsTightElectron);
             addOption("Number of TightElectrons to Select","",_numTightElectrons);
 
-	    addOption("LooseElectron Minimum pT","",_pTMinLooseElectron);
+            addOption("LooseElectron Minimum pT","",_pTMinLooseElectron);
             addOption("LooseElectron Maximum eta","",_etaMaxLooseElectron);
             addOption("Number of LooseElectrons to Select","",_numLooseElectrons);
         }
@@ -112,11 +112,11 @@ class ElectronSelection:
 
             getOption("TightElectron Minimum pT",_pTMinTightElectron);
             getOption("TightElectron Maximum eta",_etaMaxTightElectron);
-	    getOption("TightElectron ID",_idsTightElectron);
-	    getOption("TightElectron Lost Hits",_lostHitsTightElectron);
+            getOption("TightElectron ID",_idsTightElectron);
+            getOption("TightElectron Lost Hits",_lostHitsTightElectron);
             getOption("Number of TightElectrons to Select",_numTightElectrons);
 
-	    getOption("LooseElectron Minimum pT",_pTMinLooseElectron);
+            getOption("LooseElectron Minimum pT",_pTMinLooseElectron);
             getOption("LooseElectron Maximum eta",_etaMaxLooseElectron);
             getOption("Number of LooseElectrons to Select",_numLooseElectrons);
 
@@ -152,11 +152,13 @@ class ElectronSelection:
             if (not (fabs(particle->getEta())<_etaMaxLooseElectron)) {
                 return false;
             }
-	    if (particle->hasUserRecord(_idsTightElectron.data())) {
-	        if (not (particle->getUserRecord(_idsTightElectron.data()).toBool())) {
-		    return false;
-		}
-	    }
+            if (particle->hasUserRecord(_idsTightElectron.data()))
+            {
+                if (not (particle->getUserRecord(_idsTightElectron.data()).toBool()))
+                {
+                    return false;
+                }
+            }
 
             return true;
         }
@@ -193,9 +195,13 @@ class ElectronSelection:
                                     if (passTightCriteria(particle))
                                     {
                                         tightElectrons.push_back(particle);
-                                    } else if (passLooseCriteria(particle)) {
+                                    }
+                                    else if (passLooseCriteria(particle))
+                                    {
                                         looseElectrons.push_back(particle);
-                                    } else {
+                                    }
+                                    else
+                                    {
                                         otherElectrons.push_back(particle);
                                     }
                                 }

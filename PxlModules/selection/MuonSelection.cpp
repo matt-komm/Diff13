@@ -73,7 +73,7 @@ class MuonSelection:
             _etaMaxTightMuon(2.1),
             _idsTightMuon("isPFMuon, isGlobalMuon"),
             _normChi2TightMuon(10),
-	    _numberOfValidMuonHitsTightMuon(0),
+            _numberOfValidMuonHitsTightMuon(0),
             _numberOfValidPixelHitsTightMuon(1),
             _numberOfMatchedStationsTightMuon(1),
             _dxyMaxTightMuon(0.2),
@@ -111,7 +111,7 @@ class MuonSelection:
             addOption("TightMuon Maximum Eta","",_etaMaxTightMuon);
             addOption("TightMuon ID","",_idsTightMuon);
             addOption("TightMuon Chi2/nDoFs", "",_normChi2TightMuon);
-	    addOption("TightMuon Number Of Valid Muon Hits", "",_numberOfValidMuonHitsTightMuon);
+            addOption("TightMuon Number Of Valid Muon Hits", "",_numberOfValidMuonHitsTightMuon);
             addOption("TightMuon Number Of Valid Pixel Hits", "",_numberOfValidPixelHitsTightMuon);
             addOption("TightMuon Number Of Matched Stations","", _numberOfMatchedStationsTightMuon);
             addOption("TightMuon Transverse Impact Parameter","", _dxyMaxTightMuon);
@@ -170,7 +170,7 @@ class MuonSelection:
             getOption("TightMuon Maximum Eta",_etaMaxTightMuon);
             getOption("TightMuon ID",_idsTightMuon);
             getOption("TightMuon Chi2/nDoFs", _normChi2TightMuon);
-	    getOption("TightMuon Number Of Valid Muon Hits", _numberOfValidMuonHitsTightMuon);
+            getOption("TightMuon Number Of Valid Muon Hits", _numberOfValidMuonHitsTightMuon);
             getOption("TightMuon Number Of Valid Pixel Hits", _numberOfValidPixelHitsTightMuon);
             getOption("TightMuon Number Of Matched Stations", _numberOfMatchedStationsTightMuon);
             getOption("TightMuon Transverse Impact Parameter", _dxyMaxTightMuon);
@@ -291,7 +291,7 @@ class MuonSelection:
             if (not ((particle->getUserRecord("chi2").toFloat()/particle->getUserRecord("ndof").toFloat())<_normChi2TightMuon)) {
                 return false;
             }
-	    if (not (particle->getUserRecord("numberOfValidMuonHits").toInt32()>_numberOfValidMuonHitsTightMuon)) {
+            if (not (particle->getUserRecord("numberOfValidMuonHits").toInt32()>_numberOfValidMuonHitsTightMuon)) {
                 return false;
             }
             if (not (particle->getUserRecord("numberOfValidPixelHits").toInt32()>_numberOfValidPixelHitsTightMuon)) {
@@ -311,15 +311,12 @@ class MuonSelection:
             }
             for (unsigned i=0; i<_pfIsoMethodTightMuon.size(); ++i)
             {
-	        if (not (pfRelIsoCorDb (particle)<_pfRelIsoCorDbTightMuon))
-		  
+                if (not (pfRelIsoCorDb (particle)<_pfRelIsoCorDbTightMuon))
                 {
                     return false;
                 }
             }
-
-	    	    
-	    return true;
+            return true;
 
         }
 
@@ -362,7 +359,7 @@ class MuonSelection:
                     {
                         pxl::EventView* eventView = eventViews[ieventView];
                         if (eventView->getName()==_inputEventViewName)
-			  {
+                        {
                             std::vector<pxl::Particle*> particles;
                             eventView->getObjectsOfType(particles);
 
@@ -372,18 +369,22 @@ class MuonSelection:
 
                                 if (particle->getName()==_inputTightMuonName)
                                 {
-				    if (passesTightCriteria(particle))
+                                    if (passesTightCriteria(particle))
                                     {
                                         tightMuons.push_back(particle);
-                                    } else if (passesLooseCriteria(particle)) {
+                                    }
+                                    else if (passesLooseCriteria(particle))
+                                    {
                                         looseMuons.push_back(particle);
-                                    } else {
-				        otherMuons.push_back(particle);
+                                    }
+                                    else
+                                    {
+                                        otherMuons.push_back(particle);
                                     }
                                 }
                             }
                         }
-			
+
                         if (tightMuons.size()==_numTightMuons && looseMuons.size()==_numLooseMuons)
                         {
                             for (unsigned int i=0; i < tightMuons.size(); ++i)
@@ -431,8 +432,8 @@ class MuonSelection:
             delete this;
         }
   
-       void identifyToken (std::set<char> & token, std::string tokenize )
-       {
+        void identifyToken (std::set<char> & token, std::string tokenize )
+        {
 
             //Token could be everything other than a letter, i.e. everything with ASCII code outside the [65,90] and [97,122] range
             //What about excluding also the simple identation (ASCII code 45) and underscore (ASCII code 95)?
