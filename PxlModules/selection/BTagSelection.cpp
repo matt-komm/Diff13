@@ -11,15 +11,16 @@ class BTagSelection:
     public pxl::Module
 {
     private:
+        //Exact N B Tagged Jet(s) 
         pxl::Source* _output0BTagsSource;
         pxl::Source* _output1BTagsSource;
         pxl::Source* _output2BTagsSource;
         pxl::Source* _outputOtherBTagsSource;
-
+  
         std::string _inputJetName;
         std::string _inputEventViewName;
         std::string _bTaggedJetName;
-        
+
         std::string _bTaggingAlgorithmName; //b-tag algorithm out of the ones implemented in CMSSW
 
         /* b tag algorithms related variables, more info on */
@@ -41,11 +42,13 @@ class BTagSelection:
 
         {
             addSink("input", "input");
-            _output0BTagsSource = addSource("0 b-Tags", "0 b-Tags");
-            _output1BTagsSource = addSource("1 b-Tags", "1 b-Tags");
+
+            _outputOtherBTagsSource = addSource(">2 b-Tags", ">2 b-Tags");
             _output2BTagsSource = addSource("2 b-Tags", "2 b-Tags");
-            _outputOtherBTagsSource = addSource("other", "other");
-            
+            _output1BTagsSource = addSource("1 b-Tags", "1 b-Tags");
+            _output0BTagsSource = addSource("0 b-Tags", "0 b-Tags");
+
+
             addOption("event view","name of the event view where jets are selected",_inputEventViewName);
             addOption("input jet name","name of particles to consider for b-tagging",_inputJetName);
             addOption("name of selected b-jets","",_bTaggedJetName);
@@ -89,7 +92,6 @@ class BTagSelection:
             getOption("event view",_inputEventViewName);
             getOption("input jet name",_inputJetName);
             getOption("name of selected b-jets",_bTaggedJetName);
-
             getOption("b Tagging Algorithm",_bTaggingAlgorithmName);
 
             getOption("maximum b-jet eta",_maxEtaBJet);
@@ -100,11 +102,11 @@ class BTagSelection:
 
         bool isBtagged(pxl::Particle* particle)
         {
-            if (not fabs(particle->getEta())<_maxEtaBJet)
+            if (not (fabs(particle->getEta())<_maxEtaBJet))
             {
                 return false;
             }
-            if (not (particle->getUserRecord(_bTaggingAlgorithmName).toFloat()<_bTaggingWorkingPoint))
+            if (not (particle->getUserRecord(_bTaggingAlgorithmName).toFloat()>_bTaggingWorkingPoint))
             {
                 return false;
             }
@@ -114,7 +116,6 @@ class BTagSelection:
 
         bool analyse(pxl::Sink *sink) throw (std::runtime_error)
         {
-
             try
             {
                 pxl::Event *event  = dynamic_cast<pxl::Event*>(sink->get());
@@ -148,22 +149,21 @@ class BTagSelection:
                                 }
                             }
                         }
-
-                        switch (selectedBJets.size())
-                        {
-                            case 0:
-                                _output0BTagsSource->setTargets(event);
-                                return _output0BTagsSource->processTargets();
-                            case 1:
-                                _output1BTagsSource->setTargets(event);
-                                return _output1BTagsSource->processTargets();
-                            case 2:
-                                _output2BTagsSource->setTargets(event);
-                                return _output2BTagsSource->processTargets();
-                            default:
-                                _outputOtherBTagsSource->setTargets(event);
-                                return _outputOtherBTagsSource->processTargets();
-                        }
+                    }
+                    switch (selectedBJets.size())
+                    {
+                        case 0:
+                            _output0BTagsSource->setTargets(event);
+                            return _output0BTagsSource->processTargets();
+                        case 1:
+                            _output1BTagsSource->setTargets(event);
+                            return _output1BTagsSource->processTargets();
+                        case 2:
+                            _output2BTagsSource->setTargets(event);
+                            return _output2BTagsSource->processTargets();
+                        default:
+                            _outputOtherBTagsSource->setTargets(event);
+                            return _outputOtherBTagsSource->processTargets();
                     }
                 }
             }
@@ -178,7 +178,7 @@ class BTagSelection:
 
             logger(pxl::LOG_LEVEL_ERROR , "Analysed event is not an pxl::Event !");
             return false;
-    }
+        }
 
         void shutdown() throw(std::runtime_error)
         {
