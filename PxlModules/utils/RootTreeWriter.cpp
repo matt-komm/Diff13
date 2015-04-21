@@ -5,6 +5,231 @@
 #include "pxl/modules/Module.hh"
 #include "pxl/modules/ModuleFactory.hh"
 
+#include "OutputStore.hpp"
+
+#include <vector>
+#include <string>
+#include <iostream>
+#include <map>
+#include <functional>
+
+static pxl::Logger logger("RootTreeWriter");
+
+
+class SyntaxNode
+{
+    private:
+        SyntaxNode* _parent;
+        std::vector<SyntaxNode*> _children;
+        const std::string _field;
+    public:
+
+        SyntaxNode(const std::string& field="", SyntaxNode* parent=nullptr):
+            _field(field),
+            _parent(parent)
+        {
+        }
+        
+        inline const std::string& getField() const
+        {
+            return _field;
+        }
+        
+        inline void print(unsigned int ident=0) const
+        {
+            for (unsigned int i = 0; i < ident; ++i)
+            {
+                std::cout<<" - ";
+            }
+            std::cout<<_field<<std::endl;
+            for (SyntaxNode* child: _children)
+            {
+                child->print(ident+1);
+            }
+        }
+        
+        void buildTree(const std::string& s)
+        {
+            std::string::size_type pos = s.find("->");
+            std::string childField = "";
+            if (pos!=std::string::npos)
+            {
+                childField = s.substr(0,pos);
+            }
+            else
+            {
+                childField=s;
+            }
+            SyntaxNode* foundChild = nullptr;
+            for (SyntaxNode* child: _children)
+            {
+                if (child->getField()==childField)
+                {
+                    foundChild=child;
+                    break;
+                }
+            }
+
+            if (!foundChild)
+            {
+                foundChild = new SyntaxNode(childField,this);
+                _children.push_back(foundChild);
+            }
+            if (pos!=std::string::npos)
+            {
+                foundChild->buildTree(s.substr(pos+2));
+            }
+        }
+        
+        template<class TYPE>
+        void evaluateChildren(const TYPE* object, Tree* tree, const std::string& prefix)
+        {
+            for (SyntaxNode* child: _children)
+            {
+                child->evaluate(object,tree,prefix);
+            }
+        }
+        
+        void evaluate(const pxl::Event* event, Tree* tree, const std::string& prefix)
+        {
+            std::vector<pxl::EventView*> eventViews;
+            event->getObjectsOfType(eventViews);
+            unsigned int multiplicity = 1;
+            for (pxl::EventView* eventView: eventViews)
+            {
+                if (eventView->getName()==_field)
+                {
+                    evaluateChildren(eventView,tree,prefix+getField()+"_"+std::to_string(multiplicity)+"__");
+                    ++multiplicity;
+                }
+            }
+            parseUserRecords(&event->getUserRecords(),tree,prefix);
+
+        }
+        
+        void evaluate(const pxl::EventView* eventView, Tree* tree, const std::string& prefix)
+        {
+            std::vector<pxl::Particle*> particles;
+            eventView->getObjectsOfType(particles);
+            unsigned int multiplicity = 1;
+            for (pxl::Particle* particle: particles)
+            {
+                if (particle->getName()==_field)
+                {
+                    evaluateChildren(particle,tree,prefix+getField()+"_"+std::to_string(multiplicity)+"__");
+                    ++multiplicity;
+                }
+            }
+            parseUserRecords(&eventView->getUserRecords(),tree,prefix);
+        }
+
+        void evaluate(const pxl::Particle* particle, Tree* tree, const std::string& prefix)
+        {
+            const static std::map<std::string,std::function<float(const pxl::Particle* particle)>> fct = {
+                {"Pt",[](const pxl::Particle* particle){ return particle->getPt();}},
+                {"Eta",[](const pxl::Particle* particle){ return particle->getEta();}},
+                {"Phi",[](const pxl::Particle* particle){ return particle->getPhi();}},
+                {"E",[](const pxl::Particle* particle){ return particle->getE();}},
+                {"P",[](const pxl::Particle* particle){ return particle->getP();}},
+                {"Mass",[](const pxl::Particle* particle){ return particle->getMass();}},
+                {"Px",[](const pxl::Particle* particle){ return particle->getPx();}},
+                {"Py",[](const pxl::Particle* particle){ return particle->getPy();}},
+                {"Pz",[](const pxl::Particle* particle){ return particle->getPz();}}
+            };
+            if (getField()=="ALL" or getField()=="KIN")
+            {
+                for (auto it: fct)
+                {
+                    tree->storeVariable(prefix+it.first,it.second(particle));
+                }
+            }
+            else
+            {
+                auto it = fct.find(getField());
+                if (it!=fct.end())
+                {
+                    tree->storeVariable(prefix+getField(),it->second(particle));
+                }
+            }
+
+            parseUserRecords(&particle->getUserRecords(),tree,prefix);
+        }
+
+        void parseUserRecords(const pxl::UserRecords* ur, Tree* tree, const std::string& prefix)
+        {
+            if (getField()=="ALL" or getField()=="UR")
+            {
+                for (auto it: *ur->getContainer())
+                {
+                    tree->storeVariable(prefix+it.first,it.second);
+                }
+            }
+        }
+};
+
+
+class SyntaxTree
+{
+    public:
+        std::vector<SyntaxNode*> _children;
+    public:
+
+        SyntaxTree()
+        {
+        }
+        
+        void evaluate(pxl::Event* event, Tree* tree)
+        {
+            for (SyntaxNode* child: _children)
+            {
+                child->evaluate(event,tree,"");
+            }
+        }
+
+        inline void print() const
+        {
+            for (SyntaxNode* child: _children)
+            {
+                child->print();
+            }
+        }
+       
+
+        void buildTree(const std::string& s)
+        {
+            std::string::size_type pos = s.find("->");
+            std::string childField = "";
+            if (pos!=std::string::npos)
+            {
+                childField = s.substr(0,pos);
+            }
+            else
+            {
+                childField=s;
+            }
+            SyntaxNode* foundChild = nullptr;
+            for (SyntaxNode* child: _children)
+            {
+                if (child->getField()==childField)
+                {
+                    foundChild=child;
+                    break;
+                }
+            }
+
+            if (!foundChild)
+            {
+                foundChild = new SyntaxNode(childField);
+                _children.push_back(foundChild);
+            }
+            if (pos!=std::string::npos)
+            {
+                foundChild->buildTree(s.substr(pos+2));
+            }
+        }
+};
+
+/*
 #include <boost/spirit/include/qi.hpp>
 
 #include <boost/spirit/include/phoenix_core.hpp>
@@ -14,121 +239,18 @@
 
 #include <boost/spirit/home/phoenix/object/construct.hpp>
 
-#include "OutputStore.hpp"
-
-#include <vector>
-#include <string>
-#include <iostream>
-#include <sstream>
-
-static pxl::Logger logger("RootTreeWriter");
-
 namespace fusion = boost::fusion;
 namespace phoenix = boost::phoenix;
 namespace qi = boost::spirit::qi;
 namespace ascii = boost::spirit::ascii;
 
-class Accessor
-{
-    public:
-        enum Type {EVENTVIEW,PARTICLE,USERRECORD,KINEMATIC};
-
-        Type _type;
-        std::vector<std::string> _fields;
-
-        Accessor():
-            _type(EVENTVIEW)
-        {
-        }
-        
-        Accessor(const Accessor& accessor) = default;
-
-        Accessor(Type type, std::vector<std::string> fields):
-            _type(type),
-            _fields(fields)
-        {
-        }
-    
-        template<class TYPE>
-        void process(const TYPE& object)
-        {
-        }
-        
-        void process(const pxl::Event& event)
-        {
-        }
-        
-        std::string toString() const
-        {
-            std::stringstream ss;
-            ss<<"(";
-            switch (_type)
-            {
-                case EVENTVIEW:
-                    ss<<"eventview";
-                    break;
-                    
-                case PARTICLE:
-                    ss<<"particle";
-                    break;
-                    
-                case USERRECORD:
-                    ss<<"userrecord";
-                    break;
-            }
-            ss<<",[";
-            for (auto s: _fields)
-            {
-                ss<<s<<",";
-            }
-            ss<<"])";
-            return ss.str();
-        }
-        
-        virtual ~Accessor()
-        {
-        }
-};
-
-
-class AccessorChain
-{
-    private:
-        std::vector<Accessor> _chain;
-    public:
-        AccessorChain()
-        {
-        }
-        
-        AccessorChain& operator+=(const Accessor& accessor)
-        {
-            _chain.push_back(accessor);
-        }
-        
-        template<class TYPE>
-        void access(const TYPE& type, OutputStore& store, std::string prefix)
-        {
-            
-        } 
-        
-        std::string toString() const
-        {
-            std::stringstream ss;
-            for (unsigned int i = 0; i < _chain.size(); ++i)
-            {
-                ss<<"->"<<_chain[i].toString();
-            }
-            return ss.str();
-        }
-};
-
 template<typename Iterator>
 class AccessorGrammar: 
-    public qi::grammar<Iterator, AccessorChain(), ascii::space_type>
+    public qi::grammar<Iterator, AccessorTree(), ascii::space_type>
 {
     public:
         AccessorGrammar():
-            AccessorGrammar::base_type(accessorChain)
+            AccessorGrammar::base_type(accessorTree)
         {
             identifier =
                 +(qi::char_("a-zA-Z0-9\\*")[qi::_val+=qi::_1]);
@@ -140,15 +262,17 @@ class AccessorGrammar:
                 (qi::lit("Particle") >> qi::lit("(") >> fields[qi::_val=phoenix::construct<Accessor>(Accessor::PARTICLE,qi::_1)] >> qi::lit(")")) |
                 (qi::lit("UserRecord") >> qi::lit("(") >> fields[qi::_val=phoenix::construct<Accessor>(Accessor::USERRECORD,qi::_1)] >> qi::lit(")")) |
                 (qi::lit("Kinematic") >> qi::lit("(") >> fields[qi::_val=phoenix::construct<Accessor>(Accessor::KINEMATIC,qi::_1)] >> qi::lit(")"));
-            accessorChain = accessor[qi::_val+=qi::_1] >> *(qi::lit("->") >> accessor[qi::_val+=qi::_1]);
-            
+            accessorTree = accessor[qi::_val+=qi::_1] >> *(qi::lit("->") >> accessor[qi::_val+=qi::_1]);
         }
 
         qi::rule<Iterator, std::string(), ascii::space_type> identifier;
         qi::rule<Iterator, std::vector<std::string>(), ascii::space_type> fields;
         qi::rule<Iterator, Accessor(), ascii::space_type> accessor;
-        qi::rule<Iterator, AccessorChain(), ascii::space_type> accessorChain;
+        qi::rule<Iterator, AccessorTree(), ascii::space_type> accessorTree;
+
 };
+*/
+
 
 
 class RootTreeWriter:
@@ -163,11 +287,13 @@ class RootTreeWriter:
         
         std::vector<std::string> _selections;
         
+        SyntaxTree* _syntaxTree;
         
     public:
         RootTreeWriter():
             Module(),
-            _store(nullptr)
+            _store(nullptr),
+            _syntaxTree(nullptr)
         {
             addSink("input", "input");
             _outputSource = addSource("output", "output");
@@ -208,24 +334,13 @@ class RootTreeWriter:
         {
             getOption("root file",_outputFileName);
             _store = new OutputStore(_outputFileName);
+            _syntaxTree = new SyntaxTree();
             getOption("variables",_selections);
-
-            AccessorGrammar<std::string::const_iterator> grammar;
-            AccessorChain result;
-            
-            for (const std::string& selection: _selections)
+            for (const std::string& s: _selections)
             {
-                //std::cout<<selection<<std::endl;
-                std::string::const_iterator iter = selection.begin();
-                std::string::const_iterator end = selection.end();
-                bool success = qi::phrase_parse(iter, end, grammar, ascii::space,result);
-                
-                if (!success or iter!=end)
-                {
-                    std::cout<<"ERROR: "<<std::string(selection.begin(),iter)<<" ^^^ "<<std::string(iter,selection.end())<<std::endl;
-                }
-                std::cout<<result.toString()<<std::endl;
+                _syntaxTree->buildTree(s);
             }
+            //_syntaxTree->print();
         }
 
         bool analyse(pxl::Sink *sink) throw (std::runtime_error)
@@ -236,10 +351,10 @@ class RootTreeWriter:
                 if (event)
                 {
                     Tree* tree = _store->getTree(event->getUserRecord("ProcessName"));
-
-                    tree->storeVariable("event_number",(int)event->getUserRecord("Event number").asUInt64());
-                    //_syntaxTree->evaluateChildren(event,tree,"");
+                    //tree->storeVariable("event_number",(int)event->getUserRecord("Event number").asUInt64());
+                    _syntaxTree->evaluate(event,tree);
                     tree->fill();
+                    
                      _outputSource->setTargets(event);
                     return _outputSource->processTargets();
                 }
