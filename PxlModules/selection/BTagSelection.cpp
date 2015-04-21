@@ -35,7 +35,7 @@ class BTagSelection:
             Module(),
             _inputJetName("SelectedJet"),
             _inputEventViewName("Reconstructed"),
-            _bTaggedJetName("SelectedBJetTag"),
+            _bTaggedJetName("SelectedBJet"),
             _bTaggingAlgorithmName("combinedInclusiveSecondaryVertexV2BJetTags"),
             _maxEtaBJet(2.4),
             _bTaggingWorkingPoint(0.941)
