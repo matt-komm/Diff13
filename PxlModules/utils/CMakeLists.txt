@@ -1,6 +1,6 @@
 find_package(ROOT REQUIRED)
-find_package(Boost REQUIRED)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${ROOT_INCLUDE_DIR} ${BOOST_INCLUDE_DIRS})
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${ROOT_INCLUDE_DIR})
 
 add_library(RootTreeWriter MODULE RootTreeWriter.cpp OutputStore.cpp)
 target_link_libraries(RootTreeWriter ${PXL_LIBRARIES} ${ROOT_LIBRARIES})

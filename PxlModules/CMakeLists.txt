@@ -10,4 +10,5 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${PXL_INCLUDE_DIR})
 add_subdirectory(selection)
 add_subdirectory(utils)
 add_subdirectory(reconstruction)
+add_subdirectory(internal)
 
