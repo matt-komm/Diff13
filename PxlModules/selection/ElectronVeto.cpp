@@ -5,55 +5,60 @@
 #include "pxl/modules/Module.hh"
 #include "pxl/modules/ModuleFactory.hh"
 
-static pxl::Logger logger("ElectronSelection");
+static pxl::Logger logger("ElectronVeto");
 
-class ElectronSelection:
+class ElectronVeto:
     public pxl::Module
 {
     private:
-        pxl::Source* _outputIsoSource;
-        //pxl::Source* _outputAntiIsoSource;
+        pxl::Source* _outputVetoSource;
         pxl::Source* _outputOtherSource;
-       
-        std::string _inputEventViewName; 
-        std::string _inputTightElectronName;
-        std::string _tightElectronName;
         
-        /*Tight Electron Related Criteria*/
-        double _pTMinTightElectron;  //Minimum transverse momentum
-        double _etaMaxTightElectron; //Maximum pseudorapidity
+        std::string _inputEventViewName;
+        std::string _inputElectronName;
+        std::string _looseElectronName;
+        
+        bool _cleanEvent;
+        
+        /*Loose Electron Related Criteria*/
+        double _pTMinLooseElectron;  //Minimum transverse momentum
+        double _etaMaxLooseElectron; //Maximum pseudorapidity
 
+      
     public:
-        ElectronSelection():
+        ElectronVeto():
             Module(),
             _inputEventViewName("Reconstructed"),
-            _inputTightElectronName("Electron"),
-            _tightElectronName("TightElectron"),
+            _inputElectronName("Electron"),
+            _looseElectronName("LooseElectron"),
+            
+            _cleanEvent(true),
 
-            _pTMinTightElectron(35),
-            _etaMaxTightElectron(2.5)
+            _pTMinLooseElectron(20),
+            _etaMaxLooseElectron(2.5)
+
         {
             addSink("input", "input");
-            _outputIsoSource = addSource("1 iso electron", "iso");
-            //_outputAntiIsoSource = addSource("1 anti-iso electron", "anti-iso");
+            _outputVetoSource = addSource("veto loose electrons", "veto");
             _outputOtherSource = addSource("other", "other");
 
             addOption("Event view","name of the event view where electrons are selected",_inputEventViewName);
-            addOption("Input electron name","name of particles to consider for selection",_inputTightElectronName);
-            addOption("Name of selected tight electrons","",_tightElectronName);
+            addOption("Input electron name","name of particles to consider for selection",_inputElectronName);
+            addOption("Name of selected loose electrons","",_looseElectronName);
+            addOption("Clean event","this option will clean the event of all electrons falling loose criteria",_cleanEvent);
 
-            addOption("TightElectron Minimum pT","",_pTMinTightElectron);
-            addOption("TightElectron Maximum eta","",_etaMaxTightElectron);
+            addOption("LooseElectron Minimum pT","",_pTMinLooseElectron);
+            addOption("LooseElectron Maximum eta","",_etaMaxLooseElectron);
         }
 
-        ~ElectronSelection()
+        ~ElectronVeto()
         {
         }
 
         // every Module needs a unique type
         static const std::string &getStaticType()
         {
-            static std::string type ("ElectronSelection");
+            static std::string type ("ElectronVeto");
             return type;
         }
 
@@ -76,24 +81,27 @@ class ElectronSelection:
         void beginJob() throw (std::runtime_error)
         {
             getOption("Event view",_inputEventViewName);
-            getOption("Input electron name",_inputTightElectronName);
-            getOption("Name of selected tight electrons",_tightElectronName);
+            getOption("Input electron name",_inputElectronName);
+            getOption("Name of selected loose electrons",_looseElectronName);
+            
+            getOption("Clean event",_cleanEvent);
+            
+            getOption("LooseElectron Minimum pT",_pTMinLooseElectron);
+            getOption("LooseElectron Maximum eta",_etaMaxLooseElectron);
 
-            getOption("TightElectron Minimum pT",_pTMinTightElectron);
-            getOption("TightElectron Maximum eta",_etaMaxTightElectron);
         }
 
-        bool passTightCriteria(pxl::Particle* particle)
+        bool passesLooseCriteria(pxl::Particle* particle)
         {
-            if (not (particle->getPt()>_pTMinTightElectron))
+            if (not (particle->getPt()>_pTMinLooseElectron))
             {
                 return false;
             }
-            if (not (fabs(particle->getEta())<_etaMaxTightElectron))
+            if (not (fabs(particle->getEta())<_etaMaxLooseElectron))
             {
                 return false;
             }
-            if (not particle->getUserRecord("phys14eleIDTight"))
+            if (not particle->getUserRecord("phys14eleIDVeto"))
             {
                 return false;
             }
@@ -105,6 +113,7 @@ class ElectronSelection:
             {
                 return false;
             }
+
             return true;
         }
 
@@ -118,8 +127,9 @@ class ElectronSelection:
                     std::vector<pxl::EventView*> eventViews;
                     event->getObjectsOfType(eventViews);
                     
-                    std::vector<pxl::Particle*> tightElectrons;
-
+                    std::vector<pxl::Particle*> looseElectrons;
+                    std::vector<pxl::Particle*> otherElectrons;
+                    
                     for (unsigned ieventView=0; ieventView<eventViews.size();++ieventView)
                     {
                         pxl::EventView* eventView = eventViews[ieventView];
@@ -132,25 +142,38 @@ class ElectronSelection:
                             {
                                 pxl::Particle* particle = particles[iparticle];
 
-                                if (particle->getName()==_inputTightElectronName)
+                                if (particle->getName()==_inputElectronName)
                                 {
-                                    if (passTightCriteria(particle))
+                                    if (passesLooseCriteria(particle))
                                     {
-                                        tightElectrons.push_back(particle);
+                                        looseElectrons.push_back(particle);
+                                    }
+                                    else
+                                    {
+                                        otherElectrons.push_back(particle);
                                     }
                                 }
                             }
                         }
-                    
-                        if (tightElectrons.size()==1)
+                        if (_cleanEvent)
                         {
-                            tightElectrons.front()->setName(_tightElectronName);
+                            for (unsigned int iparticle = 0; iparticle < otherElectrons.size(); ++iparticle)
+                            {
+                                eventView->removeObject(otherElectrons[iparticle]);
+                            }
+                        }
 
-                            _outputIsoSource->setTargets(event);
-                            return _outputIsoSource->processTargets();
+                        if (looseElectrons.size()==0)
+                        {
+                            _outputVetoSource->setTargets(event);
+                            return _outputVetoSource->processTargets();
                         }
                         else
                         {
+                            for (unsigned int i=0; i < looseElectrons.size(); ++i)
+                            {
+                                looseElectrons[i]->setName(_looseElectronName);
+                            }
                             _outputOtherSource->setTargets(event);
                             return _outputOtherSource->processTargets();
                         }
@@ -180,5 +203,5 @@ class ElectronSelection:
         }
 };
 
-PXL_MODULE_INIT(ElectronSelection)
+PXL_MODULE_INIT(ElectronVeto)
 PXL_PLUGIN_INIT
