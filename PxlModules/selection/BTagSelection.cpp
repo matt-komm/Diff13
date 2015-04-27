@@ -96,8 +96,6 @@ class BTagSelection:
 
             getOption("maximum b-jet eta",_maxEtaBJet);
             getOption("working point",_bTaggingWorkingPoint);
-
-            
         }
 
         bool isBtagged(pxl::Particle* particle)

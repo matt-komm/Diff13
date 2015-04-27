@@ -26,19 +26,6 @@ class JetSelection:
 
         double _pTMinJet; //Minimum transverse energy
         double _etaMaxJet; //Maximum pseudorapidity
-        int64_t _constituentsOfJet; //PF Jet ID: Number of Jet Constituents
-        double _neutralHadronFracOfJet; //PF Jet ID: (Maximum) neutral Hadron Energy Fraction
-        double _chargedHadronFracOfJet; //PF Jet ID: (Minimum) charged Hadron Energy Fraction (currently not used!)
-        double _neutralEmFracOfJet; //PF Jet: (Maximum) neutral Electromagnetic Energy Fraction
-        double _chargedEmFracOfJet; //PF Jet ID: (Maximum) charged Electromagnetic Energy Fraction
-        double _muonFracOfJet; //PF Jet ID: (Maximum) Muon Energy Fraction
-    
-        /* Additional Requirements for Jets reconstructed in the cental region */
-        double _chargedHadronFracOfCentralJet; //PF Cental* Jet ID: (Minimum) charged Hadron Energy Fraction
-        double _chargedMultOfCentralJet;  //PF Cental* Jet ID: (Minimum) charged Particle Multiplicity
-        double _chargedEmFracOfCentralJet; //PF Cental* Jet ID: (Maximum) charged Electromagnetic Energy Fraction
-
-        /* *Cental--> within the tracker acceptance |eta|<2.4 */
 
         bool _dRInvert;
         double _dR;
@@ -54,18 +41,8 @@ class JetSelection:
             _pTMinJet(40.),
             _etaMaxJet(4.7),
 
-            _constituentsOfJet(1),
-            _neutralHadronFracOfJet(0.99),
-            _neutralEmFracOfJet(0.99),
-            _chargedEmFracOfJet(0.9),
-            _muonFracOfJet(0.8),
-
-            _chargedHadronFracOfCentralJet(0.),
-            _chargedMultOfCentralJet(0),
-            _chargedEmFracOfCentralJet(0.99),
-
             _dRInvert(false),
-            _dR(0.4),
+            _dR(0.3),
             _dRObjects({"TightMuon","TightElectron"})
             /*Initial Values taken from TOP JetMET Analysis (Run2) */
             /*https://twiki.cern.ch/twiki/bin/view/CMS/TopJME#General_Information */
@@ -88,16 +65,6 @@ class JetSelection:
 
             addOption("PF Jet Minimum pT","",_pTMinJet);
             addOption("PF Jet Maximum Eta","",_etaMaxJet);
-
-            addOption("PF Jet Number of Constituents","",_constituentsOfJet);
-            addOption("PF Jet ID: Neutral Hadr. Frac.","",_neutralHadronFracOfJet);
-            addOption("PF Jet ID: Charged Em. Frac.","",_chargedEmFracOfJet);
-            addOption("PF Jet ID: Neutral Em. Frac.","",_neutralEmFracOfJet);
-            addOption("PF Jet ID: Muon Frac.","",_muonFracOfJet);
-
-            addOption("PF Central Jet ID: Charged Hadr. Frac.","",_chargedHadronFracOfCentralJet);
-            addOption("PF Central Jet ID: Charged Em. Frac.","",_chargedEmFracOfCentralJet);
-            addOption("PF Central Jet ID: Charged Multiplicity","",_chargedMultOfCentralJet);
 
             addOption("invert dR","inverts dR cleaning",_dRInvert);
             addOption("dR cut","remove jets close to other objects, e.g. leptons",_dR);
@@ -141,16 +108,6 @@ class JetSelection:
             getOption("PF Jet Minimum pT",_pTMinJet);
             getOption("PF Jet Maximum Eta",_etaMaxJet);
 
-            getOption("PF Jet Number of Constituents",_constituentsOfJet);
-            getOption("PF Jet ID: Neutral Hadr. Frac.",_neutralHadronFracOfJet);
-            getOption("PF Jet ID: Charged Em. Frac.",_chargedEmFracOfJet);
-            getOption("PF Jet ID: Neutral Em. Frac.",_neutralEmFracOfJet);
-            getOption("PF Jet ID: Muon Frac.",_muonFracOfJet);
-
-            getOption("PF Central Jet ID: Charged Hadr. Frac.",_chargedHadronFracOfCentralJet);
-            getOption("PF Central Jet ID: Charged Em. Frac.",_chargedEmFracOfCentralJet);
-            getOption("PF Central Jet ID: Charged Multiplicity",_chargedMultOfCentralJet);
-
             getOption("invert dR",_dRInvert);
             getOption("dR cut",_dR);
             getOption("dR objects",_dRObjects);
@@ -171,66 +128,73 @@ class JetSelection:
             {
                 return false;
             }
-            if (not (particle->getUserRecord("nConstituents").toInt32()>_constituentsOfJet))
-            {
-                return false;
-            }
-
-            float hadronEnergyFraction = 0.0;
-            if (particle->hasUserRecord("HFHadronEnergyFraction"))
-            {
-                hadronEnergyFraction += particle->getUserRecord("HFHadronEnergyFraction").toFloat();
-            }
+           
+            float neutralHadronEnergyFraction = 0.0;
             if (particle->hasUserRecord("neutralHadronEnergyFraction"))
             {
-                hadronEnergyFraction += particle->getUserRecord("neutralHadronEnergyFraction").toFloat();
+                neutralHadronEnergyFraction += particle->getUserRecord("neutralHadronEnergyFraction").toFloat();
             }
-            if (not (hadronEnergyFraction<_neutralHadronFracOfJet))
+            if (particle->hasUserRecord("HFHadronEnergyFraction"))
+            {
+                neutralHadronEnergyFraction += particle->getUserRecord("HFHadronEnergyFraction").toFloat();
+            }
+            if (not (neutralHadronEnergyFraction<0.99))
             {
                 return false;
             }
 
             if (particle->hasUserRecord("neutralEmEnergyFraction"))
             {
-                if (not (particle->getUserRecord("neutralEmEnergyFraction").toFloat()<_neutralEmFracOfJet))
+                if (not (particle->getUserRecord("neutralEmEnergyFraction").toFloat()<0.99))
                 {
                     return false;
                 }
             }
 
-            if (particle->hasUserRecord("electronEnergyFraction"))
+            if (not (particle->getUserRecord("nConstituents").toInt32()>1))
             {
-                if (not (particle->getUserRecord("electronEnergyFraction").toFloat()<_chargedEmFracOfJet))
-                {
-                    return false;
-                }
+                return false;
             }
-
+            
             if (particle->hasUserRecord("muonEnergyFraction"))
             {
-                if (not (particle->getUserRecord("muonEnergyFraction").toFloat()<_muonFracOfJet))
+                if (not (particle->getUserRecord("muonEnergyFraction").toFloat()<0.8))
                 {
                     return false;
                 }
             }
+            
+            /* charged variables are not defined outside the tracker!!! 
+            
+            if (particle->hasUserRecord("electronEnergyFraction"))
+            {
+                if (not (particle->getUserRecord("electronEnergyFraction").toFloat()<0.9))
+                {
+                    return false;
+                }
+            }
+            */
+            
 
             //additional selection if jet is central
             if (fabs(particle->getEta())<2.4)
             {
                 if (particle->hasUserRecord("chargedHadronEnergyFraction"))
                 {
-                    if (not (particle->getUserRecord("chargedHadronEnergyFraction").toFloat()>_chargedHadronFracOfCentralJet))
+                    if (not (particle->getUserRecord("chargedHadronEnergyFraction").toFloat()>0))
                     {
                         return false;
                     }
                 }
-                if (not (particle->getUserRecord("chargedMultiplicity").toFloat()>_chargedMultOfCentralJet))
+                if (not (particle->getUserRecord("chargedMultiplicity").toFloat()>0))
                 {
                     return false;
                 }
+                
+                //same as 'chargedEmEnergy'
                 if (particle->hasUserRecord("electronEnergyFraction"))
                 {
-                    if (not (particle->getUserRecord("electronEnergyFraction").toFloat()<_chargedEmFracOfCentralJet))
+                    if (not (particle->getUserRecord("electronEnergyFraction").toFloat()<0.99))
                     {
                         return false;
                     }

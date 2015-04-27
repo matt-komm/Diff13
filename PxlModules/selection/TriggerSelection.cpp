@@ -22,8 +22,8 @@ class TriggerSelection:
         TriggerSelection():
             Module(),
             _inputEventViewName("Reconstructed"),
-            _triggerFlags({"HLT_IsoMu24_eta2p1_IterTrk02_v1"}),
-            _requireAllFlags(true)
+            _triggerFlags({"HLT_IsoMu24_eta2p1_IterTrk02_v1","HLT_IsoMu24_IterTrk02_v1"}),
+            _requireAllFlags(false)
         {
             addSink("input", "input");
             _outputSource = addSource("selected","selected");
