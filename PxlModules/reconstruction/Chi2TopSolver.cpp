@@ -16,6 +16,7 @@
 #include "TROOT.h"
 #include "TStyle.h"
 #include "TLine.h"
+#include "TMath.h"
 
 #include "hmc.hpp"
 
@@ -28,6 +29,20 @@
 #include <array>
 
 static pxl::Logger logger("Chi2TopSolver");
+
+static const double sqrt2pi = std::sqrt(2*3.14159265358979323846);
+
+static const std::function<double(double)> logNormal = [] (double x) -> double
+{
+    if (x<0)
+    {
+        return 0;
+    }
+    else
+    {
+        return vdt::fast_exp(-x/50.0)/(1+vdt::fast_exp((10.0-x)/2.0));
+    }
+};
 
 struct FitResult
 {
@@ -353,7 +368,11 @@ class Chi2TopSolver:
                     }
                     
                 } 
-                
+                if (not (genTop && genBJet && genNeutrino && genLepton))
+                {
+                    _outputSource->setTargets(event);
+                    return _outputSource->processTargets();
+                }
                 
                 if (event)
                 {
@@ -405,9 +424,10 @@ class Chi2TopSolver:
                             std::function<double(const double*)> prop = [=](const double *xx )
                             {
 
+                                double p = 1.0;
                                 double negLogP = 0.0;
 
-                                const double neutrinoPt = fabs(xx[0]);
+                                const double neutrinoPt = xx[0];
                                 const double neutrinoPhi = xx[1];
                                 const double neutrinoEta = xx[2];
 
@@ -415,8 +435,12 @@ class Chi2TopSolver:
                                 const double neutrinoPy = std::sin(neutrinoPhi)*neutrinoPt;
                                 const double neutrinoPz = std::sinh(neutrinoEta)*neutrinoPt;
                                 const double neutrinoE = std::sqrt(neutrinoPx*neutrinoPx+neutrinoPy*neutrinoPy+neutrinoPz*neutrinoPz);
-
-                                negLogP +=std::pow((neutrinoPhi-met->getPhi())/0.1,2);
+                                
+                                //p*=TMath::LogNormal(neutrinoPt,0.9,0,20);
+                                
+                                p*=logNormal(neutrinoPt);
+                                //negLogP +=std::pow((neutrinoPt-met->getPt())/30,2);
+                                negLogP +=std::pow((neutrinoPhi-met->getPhi())/0.4,2); //~22.5 deg
 
                                 const double leptonPt =fabs(xx[3]);
                                 const double leptonPhi = xx[4];
@@ -427,9 +451,10 @@ class Chi2TopSolver:
                                 const double leptonPz = std::sinh(leptonEta)*leptonPt;
                                 const double leptonE = std::sqrt(leptonPx*leptonPx+leptonPy*leptonPy+leptonPz*leptonPz);
 
-                                negLogP +=std::pow((leptonPhi-lepton->getPhi())/0.01,2);
-                                negLogP +=std::pow((leptonEta-lepton->getEta())/0.01,2);
-                                negLogP +=std::pow((leptonPt-lepton->getPt())/0.1,2);
+                                negLogP +=std::pow((leptonPt-lepton->getPt())/0.05,2);
+                                negLogP +=std::pow((leptonPhi-lepton->getPhi())/0.001,2);
+                                negLogP +=std::pow((leptonEta-lepton->getEta())/0.001,2);
+                                
 
                                 const double wPx = neutrinoPx + leptonPx;
                                 const double wPy = neutrinoPy + leptonPy;
@@ -439,15 +464,15 @@ class Chi2TopSolver:
                                 const double wE2 = (neutrinoE+leptonE)*(neutrinoE+leptonE);
                                 const double wMass2 = wE2-wP2;
 
-                                negLogP +=fabs(wMass2-80.3*80.3)/25.0;
+                                negLogP +=pow((wMass2-80.3)/4.0,2);
 
                                 const double bjetPt = fabs(xx[6]);
                                 const double bjetPhi = xx[7];
                                 const double bjetEta = xx[8];
                                 
-                                negLogP +=pow((bjetPt-bjets[0]->getPt())/5,2);
-                                negLogP +=pow((bjetPt-bjets[0]->getPhi())/0.1,2);
-                                negLogP +=pow((bjetPt-bjets[0]->getEta())/0.1,2);
+                                negLogP +=pow((bjetPt-bjets[0]->getPt())/0.5,2);
+                                negLogP +=pow((bjetPt-bjets[0]->getPhi())/0.05,2);
+                                negLogP +=pow((bjetPt-bjets[0]->getEta())/0.05,2);
 
                                 const double bjetPx = std::cos(bjetPhi)*bjetPt;
                                 const double bjetPy = std::sin(bjetPhi)*bjetPt;
@@ -462,12 +487,14 @@ class Chi2TopSolver:
                                 const double topE2 = (neutrinoE+leptonE+bjetE)*(neutrinoE+leptonE+bjetE);
                                 const double topMass2 = topE2-topP2;
 
-                                negLogP += fabs(topMass2-173.0*173.0)/9.0;
+                                negLogP += pow((topMass2-173.0)/2.0,2);
 
                                 //std::cout<<"wmass "<<std::sqrt(wMass2)<<", topmass "<<std::sqrt(topMass2)<<", nEta "<<neutrinoEta<<std::endl;
                                 //std::cout<<negLogP<<std::endl;
                                 //std::cout<<"wmass "<<std::sqrt(wMass2)<<", nEta "<<neutrinoEta<<std::endl;
-                                return vdt::fast_exp(-negLogP);
+                                
+                                p*=vdt::fast_exp(-negLogP*0.5);
+                                return p;
                             };
                             
                             HMC<9>::Function fctWrap = [&prop](const HMC<9>::Vector& vec) -> double 
@@ -496,7 +523,7 @@ class Chi2TopSolver:
                             HMC<9>::Vector maxPosition;
                             
                             std::vector<TH2F*> hists;
-                            hists.push_back(new TH2F("neutrino_pt",";neutrino p_T;dR",100,-200,200,100,0,4));
+                            hists.push_back(new TH2F("neutrino_pt",";neutrino p_T;dR",100,0,200,100,0,4));
                             hists.push_back(new TH2F("neutrino_phi",";neutrino #phi;dR",100,-9,9,100,0,4));
                             hists.push_back(new TH2F("neutrino_eta",";neutrino #eta;dR",100,-8,8,100,0,4));
                             
@@ -513,20 +540,21 @@ class Chi2TopSolver:
                                 genLepton->getPt(),genLepton->getPhi(),genLepton->getEta(),
                                 genBJet->getPt(),genBJet->getPhi(),genBJet->getEta(),
                             };
-                            for (unsigned int i = 0; i < 5000; ++i)
+                            
+                            for (unsigned int i = 0; i < 10000; ++i)
                             {
                                 hmc.sample(fctWrap,startPosition,20,{
-                                    0.2,
+                                    0.5,
+                                    0.001,
                                     0.02,
-                                    0.2,
                                     
-                                    0.0002,
-                                    0.0002,
-                                    0.0002,
+                                    0.0001,
+                                    0.0001,
+                                    0.0001,
                                     
-                                    0.005,
-                                    0.0005,
-                                    0.0005
+                                    0.01,
+                                    0.001,
+                                    0.01
                                 });
                                
                                 if (i>1000)
@@ -548,7 +576,7 @@ class Chi2TopSolver:
                                         
                                         for (int i = 0; i<9; ++i)
                                         {
-                                            hists[i]->Fill(startPosition[i],p*10);//fabs(startPosition[i]-genVec[i]));
+                                            hists[i]->Fill(startPosition[i],fabs(startPosition[i]-genVec[i]));
                                         }
                                     }
                                 
@@ -561,24 +589,29 @@ class Chi2TopSolver:
                             }
                             std::cout<<"eff = "<<hmc.getEfficiency()<<std::endl;
                             gROOT->SetStyle("Plain");
-                            gStyle->SetOptStat(0);
+                            //gStyle->SetOptStat(0);
+                            
                             for (int i = 0; i < 9; ++i)
                             {
                                 TCanvas cv("cv","",800,600);
-                                hists[i]->Draw("colz");
+                                TH1* projected = hists[i]->ProjectionX();
+                                projected->Draw();
+                                
+                                double max = projected->GetMaximum();
  
-                                TLine reco = TLine(maxPosition[i],0,maxPosition[i],4);
-                                reco.SetLineWidth(3);
+                                TLine reco = TLine(maxPosition[i],0,maxPosition[i],max);
+                                reco.SetLineWidth(2);
                                 reco.SetLineStyle(1);
                                 reco.Draw("Same");
                                 
-                                TLine gen = TLine(genVec[i],0,genVec[i],4);
-                                gen.SetLineWidth(3);
+                                TLine gen = TLine(genVec[i],0,genVec[i],max);
+                                gen.SetLineWidth(2);
                                 gen.SetLineStyle(2);
                                 gen.Draw("Same");
                                 
                                 char buf[100];
                                 sprintf(buf,"event_%i_%s.pdf",event->getUserRecord("Event number").toUInt64(),hists[i]->GetName());
+                                
                                 cv.Print(buf);
                                 
                             }
@@ -596,7 +629,7 @@ class Chi2TopSolver:
                             pxl::Particle* fittedBjet = fittedEventView->create<pxl::Particle>();
                             fittedBjet->setName("BJet");
                             fittedBjet->setP4(makeVector(maxPosition[6],maxPosition[7],maxPosition[8]));
-                            
+                           
                             /*
                             std::vector<FitResult> results;
                             for (unsigned int iter = 0; iter<5 and results.empty(); ++iter)

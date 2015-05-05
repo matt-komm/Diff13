@@ -129,20 +129,14 @@ class JetSelection:
                 return false;
             }
            
-            float neutralHadronEnergyFraction = 0.0;
             if (particle->hasUserRecord("neutralHadronEnergyFraction"))
             {
-                neutralHadronEnergyFraction += particle->getUserRecord("neutralHadronEnergyFraction").toFloat();
+                if (not (particle->getUserRecord("neutralHadronEnergyFraction").toFloat()<0.99))
+                {
+                    return false;
+                }
             }
-            if (particle->hasUserRecord("HFHadronEnergyFraction"))
-            {
-                neutralHadronEnergyFraction += particle->getUserRecord("HFHadronEnergyFraction").toFloat();
-            }
-            if (not (neutralHadronEnergyFraction<0.99))
-            {
-                return false;
-            }
-
+            
             if (particle->hasUserRecord("neutralEmEnergyFraction"))
             {
                 if (not (particle->getUserRecord("neutralEmEnergyFraction").toFloat()<0.99))
@@ -163,18 +157,6 @@ class JetSelection:
                     return false;
                 }
             }
-            
-            /* charged variables are not defined outside the tracker!!! 
-            
-            if (particle->hasUserRecord("electronEnergyFraction"))
-            {
-                if (not (particle->getUserRecord("electronEnergyFraction").toFloat()<0.9))
-                {
-                    return false;
-                }
-            }
-            */
-            
 
             //additional selection if jet is central
             if (fabs(particle->getEta())<2.4)
