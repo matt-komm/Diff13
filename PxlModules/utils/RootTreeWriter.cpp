@@ -164,7 +164,8 @@ class SyntaxNode
                 {
                     std::string urName=it.first;
                     std::replace(urName.begin(), urName.end(), ' ', '_');
-                    tree->storeVariable(prefix+it.first,it.second);
+                    std::replace(urName.begin(), urName.end(), ':', '_');
+                    tree->storeVariable(prefix+urName,it.second);
                 }
             }
         }
