@@ -144,7 +144,7 @@ const std::unordered_map<std::string,FileInfo> eventWeights = {
             55.61
         }
     },
-    {"WJetsToLNu_HT-700toInf_Tune4C_13TeV-madgraph-tauola",
+    {"WJetsToLNu_HT-600toInf_Tune4C_13TeV-madgraph-tauola",
         {
             4581841,
             18.81
@@ -211,11 +211,12 @@ class EventWeight:
                 pxl::Event *event  = dynamic_cast<pxl::Event*>(sink->get());
                 if (event)
                 {
-                    std::string processName = event->getUserRecord(_processNameField);
+                    std::string processName = event->getUserRecord(_processNameField).toString();
                     auto it = eventWeights.find(processName);
                     if (it==eventWeights.end())
                     {
-                        throw "no event weight information available for process name '"+processName+"'";
+                        logger(pxl::LOG_LEVEL_ERROR,"no event weight information available for process name '"+processName+"'");
+                        //throw std::runtime_error(getName()+": no event weight information available for process name '"+processName+"'");
                     }
                     else
                     {

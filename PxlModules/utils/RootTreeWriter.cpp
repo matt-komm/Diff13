@@ -12,6 +12,7 @@
 #include <iostream>
 #include <map>
 #include <functional>
+#include <algorithm>
 
 static pxl::Logger logger("RootTreeWriter");
 
@@ -161,6 +162,8 @@ class SyntaxNode
             {
                 for (auto it: *ur->getContainer())
                 {
+                    std::string urName=it.first;
+                    std::replace(urName.begin(), urName.end(), ' ', '_');
                     tree->storeVariable(prefix+it.first,it.second);
                 }
             }
