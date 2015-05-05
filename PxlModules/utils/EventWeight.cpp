@@ -16,7 +16,7 @@ struct FileInfo
     double crossSection;
 };
 
-static const std::unordered_map<std::string,FileInfo> eventWeights = {
+const std::unordered_map<std::string,FileInfo> eventWeights = {
     {"TToLeptons_t-channel-CSA14_Tune4C_13TeV-aMCatNLO-tauola",
         {
             1037660,
@@ -128,26 +128,26 @@ static const std::unordered_map<std::string,FileInfo> eventWeights = {
 
     {"WJetsToLNu_HT-100to200_Tune4C_13TeV-madgraph-tauola",
         {
-            1037660,
-            136.02*0.324
+            5262265,
+            1817
         }
     },
     {"WJetsToLNu_HT-200to400_Tune4C_13TeV-madgraph-tauola",
         {
-            1037660,
-            136.02*0.324
+            4936077,
+            471.6
         }
     },
     {"WJetsToLNu_HT-400to600_Tune4C_13TeV-madgraph-tauola",
         {
-            1037660,
-            136.02*0.324
+            4640594,
+            55.61
         }
     },
     {"WJetsToLNu_HT-700toInf_Tune4C_13TeV-madgraph-tauola",
         {
-            1037660,
-            136.02*0.324
+            4581841,
+            18.81
         }
     }
 
@@ -219,7 +219,7 @@ class EventWeight:
                     }
                     else
                     {
-                        event->setUserRecord("mc_weight",it->second.crossSection/it->second.nEvents);
+                        event->setUserRecord("mc_weight",1.0*it->second.crossSection/it->second.nEvents);
                     }
 
                     _outputSource->setTargets(event);
