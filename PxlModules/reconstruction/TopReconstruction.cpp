@@ -23,7 +23,6 @@ class TopReconstruction:
         std::string _topName;
 
         bool _addBestTopHypothesis;
-        bool _addAngles;
         
     public:
         TopReconstruction():
@@ -35,8 +34,7 @@ class TopReconstruction:
             _lightJetName("SelectedJet"),
             _wbosonName("W"),
             _topName("Top"),
-            _addBestTopHypothesis(true),
-            _addAngles(true)
+            _addBestTopHypothesis(true)
         {
             addSink("input", "input");
             _outputSource = addSource("selected","selected");
@@ -51,7 +49,6 @@ class TopReconstruction:
             addOption("top","name of the reconstructed top",_topName);
 
             addOption("add bestTop","includes a best top candidate",_addBestTopHypothesis);
-            addOption("add angles","calculates polarization angles",_addAngles);
         }
 
         ~TopReconstruction()
@@ -92,9 +89,8 @@ class TopReconstruction:
             getOption("top",_topName);
 
             getOption("add bestTop",_addBestTopHypothesis);
-            getOption("add angles",_addAngles);
         }
-
+        /*
         float angle(const pxl::Particle* p1, const pxl::Basic3Vector& boost1, const pxl::Particle* p2, const pxl::Basic3Vector& boost2)
         {
             pxl::LorentzVector boostP1 = p1->getVector();
@@ -104,7 +100,7 @@ class TopReconstruction:
 
             return (boostP1.getPx()*boostP2.getPx()+boostP1.getPy()*boostP2.getPy()+boostP1.getPz()*boostP2.getPz())/(boostP1.getMag()*boostP2.getMag());
         }
-
+        */
         bool analyse(pxl::Sink *sink) throw (std::runtime_error)
         {
             try
@@ -174,12 +170,6 @@ class TopReconstruction:
                                         {
                                             bestTop->setP4(top->getVector());
                                         }
-                                    }
-
-                                    if (lightjet && _addAngles)
-                                    {
-                                        top->setUserRecord("cosTheta_lq",angle(lepton,top->getBoostVector(),lightjet,top->getBoostVector()));
-                                        top->setUserRecord("cosTheta_whel",angle(lepton,wboson->getBoostVector(),wboson,top->getBoostVector()));
                                     }
                                 }
                             }
