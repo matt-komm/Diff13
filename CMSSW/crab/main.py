@@ -91,13 +91,15 @@ if __name__=="__main__":
         #"/QCD_Pt-80to170_EMEnriched_Tune4C_13TeV_pythia8/Phys14DR-PU20bx25_castor_PHYS14_25_V1-v1/MINIAODSIM",
     ]
     for dataset in datasets:
-    	jobName = dataset.split("/")[1]+'_v4'
-   	print "crab/"+jobName+"/crab_"+config.General.requestName
-    	status("crab/"+jobName+"/crab_"+config.General.requestName)
-    #print "submitting... ",jobName
-    #config.General.workArea = "crab/"+jobName
-    #config.Data.inputDataset=dataset
-    #config.JobType.pyCfgParams=['processName='+jobName]
-    #config.Data.outLFN='/store/user/mkomm/'+config.General.requestName+"/"+jobName
-    #submit(config)
+        processName = dataset.split("/")[1]
+    	jobName = processName+'_v4'
+    	#print "status... ",jobName
+    	#status("crab/"+jobName+"/crab_"+config.General.requestName)
+        #print "submitting... ",jobName
+        
+        #config.General.workArea = "crab/"+jobName
+        #config.Data.inputDataset=dataset
+        #config.JobType.pyCfgParams=['processName='+processName]
+        #config.Data.outLFN='/store/user/mkomm/'+config.General.requestName+"/"+jobName
+        #submit(config)
 
