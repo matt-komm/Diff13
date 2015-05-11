@@ -1,5 +1,7 @@
 # CMSSW
 CMSSW/CMSSW_*
+external/*
+.*
 
 # Compiled Object files
 *.slo
@@ -29,3 +31,26 @@ CMSSW/CMSSW_*
 *.exe
 *.out
 *.app
+
+# archives
+*.gz
+*.zip
+*.tar
+
+# pxl
+*.xml
+*.pxlio
+
+# other
+
+*.txt
+*.log
+*.root
+*.pdf
+*.C
+*.png
+*.jpg
+*.eps
+*.tex
+
+
