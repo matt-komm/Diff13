@@ -6,6 +6,7 @@
 #include "pxl/modules/ModuleFactory.hh"
 
 #include "EventShapeVariables.hpp"
+#include "FoxWolfram.hpp"
 
 static pxl::Logger logger("EventVariables");
 
@@ -18,12 +19,14 @@ class EventVariables:
         std::string _inputEventViewName;
         std::set<std::string> _particlesForEventShape;
         std::string _prefix;
+        int64_t _foxWolframOrder;
         
     public:
         EventVariables():
             Module(),
             _inputEventViewName("Reconstructed"),
-            _prefix("")
+            _prefix(""),
+            _foxWolframOrder(3)
         {
             addSink("input", "input");
             _outputSource = addSource("output","output");
@@ -31,6 +34,7 @@ class EventVariables:
             addOption("event view","name of the event view",_inputEventViewName);
             addOption("particles","name of the event view",std::vector<std::string>{{"TightMuon","TightElectron","SelectedJet","SelectedBJet","Neutrino"}});
             addOption("prefix","user record prefix",_prefix);
+            addOption("fox wolfram order","maximum order of moments to calculate",_foxWolframOrder);
         }
 
         ~EventVariables()
@@ -86,6 +90,7 @@ class EventVariables:
                 _particlesForEventShape.insert(s);
             }
             getOption("prefix",_prefix);
+            getOption("fox wolfram order",_foxWolframOrder);
         }
         /*
         float angle(const pxl::Particle* p1, const pxl::Basic3Vector& boost1, const pxl::Particle* p2, const pxl::Basic3Vector& boost2)
@@ -98,6 +103,7 @@ class EventVariables:
             return (boostP1.getPx()*boostP2.getPx()+boostP1.getPy()*boostP2.getPy()+boostP1.getPz()*boostP2.getPz())/(boostP1.getMag()*boostP2.getMag());
         }
         */
+        
         bool analyse(pxl::Sink *sink) throw (std::runtime_error)
         {
             try
@@ -126,6 +132,7 @@ class EventVariables:
                                     eventShapeVectors.push_back(particle->getVector());
                                 }
                             }
+                            std::cout<<eventShapeVectors.size()<<std::endl;
                             EventShapeVariables esv(eventShapeVectors);
                             eventView->setUserRecord(_prefix+"isotropy",esv.isotropy());
                             eventView->setUserRecord(_prefix+"circularity",esv.circularity());
@@ -133,7 +140,25 @@ class EventVariables:
                             eventView->setUserRecord(_prefix+"aplanarity",esv.aplanarity());
                             eventView->setUserRecord(_prefix+"C",esv.C());
                             eventView->setUserRecord(_prefix+"D",esv.D());
-                            //TODO: add thrust, fox wolfram & many more crazy variables
+                            
+                            if (_foxWolframOrder>0)
+                            {
+                                FoxWolfram fw(eventShapeVectors);
+                                for (unsigned int iorder = 0; iorder<_foxWolframOrder;++iorder)
+                                {
+                                    //implementation need to be checked
+                                    eventView->setUserRecord(_prefix+"fox_"+std::to_string(iorder)+"_shat",fw.getMoment(FoxWolfram::SHAT,iorder));
+                                    eventView->setUserRecord(_prefix+"fox_"+std::to_string(iorder)+"_pt",fw.getMoment(FoxWolfram::PT,iorder));
+                                    eventView->setUserRecord(_prefix+"fox_"+std::to_string(iorder)+"_eta",fw.getMoment(FoxWolfram::ETA,iorder));
+                                    eventView->setUserRecord(_prefix+"fox_"+std::to_string(iorder)+"_psum",fw.getMoment(FoxWolfram::PSUM,iorder));
+                                    eventView->setUserRecord(_prefix+"fox_"+std::to_string(iorder)+"_pz",fw.getMoment(FoxWolfram::PZ,iorder));
+                                    eventView->setUserRecord(_prefix+"fox_"+std::to_string(iorder)+"_one",fw.getMoment(FoxWolfram::ONE,iorder));
+                                   
+                                
+                                }
+                            }
+                            
+                            //TODO: add thrust & more crazy variables
                         }
                     }
                     _outputSource->setTargets(event);
