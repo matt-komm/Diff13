@@ -90,6 +90,16 @@ class TopReconstruction:
 
             getOption("add bestTop",_addBestTopHypothesis);
         }
+        
+        float angleInRestFrame(const pxl::LorentzVector& p1, const pxl::Basic3Vector& boost1, const pxl::LorentzVector& p2, const pxl::Basic3Vector& boost2)
+        {
+            pxl::LorentzVector boostedP1 = p1;
+            boostedP1.boost(-boost1);
+            pxl::LorentzVector boostedP2 = p2;
+            boostedP2.boost(-boost2);
+
+            return (boostedP1.getPx()*boostedP2.getPx()+boostedP1.getPy()*boostedP2.getPy()+boostedP1.getPz()*boostedP2.getPz())/(boostedP1.getMag()*boostedP2.getMag());
+        }
 
         bool analyse(pxl::Sink *sink) throw (std::runtime_error)
         {
@@ -148,7 +158,17 @@ class TopReconstruction:
                                     top->addP4(lepton);
                                     top->addP4(bjet);
                                     top->addP4(neutrino);
-
+                                    pxl::Basic3Vector normalAxis = lightjet->getVector().cross(wboson->getVector());
+                                    pxl::Basic3Vector transverseAxis = wboson->getVector().cross(normalAxis);
+                                    //top polarization
+                                    eventView->setUserRecord("cosTheta_tP",angleInRestFrame(lepton->getVector(),top->getBoostVector(),lightjet->getVector(),top->getBoostVector()));
+                                    //w polarization - helicity basis
+                                    eventView->setUserRecord("cosTheta_wH",angleInRestFrame(lepton->getVector(),wboson->getBoostVector(),-top->getVector(),wboson->getBoostVector()));
+                                    //w polarization - normal basis
+                                    eventView->setUserRecord("cosTheta_wN",angleInRestFrame(lepton->getVector(),wboson->getBoostVector(),normalAxis,wboson->getBoostVector()));
+                                    //w polarization - transvers basis
+                                    eventView->setUserRecord("cosTheta_wT",angleInRestFrame(lepton->getVector(),wboson->getBoostVector(),transverseAxis,wboson->getBoostVector()));
+                                                                        
                                     if (lightjet && _addBestTopHypothesis)
                                     {
                                         pxl::Particle* bestTop = eventView->create<pxl::Particle>();

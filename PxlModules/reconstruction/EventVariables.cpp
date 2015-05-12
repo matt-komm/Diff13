@@ -92,17 +92,6 @@ class EventVariables:
             getOption("prefix",_prefix);
             getOption("fox wolfram order",_foxWolframOrder);
         }
-        /*
-        float angle(const pxl::Particle* p1, const pxl::Basic3Vector& boost1, const pxl::Particle* p2, const pxl::Basic3Vector& boost2)
-        {
-            pxl::LorentzVector boostP1 = p1->getVector();
-            boostP1.boost(-boost1);
-            pxl::LorentzVector boostP2 = p2->getVector();
-            boostP2.boost(-boost2);
-
-            return (boostP1.getPx()*boostP2.getPx()+boostP1.getPy()*boostP2.getPy()+boostP1.getPz()*boostP2.getPz())/(boostP1.getMag()*boostP2.getMag());
-        }
-        */
         
         bool analyse(pxl::Sink *sink) throw (std::runtime_error)
         {
@@ -132,7 +121,6 @@ class EventVariables:
                                     eventShapeVectors.push_back(particle->getVector());
                                 }
                             }
-                            std::cout<<eventShapeVectors.size()<<std::endl;
                             EventShapeVariables esv(eventShapeVectors);
                             eventView->setUserRecord(_prefix+"isotropy",esv.isotropy());
                             eventView->setUserRecord(_prefix+"circularity",esv.circularity());
