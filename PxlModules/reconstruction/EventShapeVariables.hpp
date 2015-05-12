@@ -20,10 +20,10 @@
 	   Christian Veelken, UC Davis
 */
 
+#include "pxl/core.hh"
+
 #include "TMatrixDSym.h"
 #include "TVectorD.h"
-
-#include "pxl/core.hh"
 
 #include <vector>
 
