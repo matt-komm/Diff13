@@ -230,12 +230,14 @@ class JetSelection:
                     
                     std::vector<pxl::Particle*> dRCleaningObjects;
                     
+                    pxl::EventView* inputEventView = nullptr;
                     for (unsigned ieventView=0; ieventView<eventViews.size();++ieventView)
                     {
 
                         pxl::EventView* eventView = eventViews[ieventView];
                         if (eventView->getName()==_inputEventViewName)
                         {
+                            inputEventView=eventView;
                             std::vector<pxl::Particle*> particles;
                             eventView->getObjectsOfType(particles);
 
@@ -267,6 +269,15 @@ class JetSelection:
                         }
                         
                         applyDRcleaning(eventView,selectedJets,dRCleaningObjects);
+                    }
+                    if (inputEventView)
+                    {
+                        inputEventView->setUserRecord("n"+_selectedJetName,selectedJets.size());
+                    }
+                    else
+                    {
+                        _outputOtherNJetsSource->setTargets(event);
+                        return _outputOtherNJetsSource->processTargets();
                     }
 
                     switch (selectedJets.size())

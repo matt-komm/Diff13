@@ -124,12 +124,15 @@ class BTagSelection:
                     
                     std::vector<pxl::Particle*> selectedBJets;
                     
+                    pxl::EventView* inputEventView = nullptr;
+                    
                     for (unsigned ieventView=0; ieventView<eventViews.size();++ieventView)
                     {
 
                         pxl::EventView* eventView = eventViews[ieventView];
                         if (eventView->getName()==_inputEventViewName)
                         {
+                            inputEventView=eventView;
                             std::vector<pxl::Particle*> particles;
                             eventView->getObjectsOfType(particles);
 
@@ -148,6 +151,16 @@ class BTagSelection:
                             }
                         }
                     }
+                    if (inputEventView)
+                    {
+                        inputEventView->setUserRecord("n"+_bTaggedJetName,selectedBJets.size());
+                    }
+                    else
+                    {
+                        _outputOtherBTagsSource->setTargets(event);
+                        return _outputOtherBTagsSource->processTargets();
+                    }
+                    
                     switch (selectedBJets.size())
                     {
                         case 0:
