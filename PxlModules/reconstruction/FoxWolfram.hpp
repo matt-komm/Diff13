@@ -116,7 +116,7 @@ class FoxWolfram
                 for (unsigned int j = 0; j < _eventVectors.size(); ++j)
                 {
                     double angle = cosTheta(_eventVectors[i],_eventVectors[j]);
-                    sum+=1.0/(fabs(_eventVectors[i].getEta()-avgEta)*(_eventVectors[j].getEta()-avgEta))*ROOT::Math::legendre(order,angle);
+                    sum+=1.0/(fabs(_eventVectors[i].getEta()-avgEta)*fabs(_eventVectors[j].getEta()-avgEta))*ROOT::Math::legendre(order,angle);
                 }
             }
             return sum/norm/norm;
