@@ -5,7 +5,40 @@
 #include "pxl/modules/Module.hh"
 #include "pxl/modules/ModuleFactory.hh"
 
+#include <algorithm>
+
 static pxl::Logger logger("TopReconstruction");
+
+struct SortByUserRecord
+{
+    const std::string urName;
+    SortByUserRecord(std::string urName):
+        urName(urName)
+    {
+    }
+    
+    bool operator()(const pxl::Particle* p1, const pxl::Particle* p2) const
+    {
+        return p1->getUserRecord(urName).toFloat()>p2->getUserRecord(urName).toFloat();
+    }
+};
+
+struct SortByPt
+{
+    bool operator()(const pxl::Particle* p1, const pxl::Particle* p2) const
+    {
+        return p1->getPt()>p2->getPt();
+    }
+};
+
+struct SortByEta
+{
+    bool operator()(const pxl::Particle* p1, const pxl::Particle* p2) const
+    {
+        return p1->getEta()>p2->getEta();
+    }
+};
+
 
 class TopReconstruction:
     public pxl::Module
@@ -100,7 +133,183 @@ class TopReconstruction:
 
             return (boostedP1.getPx()*boostedP2.getPx()+boostedP1.getPy()*boostedP2.getPy()+boostedP1.getPz()*boostedP2.getPz())/(boostedP1.getMag()*boostedP2.getMag());
         }
+        
+        void calculateAngles(pxl::EventView* eventView, pxl::Particle* lepton, pxl::Particle* neutrino, pxl::Particle* wboson, pxl::Particle* bjet, pxl::Particle* top, pxl::Particle* lightjet)
+        {
+            if (eventView && lepton && wboson && top)
+            {
+                //w polarization - helicity basis
+                eventView->setUserRecord("cosTheta_wH",angleInRestFrame(lepton->getVector(),wboson->getBoostVector(),-top->getVector(),wboson->getBoostVector()));
+            }
+            if (eventView && lepton && wboson && top && lightjet)
+            {
+                //w polarization - normal basis
+                pxl::Basic3Vector normalAxis = lightjet->getVector().cross(wboson->getVector());
+                eventView->setUserRecord("cosTheta_wN",angleInRestFrame(lepton->getVector(),wboson->getBoostVector(),normalAxis,wboson->getBoostVector()));
+                //w polarization - transvers basis
+                pxl::Basic3Vector transverseAxis = wboson->getVector().cross(normalAxis);
+                eventView->setUserRecord("cosTheta_wT",angleInRestFrame(lepton->getVector(),wboson->getBoostVector(),transverseAxis,wboson->getBoostVector()));
 
+                //top polarization - lepton
+                eventView->setUserRecord("cosTheta_tPL",angleInRestFrame(lepton->getVector(),top->getBoostVector(),lightjet->getVector(),top->getBoostVector()));
+            }
+            if (eventView && top && neutrino && bjet && neutrino)
+            {
+                //top polarization - bjet
+                eventView->setUserRecord("cosTheta_tPB",angleInRestFrame(bjet->getVector(),top->getBoostVector(),lightjet->getVector(),top->getBoostVector()));
+                //top polarization - neutrino
+                eventView->setUserRecord("cosTheta_tPN",angleInRestFrame(neutrino->getVector(),top->getBoostVector(),lightjet->getVector(),top->getBoostVector()));                    
+            }
+            
+        }
+        
+        pxl::Particle* makeWboson(pxl::EventView* eventView, pxl::Particle* p1, pxl::Particle* p2)
+        {
+            pxl::Particle* wboson = eventView->create<pxl::Particle>();
+            wboson->setName(_wbosonName);
+            wboson->linkDaughter(p1);
+            wboson->linkDaughter(p2);
+            wboson->setP4FromDaughters();
+            return wboson;
+        }
+        
+        pxl::Particle* makeTop(pxl::EventView* eventView, pxl::Particle* p1, pxl::Particle* p2)
+        {
+            pxl::Particle* top = eventView->create<pxl::Particle>();
+            top->setName(_topName);
+            top->linkDaughter(p1);
+            top->linkDaughter(p2);
+            top->setP4FromDaughters();
+            return top;
+        }
+        
+        pxl::Particle* makeCMSystem(pxl::EventView* eventView, const std::string& name, std::vector<pxl::Particle*> particles)
+        {
+            pxl::Particle* cm = eventView->create<pxl::Particle>();
+            cm->setName(name);
+            //linking too much will crash the gui :-(
+            for (pxl::Particle* p: particles)
+            {
+                cm->addP4(p);
+            }
+            return cm;
+        }
+        
+        void reconstructEvent(pxl::EventView* eventView, pxl::Particle* lepton, pxl::Particle* neutrino, std::vector<pxl::Particle*>& lightjets, std::vector<pxl::Particle*>& bjets) 
+        {
+            const unsigned int nljets = lightjets.size();
+            const unsigned int nbjets = bjets.size();
+            const unsigned int njets = nljets+nbjets;
+            
+            pxl::Particle* wboson = nullptr;
+            pxl::Particle* top = nullptr;
+            pxl::Particle* lightjet = nullptr;
+            pxl::Particle* bjet = nullptr;
+            
+            if (njets==0)
+            {
+                wboson = makeWboson(eventView,lepton,neutrino);
+            }
+            if (njets==1)
+            {
+                wboson = makeWboson(eventView,lepton,neutrino);
+                if (nljets==1)
+                {
+                    top = makeTop(eventView,wboson,lightjets[0]);
+                }
+                else if (nbjets==1)
+                {
+                    top = makeTop(eventView,wboson,bjets[0]);
+                }
+            }
+            else if (njets==2)
+            {   
+                if (nbjets==0)
+                {
+                    //take the central jet as the one from the top
+                    wboson = makeWboson(eventView,lepton,neutrino);
+                    std::sort(lightjets.begin(),lightjets.end(),SortByEta());
+                    lightjet=lightjets[0];
+                    bjet=lightjets[1];
+                    top = makeTop(eventView,wboson,bjet);
+                }
+                else if (nbjets==1)
+                {
+                    wboson = makeWboson(eventView,lepton,neutrino);
+                    top = makeTop(eventView,wboson,bjets[0]);
+                    lightjet=lightjets[0];
+                    bjet=bjets[0];
+                    top = makeTop(eventView,wboson,bjet);
+                }
+                else if (nbjets==2)
+                {
+                    //take the jet with the higher pT as the one from the top
+                    wboson = makeWboson(eventView,lepton,neutrino);
+                    std::sort(bjets.begin(),bjets.end(),SortByPt());
+                    lightjet=bjets[1];
+                    bjet=bjets[0];
+                    top = makeTop(eventView,wboson,bjet);
+                }
+            }
+            else if (njets==3)
+            {
+                if (nbjets==0)
+                {
+                    //take the central jet as the one from the top
+                    wboson = makeWboson(eventView,lepton,neutrino);
+                    std::sort(lightjets.begin(),lightjets.end(),SortByEta());
+                    lightjet=lightjets[0];
+                    bjet=lightjets[2];
+                    top = makeTop(eventView,wboson,bjet);
+                }
+                else if (nbjets==1)
+                {
+                    //take the central jet as the one from the top
+                    wboson = makeWboson(eventView,lepton,neutrino);
+                    std::sort(lightjets.begin(),lightjets.end(),SortByEta());
+                    lightjet=lightjets[0];
+                    bjet=bjets[0];
+                    top = makeTop(eventView,wboson,bjet);
+                }
+                else if (nbjets==2)
+                {
+                    //take the jet with the higher pT as the one from the top
+                    wboson = makeWboson(eventView,lepton,neutrino);
+                    std::sort(bjets.begin(),bjets.end(),SortByPt());
+                    lightjet=lightjets[0];
+                    bjet=bjets[0];
+                    top = makeTop(eventView,wboson,bjet);
+                }
+                else if (nbjets==3)
+                {
+                    //take the jet with the higher pT as the one from the top
+                    wboson = makeWboson(eventView,lepton,neutrino);
+                    std::sort(bjets.begin(),bjets.end(),SortByPt());
+                    lightjet=bjets[2];
+                    bjet=bjets[0];
+                    top = makeTop(eventView,wboson,bjet);
+                }
+            }
+            
+            calculateAngles(eventView, lepton, neutrino, wboson, bjet, top, lightjet);
+            
+            if (top && lightjet)
+            {
+                makeCMSystem(eventView,"Shat",{{top,lightjet}});
+            }
+            if (bjet && lightjet)
+            {
+                makeCMSystem(eventView,"Dijet",{{bjet,lightjet}});
+            }
+            if (njets>0)
+            {
+                std::vector<pxl::Particle*> allHadronic;
+                std::copy (lightjets.begin(),lightjets.end(),back_inserter(allHadronic));
+                std::copy (bjets.begin(),bjets.end(),back_inserter(allHadronic));
+                makeCMSystem(eventView,"Hadronic",allHadronic);
+            }
+        }
+        
         bool analyse(pxl::Sink *sink) throw (std::runtime_error)
         {
             try
@@ -121,8 +330,8 @@ class TopReconstruction:
 
                             pxl::Particle* lepton = nullptr;
                             pxl::Particle* neutrino = nullptr;
-                            pxl::Particle* bjet = nullptr;
-                            pxl::Particle* lightjet = nullptr;
+                            std::vector<pxl::Particle*> bjets;
+                            std::vector<pxl::Particle*> lightjets;
 
                             for (unsigned int iparticle = 0; iparticle<particles.size(); ++iparticle)
                             {
@@ -135,53 +344,20 @@ class TopReconstruction:
                                 {
                                     neutrino=particle;
                                 }
-                                if (!bjet and particle->getName()==_bJetName)
+                                if (particle->getName()==_bJetName)
                                 {
-                                    bjet=particle;
+                                    bjets.push_back(particle);
                                 }
-                                if (!lightjet and particle->getName()==_lightJetName)
+                                if (particle->getName()==_lightJetName)
                                 {
-                                    lightjet=particle;
+                                    lightjets.push_back(particle);
                                 }
                             }
+                            
+                            
                             if (lepton && neutrino)
                             {
-                                pxl::Particle* wboson = eventView->create<pxl::Particle>();
-                                wboson->setName(_wbosonName);
-                                wboson->addP4(lepton);
-                                wboson->addP4(neutrino);
-
-                                if (bjet)
-                                {
-                                    pxl::Particle* top = eventView->create<pxl::Particle>();
-                                    top->setName(_topName);
-                                    top->addP4(lepton);
-                                    top->addP4(bjet);
-                                    top->addP4(neutrino);
-                                    pxl::Basic3Vector normalAxis = lightjet->getVector().cross(wboson->getVector());
-                                    pxl::Basic3Vector transverseAxis = wboson->getVector().cross(normalAxis);
-                                    //top polarization
-                                    eventView->setUserRecord("cosTheta_tP",angleInRestFrame(lepton->getVector(),top->getBoostVector(),lightjet->getVector(),top->getBoostVector()));
-                                    //w polarization - helicity basis
-                                    eventView->setUserRecord("cosTheta_wH",angleInRestFrame(lepton->getVector(),wboson->getBoostVector(),-top->getVector(),wboson->getBoostVector()));
-                                    //w polarization - normal basis
-                                    eventView->setUserRecord("cosTheta_wN",angleInRestFrame(lepton->getVector(),wboson->getBoostVector(),normalAxis,wboson->getBoostVector()));
-                                    //w polarization - transvers basis
-                                    eventView->setUserRecord("cosTheta_wT",angleInRestFrame(lepton->getVector(),wboson->getBoostVector(),transverseAxis,wboson->getBoostVector()));
-                                                                        
-                                    if (lightjet && _addBestTopHypothesis)
-                                    {
-                                        pxl::Particle* bestTop = eventView->create<pxl::Particle>();
-                                        bestTop->setName(_topName+"_best");
-                                        bestTop->addP4(lepton);
-                                        bestTop->addP4(lightjet);
-                                        bestTop->addP4(neutrino);
-                                        if (fabs(top->getMass()-173.0)<fabs(bestTop->getMass()-173.0))
-                                        {
-                                            bestTop->setP4(top->getVector());
-                                        }
-                                    }
-                                }
+                                reconstructEvent(eventView,lepton,neutrino,lightjets,bjets);
                             }
                         }
                     }
