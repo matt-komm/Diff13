@@ -58,6 +58,8 @@ execute "git checkout official-cmssw/CMSSW_7_4_0_pre -- DataFormats/Math"
 #execute "echo Pxl >> .git/info/sparse-checkout"
 #execute git read-tree -mu HEAD
 
+ln -s ../../UserCode
+
 execute "scram b -j10"
 
 cd $BASEDIR
