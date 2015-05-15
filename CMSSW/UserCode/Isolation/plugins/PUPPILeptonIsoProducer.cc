@@ -32,44 +32,38 @@
 #include "DataFormats/Math/interface/deltaR.h"
 #include "DataFormats/PatCandidates/interface/PackedCandidate.h"
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
+#include "DataFormats/RecoCandidate/interface/RecoCandidate.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
 #include "DataFormats/PatCandidates/interface/Electron.h"
 #include "DataFormats/PatCandidates/interface/Jet.h"
 
 #include "DataFormats/Common/interface/ValueMap.h"
 
+#include <functional>
+
 //
 // class declaration
 //
 
-class PUPPILeptonIsoProducer : public edm::EDProducer {
-   public:
-      explicit PUPPILeptonIsoProducer(const edm::ParameterSet&);
-      ~PUPPILeptonIsoProducer();
+class PUPPILeptonIsoProducer : public edm::EDProducer
+{
+    public:
+        explicit PUPPILeptonIsoProducer(const edm::ParameterSet&);
+        ~PUPPILeptonIsoProducer();
 
-      static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
+        static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
-   private:
-      virtual void beginJob() override;
-      virtual void produce(edm::Event&, const edm::EventSetup&) override;
-      virtual void endJob() override;
-  
-      template<class Hand, typename T>
-      void storeLeptonIso(edm::Event &iEvent,
-			const edm::Handle<Hand > & handle, 
-			const std::vector<T> & values,
-			const std::string    & label) const ;
+    private:
+        virtual void beginJob() override;
+        virtual void produce(edm::Event&, const edm::EventSetup&) override;
+        virtual void endJob() override;
+        
+        edm::EDGetTokenT<edm::View<reco::RecoCandidate>> _leptonToken;
+        edm::EDGetTokenT<edm::View<reco::Candidate>> _pfCandidatesToken;
 
+        edm::EDGetTokenT<edm::ValueMap<float> > _puppiToken;
 
-      // ----------member data ---------------------------
-      edm::EDGetTokenT<pat::ElectronCollection> electronToken_;
-      edm::EDGetTokenT<pat::MuonCollection> muonToken_;
-      typedef edm::View<reco::Candidate> candidateView_;
-      edm::EDGetTokenT< candidateView_ > pFCandidatesToken_;
-   
-      edm::EDGetTokenT<edm::ValueMap<float> > puppiToken_;
-
-      float dRConeSize_;
+        float _dRConeSize;
 };
 
 
@@ -77,112 +71,90 @@ class PUPPILeptonIsoProducer : public edm::EDProducer {
 // constructors and destructor
 //
 PUPPILeptonIsoProducer::PUPPILeptonIsoProducer(const edm::ParameterSet& iConfig):
-    electronToken_(consumes<pat::ElectronCollection>(iConfig.getParameter<edm::InputTag>("electrons"))),
-    muonToken_(consumes<pat::MuonCollection>(iConfig.getParameter<edm::InputTag>("muons"))),
-    pFCandidatesToken_(consumes<candidateView_>(iConfig.getParameter<edm::InputTag>("pfCands"))),
-    puppiToken_(consumes<edm::ValueMap<float> >(iConfig.getParameter<edm::InputTag>("puppi")))
+    _leptonToken(consumes<edm::View<reco::RecoCandidate>>(iConfig.getParameter<edm::InputTag>("leptons"))),
+    _pfCandidatesToken(consumes<edm::View<reco::Candidate>>(iConfig.getParameter<edm::InputTag>("pfCands"))),
+    _puppiToken(consumes<edm::ValueMap<float> >(iConfig.getParameter<edm::InputTag>("puppi")))
 
 {
+    _dRConeSize  = iConfig.getUntrackedParameter<double>("dRConeSize");
 
-  dRConeSize_  = iConfig.getUntrackedParameter<double>("dRConeSize");
-
-  produces<edm::ValueMap<double> > ("MuonPuppiIso");
-  produces<edm::ValueMap<double> > ("ElectronPuppiIso");
-
-  
+    produces<edm::ValueMap<double> > ();
 }
 
 
 PUPPILeptonIsoProducer::~PUPPILeptonIsoProducer()
 {
- 
-   // do anything here that needs to be done at desctruction time
-   // (e.g. close files, deallocate resources etc.)
-
 }
 
 
-//
-// member functions
-//
-
-// ------------ method called to produce the data  ------------
 void
 PUPPILeptonIsoProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-    //Handle Particle Collections for PUPPI isolation
-    edm::Handle<pat::MuonCollection> muons;
-    iEvent.getByToken(muonToken_, muons);
-    assert(muons.isValid());
-    edm::Handle<pat::ElectronCollection> electrons;
-    iEvent.getByToken(electronToken_, electrons);
-    assert(electrons.isValid());
-    edm::Handle<candidateView_> pfs;
-    iEvent.getByToken(pFCandidatesToken_,pfs);
-    assert(pfs.isValid());
+    edm::Handle<edm::View<reco::RecoCandidate>> leptons;
+    iEvent.getByToken(_leptonToken, leptons);
+    
+    edm::Handle<edm::View<reco::Candidate>> pfCandidates;
+    iEvent.getByToken(_pfCandidatesToken,pfCandidates);
 
-    //Handle Value Map for PUPPI weights
     edm::Handle<edm::ValueMap<float> > weights;
-    iEvent.getByToken(puppiToken_, weights); 
-    assert(weights.isValid());
+    iEvent.getByToken(_puppiToken, weights);
 
-    std::vector<const reco::Candidate *> leptons;
 
-    for (const pat::Muon &mu : *muons) leptons.push_back(&mu);
-    for (const pat::Electron &el : *electrons) leptons.push_back(&el);
+    std::vector<double>  leptonIsolation(leptons->size());
+    for (unsigned int ilepton = 0; ilepton < leptons->size(); ++ilepton)
+    {
+        const reco::RecoCandidate& lepton = (leptons->at(ilepton));
+        
+        std::vector<reco::CandidatePtr> footprint;
+	    for (unsigned int i = 0, n = lepton.numberOfSourceCandidatePtrs(); i < n; ++i)
+	    {
+            footprint.push_back(lepton.sourceCandidatePtr(i));
+        }
+	    double charged = 0, neutral = 0, photons  = 0;
+        
+        for (unsigned int ipf = 0; ipf <  pfCandidates->size(); ++ipf)
+        {
+            const reco::Candidate& pf = pfCandidates->at(ipf);
+            float weight = (*weights)[pfCandidates->refAt(ipf)];
 
-    std::vector<double>  muon_isolation;
-    std::vector<double>  electron_isolation;
+            if (deltaR(pf,lepton) < _dRConeSize)
+            { 
+                if (std::find(footprint.begin(), footprint.end(), reco::CandidatePtr(pfCandidates,ipf)) != footprint.end())
+                {
+                    continue;
+                }
 
-    for (const reco::Candidate *lep : leptons) {
-        // initialize sums
-        float charged = 0, neutral = 0, photons  = 0;
-
-        // now get a list of the PF candidates used to build this lepton, so to exclude them
-	std::vector<reco::CandidatePtr> footprint;
-	for (unsigned int i = 0, n = lep->numberOfSourceCandidatePtrs(); i < n; ++i) {
-	  footprint.push_back(lep->sourceCandidatePtr(i));
-	}
-
-	// now loop on pf candidates
-	// one possible Way 
-    	//
-	for (unsigned int i = 0; i <  pfs->size(); ++i) {
-	  const pat::PackedCandidate *pf =  dynamic_cast<const pat::PackedCandidate*>(&pfs->at(i)); //check if const pat::PackedCandidate!=0 ?
-
-	  edm::RefToBase<reco::Candidate>  pf_base_ref;
-	  pf_base_ref = pfs->refAt(i);
-	  float weight = (*weights)[pf_base_ref];
-
-	  if (deltaR(*pf,*lep) < dRConeSize_) { 
-	    // pfcandidate-based footprint removal
-	    if (std::find(footprint.begin(), footprint.end(), reco::CandidatePtr(pfs,i)) != footprint.end()) {
-	      continue;
-	    }
-
-	    if (pf->charge() == 0) {
-	      if (pf->pdgId() == 22 && pf->pt() > 0.5) photons += weight*pf->pt();
-	      else
-		if (pf->pt() > 0.5) neutral += weight*pf->pt();
-	    } else {
-	      if (weight==1) charged += weight*pf->pt();
-	      
-	    }
-	  }	
-	}
-  
-	double rel_iso = (charged + neutral + photons)/lep->pt();
-	if (abs(lep->pdgId())==13) muon_isolation.push_back(rel_iso);
-	else if (abs(lep->pdgId())==11) electron_isolation.push_back(rel_iso);
-
-	
+                if (pf.charge() == 0)
+                {
+                    if (pf.pdgId() == 22 && pf.pt() > 0.5)
+                    {
+                        photons += weight*pf.pt();
+                    }
+                }
+                else
+                {
+                    if (pf.pt() > 0.5)
+                    {
+                        neutral += weight*pf.pt();
+                    }
+                    else
+                    {
+                        if (weight==1)
+                        {
+                            charged += weight*pf.pt();
+                        }
+                    }
+                }
+            }	
+        }
+        leptonIsolation[ilepton]=(charged + neutral + photons)/lepton.pt();
     }
+    std::auto_ptr<edm::ValueMap<double> > out(new edm::ValueMap<double>() );
+    edm::ValueMap<double>::Filler filler(*out);
+    filler.insert(leptons, leptonIsolation.begin(), leptonIsolation.end() );
+	filler.fill();
 
-    if(!muon_isolation.empty())
-      storeLeptonIso(iEvent, muons, muon_isolation,  "MuonPuppiIso");
-    if(!electron_isolation.empty())
-      storeLeptonIso(iEvent, electrons, electron_isolation, "ElectronPuppiIso");
-
+	iEvent.put(out);
 }
 
 // ------------ method called once each job just before starting event loop  ------------
@@ -206,23 +178,6 @@ PUPPILeptonIsoProducer::fillDescriptions(edm::ConfigurationDescriptions& descrip
   descriptions.addDefault(desc);
 }
 
-
-template<class Hand, typename T>
-void
-PUPPILeptonIsoProducer:: storeLeptonIso(edm::Event &iEvent,
-			    const edm::Handle<Hand > & handle,
-			    const std::vector<T> & values,
-			    const std::string    & label) const {
-
-  
-    std::auto_ptr<edm::ValueMap<T> > valMap(new edm::ValueMap<T>());
-    typename edm::ValueMap<T>::Filler filler(*valMap);
-
-    filler.insert(handle, values.begin(), values.end());
-    filler.fill();
-    iEvent.put(valMap, label);
-
-}
 
 //define this as a plug-in
 DEFINE_FWK_MODULE(PUPPILeptonIsoProducer);
