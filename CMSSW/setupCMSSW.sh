@@ -47,9 +47,9 @@ execute "git cms-merge-topic ikrav:egm_id_phys14"
 execute "git submodule add -b plugin-based https://github.com/matt-komm/EDM2PXLIO.git"
 execute "git submodule add https://github.com/matt-komm/Pxl.git"
 
-execute "git checkout official-cmssw/CMSSW_7_4_0_pre -- CommonTools/PileupAlgos"
+execute "git checkout official-cmssw/CMSSW_7_5_X -- CommonTools/PileupAlgos"
 execute "rm CommonTools/PileupAlgos/plugins/SoftKillerProducer.cc"
-execute "git checkout official-cmssw/CMSSW_7_4_0_pre -- DataFormats/Math"
+execute "git checkout official-cmssw/CMSSW_7_5_X -- DataFormats/Math"
 
 #execute git cms-merge-topic matt-komm:ST_EA
 #execute "echo .gitignore > .git/info/sparse-checkout"
