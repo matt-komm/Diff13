@@ -124,6 +124,11 @@ class TopReconstruction:
             getOption("add bestTop",_addBestTopHypothesis);
         }
         
+        float angle(const pxl::Basic3Vector& v1, const pxl::Basic3Vector& v2)
+        {
+            return (v1.getX()*v2.getX()+v1.getY()*v2.getY()+v1.getZ()*v2.getZ())/(v1.getMag()*v2.getMag());
+        }
+        
         float angleInRestFrame(const pxl::LorentzVector& p1, const pxl::Basic3Vector& boost1, const pxl::LorentzVector& p2, const pxl::Basic3Vector& boost2)
         {
             pxl::LorentzVector boostedP1 = p1;
@@ -131,7 +136,7 @@ class TopReconstruction:
             pxl::LorentzVector boostedP2 = p2;
             boostedP2.boost(-boost2);
 
-            return (boostedP1.getPx()*boostedP2.getPx()+boostedP1.getPy()*boostedP2.getPy()+boostedP1.getPz()*boostedP2.getPz())/(boostedP1.getMag()*boostedP2.getMag());
+            return angle(boostedP1,boostedP2);
         }
         
         void calculateAngles(pxl::EventView* eventView, pxl::Particle* lepton, pxl::Particle* neutrino, pxl::Particle* wboson, pxl::Particle* bjet, pxl::Particle* top, pxl::Particle* lightjet)
@@ -299,7 +304,9 @@ class TopReconstruction:
             }
             if (bjet && lightjet)
             {
-                makeCMSystem(eventView,"Dijet",{{bjet,lightjet}});
+                pxl::Particle* dijetSystem = makeCMSystem(eventView,"Dijet",{{bjet,lightjet}});
+                dijetSystem->setUserRecord("cosTheta",angle(bjet->getVector(),lightjet->getVector()));
+                dijetSystem->setUserRecord("chi",std::exp(fabs(bjet->getEta()-lightjet->getEta())));
             }
             if (njets>0)
             {
