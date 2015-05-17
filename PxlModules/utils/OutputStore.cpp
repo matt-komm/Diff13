@@ -1,7 +1,5 @@
 #include "OutputStore.hpp"
 
-const int Tree::INVALID=-100000;
-
 Tree::Tree(TFile* file, std::string name):
     _file(file),
     _count(0),

@@ -94,7 +94,6 @@ template<class TYPE> TYPE Variable::get() const
 class Tree
 {
     private:
-        static const int INVALID;
         unsigned int _count;
         std::unordered_map<std::string,Variable*> _variables;
         TTree* _tree;
@@ -131,22 +130,22 @@ class Tree
                 }
                 case pxl::Variant::TYPE_BOOL:
                 {
-                    storeVariable(name,value.asBool());
+                    storeVariable<bool>(name,value.asBool());
                     break;
                 }
                 case pxl::Variant::TYPE_CHAR:
                 {
-                    storeVariable<int>(name,value.asChar());
+                    storeVariable<char>(name,value.asChar());
                     break;
                 }
                 case pxl::Variant::TYPE_DOUBLE:
                 {
-                    storeVariable(name,value.asDouble());
+                    storeVariable<double>(name,value.asDouble());
                     break;
                 }
                 case pxl::Variant::TYPE_FLOAT:
                 {
-                    storeVariable(name,value.asFloat());
+                    storeVariable<float>(name,value.asFloat());
                     break;
                 }
                 case pxl::Variant::TYPE_INT16:
@@ -161,7 +160,7 @@ class Tree
                 }
                 case pxl::Variant::TYPE_INT64:
                 {
-                    storeVariable<int>(name,(int)value.asInt64());
+                    storeVariable<int64_t>(name,value.asInt64());
                     break;
                 }
                 case pxl::Variant::TYPE_LORENTZVECTOR:
@@ -188,22 +187,22 @@ class Tree
                 }
                 case pxl::Variant::TYPE_UCHAR:
                 {
-                    storeVariable<unsigned int>(name,value.asUChar());
+                    storeVariable<int>(name,value.asUChar());
                     break;
                 }
                 case pxl::Variant::TYPE_UINT16:
                 {
-                    storeVariable<unsigned int>(name,value.asUInt16());
+                    storeVariable<int>(name,value.asUInt16());
                     break;
                 }
                 case pxl::Variant::TYPE_UINT32:
                 {
-                    storeVariable<unsigned int>(name,value.asUInt32());
+                    storeVariable<int>(name,value.asUInt32());
                     break;
                 }
                 case pxl::Variant::TYPE_UINT64:
                 {
-                    storeVariable<long>(name,value.asUInt64());
+                    storeVariable<int>(name,value.asUInt64());
                     break;
                 }
                 case pxl::Variant::TYPE_VECTOR:
@@ -224,9 +223,9 @@ class Tree
         }
 
         template<class TYPE>
-        VariableTmpl<TYPE>* bookVariable(const std::string& name, const TYPE& defaultValue=Tree::INVALID)
+        VariableTmpl<TYPE>* bookVariable(const std::string& name)
         {
-            VariableTmpl<TYPE>* var = new VariableTmpl<TYPE>(defaultValue);
+            VariableTmpl<TYPE>* var = new VariableTmpl<TYPE>(std::numeric_limits<TYPE>::min());
             _variables[name]=var;
             TBranch* branch = _tree->Branch(name.c_str(),(TYPE*)var->getAddress());
             _logger(pxl::LOG_LEVEL_INFO ,"fill new variable '",name,"' in tree '",_tree->GetName(),"' with ",_count," empty entries");
