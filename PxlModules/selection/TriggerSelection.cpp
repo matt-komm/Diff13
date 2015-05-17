@@ -17,13 +17,15 @@ class TriggerSelection:
         std::string _inputEventViewName;
         std::vector<std::string> _triggerFlags;
         bool _requireAllFlags;
+        bool _cleanNoneRequired;
 
     public:
         TriggerSelection():
             Module(),
             _inputEventViewName("Reconstructed"),
             _triggerFlags({"HLT_IsoMu24_eta2p1_IterTrk02_v1","HLT_IsoMu24_IterTrk02_v1"}),
-            _requireAllFlags(false)
+            _requireAllFlags(false),
+            _cleanNoneRequired(true)
         {
             addSink("input", "input");
             _outputSource = addSource("selected","selected");
@@ -34,7 +36,7 @@ class TriggerSelection:
 
 
             addOption("require all","this option requires all triggers (if set to true) or at least one (if set to false) to be fired",_requireAllFlags);
-
+            addOption("remove other HLT","this option removes all HLT* trigger flags which are not in the list",_cleanNoneRequired);
         }
 
         ~TriggerSelection()
@@ -69,11 +71,20 @@ class TriggerSelection:
             getOption("Event view",_inputEventViewName);
             getOption("required trigger flags",_triggerFlags);
             getOption("require all",_requireAllFlags);
+            getOption("remove other HLT",_cleanNoneRequired);
         }
 
         bool passTriggerSelection(pxl::EventView* eventView)
         {
             bool accepted = _requireAllFlags; //concatenate with AND if true. Otherwise with OR if false.
+            for (pxl::UserRecords::const_iterator it = eventView->getUserRecords().begin(); _cleanNoneRequired && it!=eventView->getUserRecords().end(); ++it)
+            {
+                //std::cout<<"remove "<<it->first<<std::endl;
+                if (it->first.find("HLT")!=std::string::npos && std::find(_triggerFlags.begin(),_triggerFlags.end(),it->first)==_triggerFlags.end())
+                {
+                    eventView->getUserRecords().erase(it->first);
+                }
+            }
             for (unsigned int itrigger = 0; itrigger<_triggerFlags.size(); ++itrigger)
             {
                 const std::string& triggerName = _triggerFlags[itrigger];
@@ -95,6 +106,7 @@ class TriggerSelection:
                     return accepted;
                 }
             }
+            
             return accepted;
         }
 
