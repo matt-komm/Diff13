@@ -120,9 +120,10 @@ class NeutrinoPz : public pxl::Module
                             p1.getVector()+=lepton->getVector();
                             p2.getVector()+=neutrino->getVector();
                             p2.getVector()+=lepton->getVector();
-                            neutrino->setUserRecord("mtw_beforePzSolution",sqrt(p1.getMass()*p1.getMass()+p1.getPx()*p1.getPx()+p1.getPy()*p1.getPy()));
-                            neutrino->setUserRecord("mtw_afterPzSolution",sqrt(p2.getMass()*p2.getMass()+p2.getPx()*p2.getPx()+p2.getPy()*p2.getPy()));
-                            //neutrino->setUserRecord("wmass_afterPzSolution",p2.getMass());
+                            const double mtw_beforePz = sqrt((lepton->getPt()+met->getPt())*(lepton->getPt()+met->getPt())-(lepton->getPx()+met->getPx())*(lepton->getPx()+met->getPx())-(lepton->getPy()+met->getPy())*(lepton->getPy()+met->getPy()));
+                            const double mtw_afterPz = sqrt((lepton->getPt()+neutrino->getPt())*(lepton->getPt()+neutrino->getPt())-(lepton->getPx()+neutrino->getPx())*(lepton->getPx()+neutrino->getPx())-(lepton->getPy()+neutrino->getPy())*(lepton->getPy()+neutrino->getPy()));
+                            eventView->setUserRecord("mtw_beforePz",mtw_beforePz);
+                            eventView->setUserRecord("mtw_afterPz",mtw_afterPz);
                         }
                     }
                 }
