@@ -35,7 +35,7 @@ struct SortByEta
 {
     bool operator()(const pxl::Particle* p1, const pxl::Particle* p2) const
     {
-        return p1->getEta()>p2->getEta();
+        return fabs(p1->getEta())>fabs(p2->getEta());
     }
 };
 
