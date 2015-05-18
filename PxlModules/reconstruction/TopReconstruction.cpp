@@ -144,7 +144,7 @@ class TopReconstruction:
             if (eventView && lepton && wboson && top)
             {
                 //w polarization - helicity basis
-                eventView->setUserRecord("cosTheta_wH",angleInRestFrame(lepton->getVector(),wboson->getBoostVector(),-top->getVector(),wboson->getBoostVector()));
+                eventView->setUserRecord("cosTheta_wH",angleInRestFrame(lepton->getVector(),wboson->getBoostVector(),top->getVector(),wboson->getBoostVector()));
             }
             if (eventView && lepton && wboson && top && lightjet)
             {
@@ -241,7 +241,6 @@ class TopReconstruction:
                 else if (nbjets==1)
                 {
                     wboson = makeWboson(eventView,lepton,neutrino);
-                    top = makeTop(eventView,wboson,bjets[0]);
                     lightjet=lightjets[0];
                     bjet=bjets[0];
                     top = makeTop(eventView,wboson,bjet);
@@ -306,7 +305,9 @@ class TopReconstruction:
             {
                 pxl::Particle* dijetSystem = makeCMSystem(eventView,"Dijet",{{bjet,lightjet}});
                 dijetSystem->setUserRecord("cosTheta",angle(bjet->getVector(),lightjet->getVector()));
-                dijetSystem->setUserRecord("chi",std::exp(fabs(bjet->getEta()-lightjet->getEta())));
+                const double y1 = 0.5*std::log((lightjet->getE()+lightjet->getPz())/(lightjet->getE()-lightjet->getPz()));
+                const double y2 = 0.5*std::log((bjet->getE()+bjet->getPz())/(bjet->getE()-bjet->getPz()));
+                dijetSystem->setUserRecord("chi",std::exp(fabs(y1-y2)));
             }
             if (njets>0)
             {
