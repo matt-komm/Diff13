@@ -197,6 +197,59 @@ class TopReconstruction:
             {
                 cm->addP4(p);
             }
+            if (particles.size()>=2)
+            {
+                float minCosTheta = 100;
+                float maxCosTheta = -100;
+                float minDY = 100;
+                float maxDY = -100;
+                float minDR = 100;
+                float maxDR = -100;
+                float minDPhi = 100;
+                float maxDPhi = -100;
+                for (unsigned int i = 0; i < particles.size(); ++i)
+                {
+                    for (unsigned int j = 0; j < particles.size(); ++j)
+                    {
+                        if (i==j)
+                        {
+                            continue;
+                        }
+                        const pxl::Particle* p1 = particles[i];
+                        const pxl::Particle* p2 = particles[j];
+                        
+                        const float cosTheta = angle(p1->getVector(),p2->getVector());
+                        minCosTheta=std::min(minCosTheta,cosTheta);
+                        maxCosTheta=std::max(maxCosTheta,cosTheta);
+                        
+                        const float y1 = 0.5*std::log((particles[0]->getE()+particles[0]->getPz())/(particles[0]->getE()-particles[0]->getPz()));
+                        const float y2 = 0.5*std::log((particles[1]->getE()+particles[1]->getPz())/(particles[1]->getE()-particles[1]->getPz()));
+                        const float deltaY = fabs(y1-y2);
+                        minDY=std::min(minDY,deltaY);
+                        maxDY=std::max(maxDY,deltaY);
+                        
+                        const float deltaR = particles[0]->getVector().deltaR(&(particles[1]->getVector()));
+                        minDR=std::min(minDR,deltaR);
+                        maxDR=std::max(maxDR,deltaR);
+                        
+                        const float deltaPhi = particles[0]->getVector().deltaPhi(&(particles[1]->getVector()));
+                        minDPhi=std::min(minDPhi,deltaPhi);
+                        maxDPhi=std::max(maxDPhi,deltaPhi);
+                    }
+                }
+                cm->setUserRecord("minCosTheta",minCosTheta);
+                cm->setUserRecord("maxCosTheta",maxCosTheta);
+                
+                cm->setUserRecord("minDY",minDY);
+                cm->setUserRecord("maxDY",maxDY);
+                
+                cm->setUserRecord("minDR",minDR);
+                cm->setUserRecord("maxDR",maxDR);
+                
+                cm->setUserRecord("minDPhi",minDPhi);
+                cm->setUserRecord("maxDPhi",maxDPhi);
+            }
+        
             return cm;
         }
         
@@ -299,15 +352,11 @@ class TopReconstruction:
             
             if (top && lightjet)
             {
-                makeCMSystem(eventView,"Shat",{{top,lightjet}});
+                makeCMSystem(eventView,"Shat",{{bjet,lightjet,lepton,neutrino}});
             }
             if (bjet && lightjet)
             {
                 pxl::Particle* dijetSystem = makeCMSystem(eventView,"Dijet",{{bjet,lightjet}});
-                dijetSystem->setUserRecord("cosTheta",angle(bjet->getVector(),lightjet->getVector()));
-                const double y1 = 0.5*std::log((lightjet->getE()+lightjet->getPz())/(lightjet->getE()-lightjet->getPz()));
-                const double y2 = 0.5*std::log((bjet->getE()+bjet->getPz())/(bjet->getE()-bjet->getPz()));
-                dijetSystem->setUserRecord("chi",std::exp(fabs(y1-y2)));
             }
             if (njets>0)
             {
