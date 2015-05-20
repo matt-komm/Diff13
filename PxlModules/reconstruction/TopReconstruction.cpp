@@ -222,17 +222,17 @@ class TopReconstruction:
                         minCosTheta=std::min(minCosTheta,cosTheta);
                         maxCosTheta=std::max(maxCosTheta,cosTheta);
                         
-                        const float y1 = 0.5*std::log((particles[0]->getE()+particles[0]->getPz())/(particles[0]->getE()-particles[0]->getPz()));
-                        const float y2 = 0.5*std::log((particles[1]->getE()+particles[1]->getPz())/(particles[1]->getE()-particles[1]->getPz()));
+                        const float y1 = 0.5*std::log((p1->getE()+p1->getPz())/(p1->getE()-p1->getPz()));
+                        const float y2 = 0.5*std::log((p2->getE()+p2->getPz())/(p2->getE()-p2->getPz()));
                         const float deltaY = fabs(y1-y2);
                         minDY=std::min(minDY,deltaY);
                         maxDY=std::max(maxDY,deltaY);
                         
-                        const float deltaR = particles[0]->getVector().deltaR(&(particles[1]->getVector()));
+                        const float deltaR = p1->getVector().deltaR(&(p2->getVector()));
                         minDR=std::min(minDR,deltaR);
                         maxDR=std::max(maxDR,deltaR);
                         
-                        const float deltaPhi = particles[0]->getVector().deltaPhi(&(particles[1]->getVector()));
+                        const float deltaPhi = p1->getVector().deltaPhi(&(p2->getVector()));
                         minDPhi=std::min(minDPhi,deltaPhi);
                         maxDPhi=std::max(maxDPhi,deltaPhi);
                     }
@@ -350,7 +350,7 @@ class TopReconstruction:
             
             calculateAngles(eventView, lepton, neutrino, wboson, bjet, top, lightjet);
             
-            if (top && lightjet)
+            if (bjet && lightjet && lepton && neutrino)
             {
                 makeCMSystem(eventView,"Shat",{{bjet,lightjet,lepton,neutrino}});
             }
