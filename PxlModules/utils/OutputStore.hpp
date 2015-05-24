@@ -178,7 +178,7 @@ class Tree
                 }
                 case pxl::Variant::TYPE_INT64:
                 {
-                    storeVariable<int64_t>(name,value.asInt64());
+                    storeVariable<int>(name,value.asInt64());
                     break;
                 }
                 case pxl::Variant::TYPE_LORENTZVECTOR:
@@ -220,7 +220,7 @@ class Tree
                 }
                 case pxl::Variant::TYPE_UINT64:
                 {
-                    storeVariable<int64_t>(name,value.asUInt64());
+                    storeVariable<int>(name,value.asUInt64());
                     break;
                 }
                 case pxl::Variant::TYPE_VECTOR:
