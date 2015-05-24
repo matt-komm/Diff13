@@ -14,6 +14,17 @@ void Tree::fill()
 {
     ++_count;
     _tree->Fill();
+    resetVariables();
+}
+
+void Tree::resetVariables()
+{
+    for (std::unordered_map<std::string,Variable*>::iterator it = _variables.begin(); it!=_variables.end(); ++it)
+    {
+        //std::cout<<it->first<<": "<<it->second->isDirty()<<std::endl;
+        it->second->reset();
+    }
+    //std::cout<<std::endl;
 }
 
 void Tree::write()

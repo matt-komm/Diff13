@@ -21,6 +21,8 @@ class Variable
         }
         
         virtual void* getAddress() = 0;
+        virtual void reset() = 0;
+        virtual bool isDirty() = 0;
         virtual unsigned int getSize() const = 0;
         
         template<class TYPE>
@@ -34,15 +36,28 @@ class VariableTmpl:
 {
     private:
         TYPE* _value;
+        bool _isDirty;
     public:
-        VariableTmpl(const TYPE& value):
-            _value(new TYPE(value))
+        VariableTmpl(TYPE value=std::numeric_limits<TYPE>::lowest()):
+            _value(new TYPE(value)),
+            _isDirty(true)
         {
         }
         
         virtual void* getAddress()
         {
             return _value;
+        }
+        
+        virtual bool isDirty()
+        {
+            return _isDirty;
+        }
+        
+        virtual void reset()
+        {
+            *_value=std::numeric_limits<TYPE>::lowest();
+            _isDirty=true;
         }
         
         virtual unsigned int getSize() const
@@ -52,6 +67,7 @@ class VariableTmpl:
         
         void setValue(const TYPE& value)
         {
+            _isDirty=false;
             *_value=value;
         }
         
@@ -115,6 +131,8 @@ class Tree
             }
         }
         
+        void resetVariables();
+        
         void storeVariable(const std::string& name, const pxl::Variant& value)
         {
             switch (value.getType())
@@ -130,7 +148,7 @@ class Tree
                 }
                 case pxl::Variant::TYPE_BOOL:
                 {
-                    storeVariable<bool>(name,value.asBool());
+                    storeVariable<short>(name,value.asBool());
                     break;
                 }
                 case pxl::Variant::TYPE_CHAR:
@@ -140,7 +158,7 @@ class Tree
                 }
                 case pxl::Variant::TYPE_DOUBLE:
                 {
-                    storeVariable<double>(name,value.asDouble());
+                    storeVariable<float>(name,value.asDouble());
                     break;
                 }
                 case pxl::Variant::TYPE_FLOAT:
@@ -202,7 +220,7 @@ class Tree
                 }
                 case pxl::Variant::TYPE_UINT64:
                 {
-                    storeVariable<int>(name,value.asUInt64());
+                    storeVariable<int64_t>(name,value.asUInt64());
                     break;
                 }
                 case pxl::Variant::TYPE_VECTOR:
@@ -225,7 +243,7 @@ class Tree
         template<class TYPE>
         VariableTmpl<TYPE>* bookVariable(const std::string& name)
         {
-            VariableTmpl<TYPE>* var = new VariableTmpl<TYPE>(std::numeric_limits<TYPE>::min());
+            VariableTmpl<TYPE>* var = new VariableTmpl<TYPE>();
             _variables[name]=var;
             TBranch* branch = _tree->Branch(name.c_str(),(TYPE*)var->getAddress());
             _logger(pxl::LOG_LEVEL_INFO ,"fill new variable '",name,"' in tree '",_tree->GetName(),"' with ",_count," empty entries");

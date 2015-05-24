@@ -357,6 +357,29 @@ class RootTreeWriter:
                     Tree* tree = _store->getTree(event->getUserRecord("ProcessName"));
                     //tree->storeVariable("event_number",(int)event->getUserRecord("Event number").asUInt64());
                     _syntaxTree->evaluate(event,tree);
+                    /*
+                    std::vector<pxl::EventView*> eventViews;
+                    event->getObjectsOfType(eventViews);
+                    for (unsigned int iev = 0; iev < eventViews.size(); ++iev)
+                    {
+                        if (eventViews[iev]->getName()!="Reconstructed")
+                        {
+                            continue;
+                        }
+                        std::vector<pxl::Particle*> particles;
+                        eventViews[iev]->getObjectsOfType(particles);
+                        unsigned int njet = 1;
+                        for (unsigned int iparticle = 0; iparticle < particles.size(); ++iparticle)
+                        {
+                            if (particles[iparticle]->getName()!="SelectedJet")
+                            {
+                                continue;
+                            }
+                            tree->storeVariable("jet_pt_"+std::to_string(njet),particles[iparticle]->getPt());
+                            ++njet;
+                        }
+                    }
+                    */
                     tree->fill();
                     
                      _outputSource->setTargets(event);
