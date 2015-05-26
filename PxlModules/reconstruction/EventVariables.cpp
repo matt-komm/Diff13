@@ -132,7 +132,7 @@ class EventVariables:
                             if (_foxWolframOrder>0)
                             {
                                 FoxWolfram fw(eventShapeVectors);
-                                for (unsigned int iorder = 0; iorder<_foxWolframOrder;++iorder)
+                                for (unsigned int iorder = 1; iorder<_foxWolframOrder;++iorder)
                                 {
                                     //implementation need to be checked
                                     eventView->setUserRecord(_prefix+"fox_"+std::to_string(iorder)+"_shat",fw.getMoment(FoxWolfram::SHAT,iorder));
