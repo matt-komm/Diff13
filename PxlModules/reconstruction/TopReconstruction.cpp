@@ -224,6 +224,8 @@ class TopReconstruction:
                 float maxCosTheta = -100;
                 float minDY = 100;
                 float maxDY = -100;
+                float minDEta = 100;
+                float maxDEta = -100;
                 float minDR = 100;
                 float maxDR = -100;
                 float minDPhi = 100;
@@ -245,6 +247,10 @@ class TopReconstruction:
                         minDY=std::min(minDY,deltaY);
                         maxDY=std::max(maxDY,deltaY);
                         
+                        const float deltaEta = fabs(p1->getEta()-p2->getEta());
+                        minDEta=std::min(minDEta,deltaEta);
+                        maxDEta=std::max(maxDEta,deltaEta);
+                        
                         const float deltaR = p1->getVector().deltaR(&(p2->getVector()));
                         minDR=std::min(minDR,deltaR);
                         maxDR=std::max(maxDR,deltaR);
@@ -262,6 +268,9 @@ class TopReconstruction:
                     cm->setUserRecord("minDY",minDY);
                     cm->setUserRecord("maxDY",maxDY);
                     
+                    cm->setUserRecord("minDEta",minDEta);
+                    cm->setUserRecord("maxDEta",maxDEta);
+                    
                     cm->setUserRecord("minDR",minDR);
                     cm->setUserRecord("maxDR",maxDR);
                     
@@ -272,6 +281,7 @@ class TopReconstruction:
                 {
                     cm->setUserRecord("CosTheta",minCosTheta);
                     cm->setUserRecord("DY",minDY);
+                    cm->setUserRecord("DEta",minDEta);
                     cm->setUserRecord("DR",minDR);
                     cm->setUserRecord("DPhi",minDPhi);
                 }
