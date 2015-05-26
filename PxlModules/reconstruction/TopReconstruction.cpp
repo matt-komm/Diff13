@@ -230,12 +230,8 @@ class TopReconstruction:
                 float maxDPhi = -100;
                 for (unsigned int i = 0; i < particles.size(); ++i)
                 {
-                    for (unsigned int j = 0; j < particles.size(); ++j)
+                    for (unsigned int j = i+1; j < particles.size(); ++j)
                     {
-                        if (i==j)
-                        {
-                            continue;
-                        }
                         const pxl::Particle* p1 = particles[i];
                         const pxl::Particle* p2 = particles[j];
                         
@@ -258,17 +254,27 @@ class TopReconstruction:
                         maxDPhi=std::max(maxDPhi,deltaPhi);
                     }
                 }
-                cm->setUserRecord("minCosTheta",minCosTheta);
-                cm->setUserRecord("maxCosTheta",maxCosTheta);
-                
-                cm->setUserRecord("minDY",minDY);
-                cm->setUserRecord("maxDY",maxDY);
-                
-                cm->setUserRecord("minDR",minDR);
-                cm->setUserRecord("maxDR",maxDR);
-                
-                cm->setUserRecord("minDPhi",minDPhi);
-                cm->setUserRecord("maxDPhi",maxDPhi);
+                if (particles.size()>2)
+                {
+                    cm->setUserRecord("minCosTheta",minCosTheta);
+                    cm->setUserRecord("maxCosTheta",maxCosTheta);
+                    
+                    cm->setUserRecord("minDY",minDY);
+                    cm->setUserRecord("maxDY",maxDY);
+                    
+                    cm->setUserRecord("minDR",minDR);
+                    cm->setUserRecord("maxDR",maxDR);
+                    
+                    cm->setUserRecord("minDPhi",minDPhi);
+                    cm->setUserRecord("maxDPhi",maxDPhi);
+                }
+                else if (particles.size()==2)
+                {
+                    cm->setUserRecord("CosTheta",minCosTheta);
+                    cm->setUserRecord("DY",minDY);
+                    cm->setUserRecord("DR",minDR);
+                    cm->setUserRecord("DPhi",minDPhi);
+                }
             }
         
             return cm;
@@ -453,13 +459,27 @@ class TopReconstruction:
                             pxl::Particle* particle = particles[iparticle];
                             if (!lepton and inputEventView->getName()==_inputEventViewNameLepton and particle->getName()==_leptonName)
                             {
-                                lepton=(pxl::Particle*)particle->clone();
-                                outputEventView->insertObject(lepton);
+                                if (_inputEventViewNameLepton!=_outputEventViewName)
+                                {
+                                    lepton=(pxl::Particle*)particle->clone();
+                                    outputEventView->insertObject(lepton);
+                                }
+                                else
+                                {
+                                    lepton=particle;
+                                }
                             }
                             if (!neutrino and inputEventView->getName()==_inputEventViewNameNeutrino and particle->getName()==_neutrinoName)
                             {
-                                neutrino=(pxl::Particle*)particle->clone();
-                                outputEventView->insertObject(neutrino);
+                                if (_inputEventViewNameNeutrino!=_outputEventViewName)
+                                {
+                                    neutrino=(pxl::Particle*)particle->clone();
+                                    outputEventView->insertObject(neutrino);
+                                }
+                                else
+                                {
+                                    neutrino=particle;
+                                }
                             }
                             if (inputEventView->getName()==_inputEventViewNameJets)
                             {
