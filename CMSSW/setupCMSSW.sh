@@ -44,7 +44,7 @@ execute "git cms-init"
 
 execute "git cms-merge-topic ikrav:egm_id_phys14"
 
-execute "git submodule add -b plugin-based https://github.com/matt-komm/EDM2PXLIO.git"
+execute "git submodule add -b CMSSW_723_patch1 https://github.com/matt-komm/EDM2PXLIO.git"
 execute "git submodule add https://github.com/matt-komm/Pxl.git"
 
 execute "git checkout official-cmssw/CMSSW_7_5_X -- CommonTools/PileupAlgos"

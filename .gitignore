@@ -3,6 +3,9 @@ CMSSW/CMSSW_*
 external/*
 .*
 
+# CRAB
+CMSSW/crab/*
+
 # Compiled Object files
 *.slo
 *.lo
