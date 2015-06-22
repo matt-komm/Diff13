@@ -5,6 +5,8 @@
 #include "pxl/modules/Module.hh"
 #include "pxl/modules/ModuleFactory.hh"
 
+#include <cmath>
+
 static pxl::Logger logger("JetSelection");
 
 class JetSelection:
@@ -268,8 +270,36 @@ class JetSelection:
                             }
                         }
                         
-                        applyDRcleaning(eventView,selectedJets,dRCleaningObjects);
+                        applyDRcleaning(inputEventView,selectedJets,dRCleaningObjects);
                     }
+                    unsigned char nBFlavor = 0;
+                    unsigned char nCFlavor = 0;
+                    unsigned char nLFlavor = 0;
+                    unsigned char nGFlavor = 0;
+                    for (unsigned int ijet = 0; ijet < selectedJets.size(); ++ ijet)
+                    {
+                        if (std::abs(selectedJets[ijet]->getUserRecord("partonFlavor").toInt32())==5)
+                        {
+                            nBFlavor+=1;
+                        }
+                        else if (std::abs(selectedJets[ijet]->getUserRecord("partonFlavor").toInt32())==4)
+                        {
+                            nCFlavor+=1;
+                        }
+                        else if ((std::abs(selectedJets[ijet]->getUserRecord("partonFlavor").toInt32())<4) && (selectedJets[ijet]->getUserRecord("partonFlavor").toInt32()>0))
+                        {
+                            nLFlavor+=1;
+                        }
+                        else
+                        {
+                            nGFlavor+=1;
+                        }
+                    }
+                    inputEventView->setUserRecord("nBFlavor",nBFlavor);
+                    inputEventView->setUserRecord("nCFlavor",nCFlavor);
+                    inputEventView->setUserRecord("nLFlavor",nLFlavor);
+                    inputEventView->setUserRecord("nGFlavor",nGFlavor);
+                    
                     if (inputEventView)
                     {
                         inputEventView->setUserRecord("n"+_selectedJetName,selectedJets.size());
