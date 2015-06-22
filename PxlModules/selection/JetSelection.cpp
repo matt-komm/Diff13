@@ -278,15 +278,21 @@ class JetSelection:
                     unsigned char nGFlavor = 0;
                     for (unsigned int ijet = 0; ijet < selectedJets.size(); ++ ijet)
                     {
-                        if (std::abs(selectedJets[ijet]->getUserRecord("partonFlavor").toInt32())==5)
+                        if (!selectedJets[ijet]->hasUserRecord("partonFlavour"))
+                        {
+                            //this jet was not matched to GenJet -> ignore
+                            continue;
+                        }
+                        std::abs(selectedJets[ijet]->getUserRecord("partonFlavour").toInt32()
+                        if ()==5)
                         {
                             nBFlavor+=1;
                         }
-                        else if (std::abs(selectedJets[ijet]->getUserRecord("partonFlavor").toInt32())==4)
+                        else if (std::abs(selectedJets[ijet]->getUserRecord("partonFlavour").toInt32())==4)
                         {
                             nCFlavor+=1;
                         }
-                        else if ((std::abs(selectedJets[ijet]->getUserRecord("partonFlavor").toInt32())<4) && (selectedJets[ijet]->getUserRecord("partonFlavor").toInt32()>0))
+                        else if ((std::abs(selectedJets[ijet]->getUserRecord("partonFlavour").toInt32())<4) && (selectedJets[ijet]->getUserRecord("partonFlavour").toInt32()>0))
                         {
                             nLFlavor+=1;
                         }
