@@ -283,8 +283,7 @@ class JetSelection:
                             //this jet was not matched to GenJet -> ignore
                             continue;
                         }
-                        std::abs(selectedJets[ijet]->getUserRecord("partonFlavour").toInt32()
-                        if ()==5)
+                        if (std::abs(selectedJets[ijet]->getUserRecord("partonFlavour").toInt32())==5)
                         {
                             nBFlavor+=1;
                         }

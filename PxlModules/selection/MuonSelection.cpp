@@ -172,7 +172,8 @@ class MuonSelection:
                     std::vector<pxl::EventView*> eventViews;
                     event->getObjectsOfType(eventViews);
                     
-                    std::vector<pxl::Particle*> tightMuons;
+                    std::vector<pxl::Particle*> tightIsoMuons;
+                    std::vector<pxl::Particle*> tightAntiIsoMuons;
                     
                     for (unsigned ieventView=0; ieventView<eventViews.size();++ieventView)
                     {
@@ -190,27 +191,34 @@ class MuonSelection:
                                 {
                                     if (passesTightCriteria(particle))
                                     {
-                                        tightMuons.push_back(particle);
+                                        if (pfRelIsoCorDb(particle)<_pfRelIsoCorDbTightMuon)
+                                        {
+                                            tightIsoMuons.push_back(particle);
+                                        }
+                                        else
+                                        {
+                                            tightAntiIsoMuons.push_back(particle);
+                                        }
+                                        
                                     }
                                 }
                             }
                         }
 
-                        if (tightMuons.size()==1)
+                        if (tightIsoMuons.size()==1)
                         {
-                            pxl::Particle* tightMuon = tightMuons.front();   
+                            pxl::Particle* tightMuon = tightIsoMuons.front();   
                             tightMuon->setName(_tightMuonName);
+                            _outputIsoSource->setTargets(event);
+                            return _outputIsoSource->processTargets();
                             
-                            if (pfRelIsoCorDb(tightMuon)<_pfRelIsoCorDbTightMuon)
-                            {
-                                _outputIsoSource->setTargets(event);
-                                return _outputIsoSource->processTargets();
-                            }
-                            else
-                            {
-                                _outputAntiIsoSource->setTargets(event);
-                                return _outputAntiIsoSource->processTargets();
-                            }
+                        }
+                        else if (tightIsoMuons.size()==0 || tightAntiIsoMuons.size()==1)
+                        {
+                            pxl::Particle* tightMuon = tightAntiIsoMuons.front();   
+                            tightMuon->setName(_tightMuonName);
+                            _outputAntiIsoSource->setTargets(event);
+                            return _outputAntiIsoSource->processTargets();
                         }
                         else
                         {
