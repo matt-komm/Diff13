@@ -213,7 +213,7 @@ class MuonSelection:
                             return _outputIsoSource->processTargets();
                             
                         }
-                        else if (tightIsoMuons.size()==0 || tightAntiIsoMuons.size()==1)
+                        else if (tightIsoMuons.size()==0 && tightAntiIsoMuons.size()==1)
                         {
                             pxl::Particle* tightMuon = tightAntiIsoMuons.front();   
                             tightMuon->setName(_tightMuonName);
