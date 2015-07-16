@@ -17,10 +17,10 @@ struct FileInfo
 };
 
 static const std::unordered_map<std::string,FileInfo> eventWeights = {
-    {"ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1", //TToLeptons_t-channel-CSA14_Tune4C_13TeV-aMCatNLO-tauola
+    {"TToLeptons_t-channel-CSA14_Tune4C_13TeV-aMCatNLO-tauola",
         {
-            3999910,
-            216.97*0.324
+            1037660,
+            136.02*0.324
         }
     },
     {"TBarToLeptons_t-channel_Tune4C_CSA14_13TeV-aMCatNLO-tauola",
@@ -30,15 +30,15 @@ static const std::unordered_map<std::string,FileInfo> eventWeights = {
         }
     },
 
-    {"ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1", //T_tW-channel-DR_Tune4C_13TeV-CSA14-powheg-tauola
+    {"T_tW-channel-DR_Tune4C_13TeV-CSA14-powheg-tauola",
         {
-            998400,
+            986100,
             35.6
         }
     },
-    {"ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1", //Tbar_tW-channel-DR_Tune4C_13TeV-CSA14-powheg-tauola"
+    {"Tbar_tW-channel-DR_Tune4C_13TeV-CSA14-powheg-tauola",
         {
-            1000000,
+            971800,
             35.6
         }
     },
@@ -56,28 +56,28 @@ static const std::unordered_map<std::string,FileInfo> eventWeights = {
         }
     },
 
-    {"TT_TuneCUETP8M1_13TeV-powheg-pythia8", //TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola
+    {"TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola",
         {
-            19665194,
+            25446993,
             831.76
         }
     },
-    {"WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8", //WJetsToLNu_13TeV-madgraph-pythia8-tauola
+    {"WJetsToLNu_13TeV-madgraph-pythia8-tauola",
         {
-            24089991,
+            10017462,
             20508.9*3 //(= n leptons)
         }
     },
-    {"DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8", //DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8 
-       {
-	    28825132,
+    {"DYJetsToLL_M-50_13TeV-madgraph-pythia8",
+        {
+            2829164,
             6025.2
         }
     },
 
-    {"QCD_Pt-20toInf_MuEnrichedPt15_TuneCUETP8M1_13TeV_pythia8", //QCD_Pt-20toInf_MuEnrichedPt15_PionKaonDecay_Tune4C_13TeV_pythia8
+    {"QCD_Pt-20toInf_MuEnrichedPt15_PionKaonDecay_Tune4C_13TeV_pythia8",
         {
-	    13227148,
+            4777926,
             866600000 * 0.00044
         }
     },
@@ -128,26 +128,26 @@ static const std::unordered_map<std::string,FileInfo> eventWeights = {
 
     {"WJetsToLNu_HT-100to200_Tune4C_13TeV-madgraph-tauola",
         {
-            1037660,
-            136.02*0.324
+            5262265,
+            1817
         }
     },
     {"WJetsToLNu_HT-200to400_Tune4C_13TeV-madgraph-tauola",
         {
-            1037660,
-            136.02*0.324
+            4936077,
+            471.6
         }
     },
     {"WJetsToLNu_HT-400to600_Tune4C_13TeV-madgraph-tauola",
         {
-            1037660,
-            136.02*0.324
+            4640594,
+            55.61
         }
     },
-    {"WJetsToLNu_HT-700toInf_Tune4C_13TeV-madgraph-tauola",
+    {"WJetsToLNu_HT-600toInf_Tune4C_13TeV-madgraph-tauola",
         {
-            1037660,
-            136.02*0.324
+            4581841,
+            18.81
         }
     }
 

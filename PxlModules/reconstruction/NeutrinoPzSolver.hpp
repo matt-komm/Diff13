@@ -130,8 +130,10 @@ void solveNu4Momentum(pxl::Particle* neutrino, const pxl::LorentzVector& lepton,
         if(usePzAbsValMinimumSolutions_)
         {
             pznu = pz1;
+            neutrino->setUserRecord("altSolution",pz2);
             if(fabs(pz1)>fabs(pz2))
             {
+                neutrino->setUserRecord("altSolution",pz1);
                 pznu = pz2;
             }
         }
