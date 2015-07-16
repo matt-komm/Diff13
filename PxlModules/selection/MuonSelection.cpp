@@ -18,10 +18,11 @@ class MuonSelection:
     public pxl::Module
 {
     private:
-        pxl::Source* _outputIsoSource;
+        pxl::Source* _outputIsoLessSource;
+        pxl::Source* _outputIsoMoreSource;
         pxl::Source* _outputAntiIsoSource;
         pxl::Source* _outputOtherSource;
-        
+
         std::string _inputEventViewName;
         std::string _inputMuonName;
         std::string _tightMuonName;
@@ -29,7 +30,8 @@ class MuonSelection:
         /*Tight Muon Related Criteria*/
         double _pTMinTightMuon;  //Minimum transverse momentum
         double _etaMaxTightMuon; //Maximum pseudorapidity
-        double _pfRelIsoCorDbTightMuon; //Muon Isolation:Relative(Rel) Isolation Correction (Cor) Delta beta (Db)
+        double _pfRelIsoLessCorDbTightMuon; //Muon Isolation:Relative(Rel) Isolation Correction (Cor) Delta beta (Db)
+        double _pfRelIsoMoreCorDbTightMuon; //Muon Isolation:Relative(Rel) Isolation Correction (Cor) Delta beta (Db)
         double _pfRelIsoCorDbBetaTightMuon; //Muon Isolation:Relative Isolation Correction (Cor) Delta beta (Db)- Beta parameter
 
       
@@ -43,7 +45,8 @@ class MuonSelection:
 
             _pTMinTightMuon(30),
             _etaMaxTightMuon(2.5),
-            _pfRelIsoCorDbTightMuon(0.12),
+	    _pfRelIsoLessCorDbTightMuon(0.06),
+	    _pfRelIsoMoreCorDbTightMuon(0.12),
             _pfRelIsoCorDbBetaTightMuon(0.5)
 
 
@@ -55,8 +58,9 @@ class MuonSelection:
 
         {
             addSink("input", "input");
-            _outputIsoSource = addSource("1 iso muon", "iso");
-            _outputAntiIsoSource = addSource("1 anti-iso muon", "anti-iso");
+	    _outputIsoLessSource = addSource("1 iso muon", "iso");
+	    _outputIsoMoreSource = addSource("1 iso-more muon", "iso-more");
+	    _outputAntiIsoSource = addSource("1 anti-iso muon", "anti-iso");
             _outputOtherSource = addSource("other", "other");
 
             addOption("Event view","name of the event view where muons are selected",_inputEventViewName);
@@ -65,7 +69,8 @@ class MuonSelection:
 
             addOption("TightMuon Minimum pT","",_pTMinTightMuon);
             addOption("TightMuon Maximum Eta","",_etaMaxTightMuon);
-            addOption("TightMuon Minimum Relative Iso DeltaBeta","",_pfRelIsoCorDbTightMuon);
+	    addOption("TightMuon Minimum Relative IsoLess DeltaBeta","",_pfRelIsoLessCorDbTightMuon);
+	    addOption("TightMuon Minimum Relative IsoMore DeltaBeta","",_pfRelIsoMoreCorDbTightMuon);
             addOption("TightMuon Relative Iso DeltaBeta; Beta Parameter","",_pfRelIsoCorDbBetaTightMuon);
         }
 
@@ -104,7 +109,8 @@ class MuonSelection:
 
             getOption("TightMuon Minimum pT",_pTMinTightMuon);
             getOption("TightMuon Maximum Eta",_etaMaxTightMuon);
-            getOption("TightMuon Minimum Relative Iso DeltaBeta",_pfRelIsoCorDbTightMuon);
+	    getOption("TightMuon Minimum Relative IsoLess DeltaBeta",_pfRelIsoLessCorDbTightMuon);
+	    getOption("TightMuon Minimum Relative IsoMore DeltaBeta",_pfRelIsoMoreCorDbTightMuon);
             getOption("TightMuon Relative Iso DeltaBeta; Beta Parameter",_pfRelIsoCorDbBetaTightMuon);
         }
 
@@ -151,14 +157,14 @@ class MuonSelection:
             if (not (fabs(particle->getUserRecord("dz").toFloat())<_dzMaxTightMuon)) {
                 return false;
             }
-            if (not (particle->getUserRecord("trackerLayersWithMeasurement").toInt32()>_trackerLayersWithMeasurementTightMuon)) {
+            if (not (particle->getUserRecord("trackerLayersWithMeasurement").toFloat()>_trackerLayersWithMeasurementTightMuon)) {
                 return false;
-            }
+	    }
             if (not (pfRelIsoCorDb(particle)<_pfRelIsoCorDbTightMuon))
             {
                 return false;
             }
-            */
+	    */
             return true;
         }
 
@@ -169,62 +175,75 @@ class MuonSelection:
                 pxl::Event *event  = dynamic_cast<pxl::Event *> (sink->get());
                 if (event)
                 {
-                    std::vector<pxl::EventView*> eventViews;
+		    std::vector<pxl::EventView*> eventViews;
                     event->getObjectsOfType(eventViews);
                     
-                    std::vector<pxl::Particle*> tightIsoMuons;
-                    std::vector<pxl::Particle*> tightAntiIsoMuons;
-                    
+		    std::vector<pxl::Particle*> tightIsoLessMuons;
+		    std::vector<pxl::Particle*> tightIsoMoreMuons;
+		    std::vector<pxl::Particle*> tightAntiIsoMuons;
+		    
                     for (unsigned ieventView=0; ieventView<eventViews.size();++ieventView)
-                    {
-                        pxl::EventView* eventView = eventViews[ieventView];
-                        if (eventView->getName()==_inputEventViewName)
-                        {
-                            std::vector<pxl::Particle*> particles;
-                            eventView->getObjectsOfType(particles);
+		    {
+		        pxl::EventView* eventView = eventViews[ieventView];
+			if (eventView->getName()==_inputEventViewName)
+			{
+			    std::vector<pxl::Particle*> particles;
+			    eventView->getObjectsOfType(particles);
 
-                            for (unsigned iparticle=0; iparticle<particles.size();++iparticle)
-                            {
-                                pxl::Particle* particle = particles[iparticle];
+			    for (unsigned iparticle=0; iparticle<particles.size();++iparticle)
+			    {
+				pxl::Particle* particle = particles[iparticle];
 
-                                if (particle->getName()==_inputMuonName)
-                                {
-                                    if (passesTightCriteria(particle))
-                                    {
-                                        if (pfRelIsoCorDb(particle)<_pfRelIsoCorDbTightMuon)
-                                        {
-                                            tightIsoMuons.push_back(particle);
-                                        }
-                                        else
-                                        {
-                                            tightAntiIsoMuons.push_back(particle);
-                                        }
-                                        
-                                    }
-                                }
-                            }
-                        }
-
-                        if (tightIsoMuons.size()==1)
-                        {
-                            pxl::Particle* tightMuon = tightIsoMuons.front();   
+				if (particle->getName()==_inputMuonName)
+				{
+				    if (passesTightCriteria(particle))
+				    {
+				        if (pfRelIsoCorDb(particle)<_pfRelIsoLessCorDbTightMuon)
+					{
+					    tightIsoLessMuons.push_back(particle);
+					}
+					else if (pfRelIsoCorDb(particle)>_pfRelIsoLessCorDbTightMuon && 
+						 pfRelIsoCorDb(particle)<_pfRelIsoMoreCorDbTightMuon)
+					{
+					    tightIsoMoreMuons.push_back(particle);
+					    
+					}
+					else
+					{
+					    tightAntiIsoMuons.push_back(particle);
+					}
+				    }
+				}
+			    }
+			}
+						
+			if (tightIsoLessMuons.size()==1)
+			{
+			    pxl::Particle* tightMuon = tightIsoLessMuons.front();   
                             tightMuon->setName(_tightMuonName);
-                            _outputIsoSource->setTargets(event);
-                            return _outputIsoSource->processTargets();
+                            _outputIsoLessSource->setTargets(event);
+                            return _outputIsoLessSource->processTargets();
                             
-                        }
-                        else if (tightIsoMuons.size()==0 && tightAntiIsoMuons.size()==1)
-                        {
-                            pxl::Particle* tightMuon = tightAntiIsoMuons.front();   
+			}
+			else if (tightIsoMoreMuons.size()==1)
+			{
+			    pxl::Particle* tightMuon = tightIsoMoreMuons.front();   
+                            tightMuon->setName(_tightMuonName);
+                            _outputIsoMoreSource->setTargets(event);
+                            return _outputIsoMoreSource->processTargets();
+			}
+                        else if (tightIsoLessMuons.size()==0 && tightIsoMoreMuons.size()==0 && tightAntiIsoMuons.size()==1)
+			{
+			    pxl::Particle* tightMuon = tightAntiIsoMuons.front();   
                             tightMuon->setName(_tightMuonName);
                             _outputAntiIsoSource->setTargets(event);
                             return _outputAntiIsoSource->processTargets();
-                        }
-                        else
-                        {
+			}
+			else
+			{
                             _outputOtherSource->setTargets(event);
                             return _outputOtherSource->processTargets();
-                        }
+			}
                     }
                 }
             }
@@ -263,6 +282,19 @@ class MuonSelection:
             }
             float relIso = (R04PFsumChargedHadronPt + std::max(R04sumNeutralHadronEt+ R04PFsumPhotonEt - _pfRelIsoCorDbBetaTightMuon*R04PFsumPUPt, 0.0)) / pT;
             particle->setUserRecord("relIso_deltaBeta",relIso);
+            return relIso;
+        }
+
+
+        double pfRelIsoPUPPI (pxl::Particle* particle)
+        {
+            float pT =  particle->getPt();
+            if( pT < std::numeric_limits<float>::epsilon())
+            {
+                throw "Division by zero pT!";
+            }
+            float relIso = particle->getUserRecord("puppiIsoMuonR40").toFloat() / pT;
+
             return relIso;
         }
   

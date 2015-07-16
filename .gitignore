@@ -6,6 +6,9 @@ external/*
 # CRAB
 CMSSW/crab/*
 
+#PXLMODULES
+PxlModules/build
+
 # Compiled Object files
 *.slo
 *.lo
