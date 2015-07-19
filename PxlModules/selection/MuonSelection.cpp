@@ -217,12 +217,10 @@ class MuonSelection:
                                             tightAntiIsoMuons.push_back(particle);
                                         }
                                     }
-                                    break;
                                 }
                             }
                         }
                     }
-
                     //1 highly iso muon, 0 intermediate iso muons
                     if (tightIsoLessMuons.size()==1 && tightIsoMoreMuons.size()==0)
                     {
