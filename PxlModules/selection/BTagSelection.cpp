@@ -36,9 +36,9 @@ class BTagSelection:
             _inputJetName("SelectedJet"),
             _inputEventViewName("Reconstructed"),
             _bTaggedJetName("SelectedBJet"),
-            _bTaggingAlgorithmName("combinedInclusiveSecondaryVertexV2BJetTags"),
+            _bTaggingAlgorithmName("pfCombinedInclusiveSecondaryVertexV2BJetTags"),
             _maxEtaBJet(2.4),
-            _bTaggingWorkingPoint(0.941)
+            _bTaggingWorkingPoint(0.97)
 
         {
             addSink("input", "input");
