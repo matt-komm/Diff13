@@ -7,6 +7,8 @@
 
 #include "NeutrinoPzSolver.hpp"
 
+#include <iostream>
+
 static pxl::Logger logger("NeutrinoPz");
 
 class NeutrinoPz:
@@ -138,7 +140,12 @@ class NeutrinoPz:
                             {
                                 neutrino=outputEventView->create<pxl::Particle>();
                                 neutrino->setName(_neutrinoName);
-                                solveNu4Momentum(neutrino,lepton->getVector(),met->getPx(),met->getPy());
+                                //our code
+                                //solveNu4Momentum(neutrino,lepton->getVector(),met->getPx(),met->getPy());
+                                //from Hamed - possible difference is in treating the complex solution cases
+                                math::XYZTLorentzVector nuVec = NuMomentum(lepton->getPx(), lepton->getPy(), lepton->getPz(), lepton->getPt(), lepton->getE(), met->getPx(),met->getPy() );
+                                //std::cout<<neutrino->getPt()-nuVec.Pt()<<std::endl;
+                                neutrino->setP4(nuVec.Px(),nuVec.Py(),nuVec.Pz(),nuVec.E());
                                 pxl::Particle p1;
                                 pxl::Particle p2;
                                 p1.getVector()+=met->getVector();
