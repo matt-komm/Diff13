@@ -12,6 +12,8 @@
 #include "pxl/modules/Module.hh"
 #include "pxl/modules/ModuleFactory.hh"
 
+#include "muonisolation.h"
+
 static pxl::Logger logger("MuonVeto");
 
 class MuonVeto:
@@ -127,7 +129,7 @@ class MuonVeto:
             {
                 return false;
             }
-            if (not (pfRelIsoCorDb (particle)<_pfRelIsoCorDbLooseMuon))
+            if (not (pfRelIsoCorrectedDeltaBetaR04 (particle,_pfRelIsoCorDbBetaLooseMuon)<_pfRelIsoCorDbLooseMuon))
             {
                 return false;
             }
@@ -218,21 +220,6 @@ class MuonVeto:
         {
             delete this;
         }
-        
-        double pfRelIsoCorDb (const pxl::Particle* particle)
-        {
-            float R04PFsumChargedHadronPt = particle->getUserRecord("R04PFsumChargedHadronPt").toFloat();
-            float R04sumNeutralHadronEt = particle->getUserRecord("R04PFsumNeutralHadronEt").toFloat(); //Correct it!
-            float R04PFsumPhotonEt = particle->getUserRecord("R04PFsumPhotonEt").toFloat(); //Correct it!
-            float R04PFsumPUPt = particle->getUserRecord("R04PFsumPUPt").toFloat();
-            float pT =  particle->getPt();
-            if( pT < std::numeric_limits<float>::epsilon())
-            {
-                throw "Division by zero pT!";
-            }
-            return  (R04PFsumChargedHadronPt + std::max(R04sumNeutralHadronEt+ R04PFsumPhotonEt - _pfRelIsoCorDbBetaLooseMuon*R04PFsumPUPt, 0.0)) / pT;
-        }
-  
 };
 
 PXL_MODULE_INIT(MuonVeto)

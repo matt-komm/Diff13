@@ -12,6 +12,8 @@
 #include "pxl/modules/Module.hh"
 #include "pxl/modules/ModuleFactory.hh"
 
+#include "muonisolation.h"
+
 static pxl::Logger logger("MuonSelection");
 
 class MuonSelection:
@@ -199,12 +201,12 @@ class MuonSelection:
                                 {
                                     if (passesTightCriteria(particle))
                                     {
-                                        if (pfRelIsoCorDb(particle)<_pfRelIsoLessCorDbTightMuon)
+                                        if (pfRelIsoCorrectedDeltaBetaR04(particle,_pfRelIsoCorDbBetaTightMuon)<_pfRelIsoLessCorDbTightMuon)
                                         {
                                             //highly isolated muons
                                             tightIsoLessMuons.push_back(particle);
                                         }
-                                        else if (pfRelIsoCorDb(particle)>_pfRelIsoLessCorDbTightMuon && pfRelIsoCorDb(particle)<_pfRelIsoMoreCorDbTightMuon)
+                                        else if (pfRelIsoCorrectedDeltaBetaR04(particle,_pfRelIsoCorDbBetaTightMuon)>_pfRelIsoLessCorDbTightMuon && pfRelIsoCorrectedDeltaBetaR04(particle,_pfRelIsoCorDbBetaTightMuon)<_pfRelIsoMoreCorDbTightMuon)
                                         {
                                             //intermediate isolated muons
                                             tightIsoMoreMuons.push_back(particle);
@@ -273,36 +275,7 @@ class MuonSelection:
         {
             delete this;
         }
-        
-        double pfRelIsoCorDb (pxl::Particle* particle)
-        {
-            float R04PFsumChargedHadronPt = particle->getUserRecord("R04PFsumChargedHadronPt").toFloat();
-            float R04sumNeutralHadronEt = particle->getUserRecord("R04PFsumNeutralHadronEt").toFloat();
-            float R04PFsumPhotonEt = particle->getUserRecord("R04PFsumPhotonEt").toFloat();
-            float R04PFsumPUPt = particle->getUserRecord("R04PFsumPUPt").toFloat();
-            float pT =  particle->getPt();
-            if( pT < std::numeric_limits<float>::epsilon())
-            {
-                throw "Division by zero pT!";
-            }
-            float relIso = (R04PFsumChargedHadronPt + std::max(R04sumNeutralHadronEt+ R04PFsumPhotonEt - _pfRelIsoCorDbBetaTightMuon*R04PFsumPUPt, 0.0)) / pT;
-            particle->setUserRecord("relIso_deltaBeta",relIso);
-            return relIso;
-        }
 
-
-        double pfRelIsoPUPPI (pxl::Particle* particle)
-        {
-            float pT =  particle->getPt();
-            if( pT < std::numeric_limits<float>::epsilon())
-            {
-                throw "Division by zero pT!";
-            }
-            float relIso = particle->getUserRecord("puppiIsoMuonR40").toFloat() / pT;
-
-            return relIso;
-        }
-  
 };
 
 PXL_MODULE_INIT(MuonSelection)
