@@ -409,7 +409,7 @@ class TopReconstruction:
                 {
                     //take the central jet as the one from the top
                     wboson = makeWboson(eventView,lepton,neutrino);
-                    std::sort(lightjets.begin(),lightjets.end(),SortByUserRecord("combinedInclusiveSecondaryVertexV2BJetTags"));
+                    std::sort(lightjets.begin(),lightjets.end(),SortByUserRecord("pfCombinedInclusiveSecondaryVertexV2BJetTags"));
                     lightjet=(pxl::Particle*)lightjets[0]->clone();
                     bjet=(pxl::Particle*)lightjets[1]->clone();
                     eventView->insertObject(lightjet);
@@ -429,7 +429,7 @@ class TopReconstruction:
                 {
                     //take the jet with the higher pT as the one from the top
                     wboson = makeWboson(eventView,lepton,neutrino);
-                    std::sort(bjets.begin(),bjets.end(),SortByUserRecord("combinedInclusiveSecondaryVertexV2BJetTags"));
+                    std::sort(bjets.begin(),bjets.end(),SortByUserRecord("pfCombinedInclusiveSecondaryVertexV2BJetTags"));
                     lightjet=(pxl::Particle*)bjets[1]->clone();
                     bjet=(pxl::Particle*)bjets[0]->clone();
                     eventView->insertObject(lightjet);
@@ -443,7 +443,7 @@ class TopReconstruction:
                 {
                     //take the central jet as the one from the top
                     wboson = makeWboson(eventView,lepton,neutrino);
-                    std::sort(lightjets.begin(),lightjets.end(),SortByUserRecord("combinedInclusiveSecondaryVertexV2BJetTags"));
+                    std::sort(lightjets.begin(),lightjets.end(),SortByUserRecord("pfCombinedInclusiveSecondaryVertexV2BJetTags"));
                     lightjet=(pxl::Particle*)lightjets[0]->clone();
                     bjet=(pxl::Particle*)lightjets[2]->clone();
                     eventView->insertObject(lightjet);
@@ -454,7 +454,7 @@ class TopReconstruction:
                 {
                     //take the central jet as the one from the top
                     wboson = makeWboson(eventView,lepton,neutrino);
-                    std::sort(lightjets.begin(),lightjets.end(),SortByUserRecord("combinedInclusiveSecondaryVertexV2BJetTags"));
+                    std::sort(lightjets.begin(),lightjets.end(),SortByUserRecord("pfCombinedInclusiveSecondaryVertexV2BJetTags"));
                     lightjet=(pxl::Particle*)lightjets[0]->clone();
                     bjet=(pxl::Particle*)bjets[0]->clone();
                     eventView->insertObject(lightjet);
@@ -465,7 +465,7 @@ class TopReconstruction:
                 {
                     //take the jet with the higher pT as the one from the top
                     wboson = makeWboson(eventView,lepton,neutrino);
-                    std::sort(bjets.begin(),bjets.end(),SortByUserRecord("combinedInclusiveSecondaryVertexV2BJetTags"));
+                    std::sort(bjets.begin(),bjets.end(),SortByUserRecord("pfCombinedInclusiveSecondaryVertexV2BJetTags"));
                     lightjet=(pxl::Particle*)lightjets[0]->clone();
                     bjet=(pxl::Particle*)bjets[0]->clone();
                     eventView->insertObject(lightjet);
@@ -476,7 +476,7 @@ class TopReconstruction:
                 {
                     //take the jet with the higher pT as the one from the top
                     wboson = makeWboson(eventView,lepton,neutrino);
-                    std::sort(bjets.begin(),bjets.end(),SortByUserRecord("combinedInclusiveSecondaryVertexV2BJetTags"));
+                    std::sort(bjets.begin(),bjets.end(),SortByUserRecord("pfCombinedInclusiveSecondaryVertexV2BJetTags"));
                     lightjet=(pxl::Particle*)bjets[2]->clone();
                     bjet=(pxl::Particle*)bjets[0]->clone();
                     eventView->insertObject(lightjet);
