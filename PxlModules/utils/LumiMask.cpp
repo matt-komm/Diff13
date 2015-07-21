@@ -9,6 +9,7 @@
 
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <fstream>
 #include <sstream>
 
@@ -26,9 +27,13 @@ class LumiMask:
         std::string _runField;
         std::string _maskFileName;
         
+        std::unordered_map<unsigned int,std::unordered_set<unsigned int>> _mask;
+        
     public:
         LumiMask():
-            Module()
+            Module(),
+            _lumiField("LuminosityBlock"),
+            _runField("Run")
         {
             addSink("input", "input");
             _outputSource = addSource("output","output");
@@ -72,23 +77,53 @@ class LumiMask:
             getOption("name of run field",_runField);
             getOption("mask file",_maskFileName);
             
-            std::stringstream maskData;
-            std::ifstream f(_maskFileName, std::ios::in);
-            std::string line;
-            if (f.is_open())
+            try
             {
-                while ( getline (f,line) )
+            
+                std::stringstream maskData;
+                std::ifstream f(_maskFileName, std::ios::in);
+                std::string line;
+                if (f.is_open())
                 {
-                    maskData << line;
+                    while ( getline (f,line) )
+                    {
+                        maskData << line;
+                    }
+                    f.close();
                 }
-                f.close();
-            }
-            rapidjson::Document document;
-            const char* data = maskData.str().c_str();
-            document.Parse<0>(data);
-            for (rapidjson::Value::ConstMemberIterator it = document.MemberBegin(); it != document.MemberEnd(); ++it)
+                rapidjson::Document document;
+                const char* data = maskData.str().c_str();
+                document.Parse<0>(data);
+
+                printf("Parsing lumi mask .....\n");
+                for (rapidjson::Value::ConstMemberIterator itr = document.MemberBegin(); itr != document.MemberEnd(); ++itr)
+                {
+                    unsigned int runNumber = std::atol(itr->name.GetString());
+                    printf("run %u: ", runNumber);
+                    const rapidjson::Value& lumis = document[itr->name.GetString()];
+                    unsigned int nLumis=0;
+                    for (rapidjson::SizeType i = 0; i < lumis.Size(); i++)
+                    {
+                        rapidjson::SizeType first = 0;
+                        rapidjson::SizeType last = 1;
+                        unsigned int lumiStart = lumis[i][first].GetUint();
+                        unsigned int lumiEnd = lumis[i][last].GetUint();
+                        printf("%u-%u,", lumiStart,lumiEnd);
+                        
+                        for (unsigned int ilumi = lumiStart; ilumi<lumiEnd+1; ++ilumi)
+                        {
+                            _mask[runNumber].insert(ilumi);
+                            ++nLumis;
+                        }
+                        
+                    }
+                    printf(" total lumis = %u\n",nLumis);
+                }
+                printf("   ..... done!\n");
+            } 
+            catch (...)
             {
-                printf("member %s\n", it->name.GetString());
+                throw std::runtime_error(getName()+": error during parsing of lumi mask!");
             }
         }
 
@@ -99,11 +134,23 @@ class LumiMask:
                 pxl::Event *event  = dynamic_cast<pxl::Event*>(sink->get());
                 if (event)
                 {
-                    //std::string processName = event->getUserRecord(_processNameField);
-		    
-
-                    _outputSource->setTargets(event);
-                    return _outputSource->processTargets();
+                    unsigned int runNumber = event->getUserRecord(_runField).toUInt32();
+                    unsigned int lumiNumber = event->getUserRecord(_lumiField).toUInt32();
+		            
+		            auto lumiSet = _mask.find(runNumber);
+		            if (lumiSet!=_mask.end())
+		            {
+		                
+		                auto lumi = lumiSet->second.find(lumiNumber);
+		                if (lumi!=lumiSet->second.end())
+		                {
+		                    _outputSource->setTargets(event);
+                            return _outputSource->processTargets();
+		                }
+		            }
+                    _outputVetoSource->setTargets(event);
+                    return _outputVetoSource->processTargets();
+                    
                 }
             }
             catch(std::exception &e)
