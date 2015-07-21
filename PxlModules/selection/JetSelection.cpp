@@ -130,13 +130,19 @@ class JetSelection:
             {
                 return false;
             }
-           
+            
+            float neutralhadronEnergyFraction = 0.0;
+            if (particle->hasUserRecord("HFHadronEnergyFraction"))
+            {
+                neutralhadronEnergyFraction += particle->getUserRecord("HFHadronEnergyFraction").toFloat();
+            }
             if (particle->hasUserRecord("neutralHadronEnergyFraction"))
             {
-                if (not (particle->getUserRecord("neutralHadronEnergyFraction").toFloat()<0.99))
-                {
-                    return false;
-                }
+                neutralhadronEnergyFraction += particle->getUserRecord("neutralHadronEnergyFraction").toFloat();
+            }
+            if (not (neutralhadronEnergyFraction<0.99))
+            {
+                return false;
             }
             
             if (particle->hasUserRecord("neutralEmEnergyFraction"))
