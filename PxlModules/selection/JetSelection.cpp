@@ -33,6 +33,7 @@ class JetSelection:
         double _dR;
         
         bool _nhfBarrelOnly;
+        bool _emBarrelOnly;
         std::vector<std::string> _dRObjects;
 
     public:
@@ -48,7 +49,7 @@ class JetSelection:
             _dRInvert(false),
             _dR(0.3),
             _nhfBarrelOnly(false),
-            
+            _emBarrelOnly(false),
             _dRObjects({"TightMuon","TightElectron"})
             /*Initial Values taken from TOP JetMET Analysis (Run2) */
             /*https://twiki.cern.ch/twiki/bin/view/CMS/TopJME#General_Information */
@@ -73,6 +74,7 @@ class JetSelection:
             addOption("PF Jet Maximum Eta","",_etaMaxJet);
             
             addOption("apply NHF in barrel only","",_nhfBarrelOnly);
+            addOption("apply EM in barrel only","",_emBarrelOnly);
 
             addOption("invert dR","inverts dR cleaning",_dRInvert);
             addOption("dR cut","remove jets close to other objects, e.g. leptons",_dR);
@@ -121,6 +123,7 @@ class JetSelection:
             getOption("dR objects",_dRObjects);
             
             getOption("apply NHF in barrel only",_nhfBarrelOnly);
+            getOption("apply EM in barrel only",_emBarrelOnly);
             if (_dRObjects.size()==0)
             {
                 _dR=-1;
@@ -155,12 +158,14 @@ class JetSelection:
                     return false;
                 }
             }
-            
-            if (particle->hasUserRecord("neutralEmEnergyFraction"))
+            if ((_emBarrelOnly and fabs(particle->getEta())<2.4) or (not _emBarrelOnly))
             {
-                if (not (particle->getUserRecord("neutralEmEnergyFraction").toFloat()<0.99))
+                if (particle->hasUserRecord("neutralEmEnergyFraction"))
                 {
-                    return false;
+                    if (not (particle->getUserRecord("neutralEmEnergyFraction").toFloat()<0.99))
+                    {
+                        return false;
+                    }
                 }
             }
 
