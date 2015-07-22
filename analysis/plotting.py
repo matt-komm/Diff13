@@ -121,7 +121,7 @@ ROOT.gStyle.SetTitleSize(32, "XYZ")
 # ROOT.gStyle.SetTitleYSize(Float_t size = 0.02)
 ROOT.gStyle.SetTitleXOffset(1.135)
 #ROOT.gStyle.SetTitleYOffset(1.2)
-ROOT.gStyle.SetTitleOffset(1.24, "YZ") # Another way to set the Offset
+ROOT.gStyle.SetTitleOffset(1.32, "YZ") # Another way to set the Offset
 
 # For the axis labels:
 
@@ -242,8 +242,9 @@ sampleDict = {
             "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8"
         ],
         "color":ROOT.gROOT.GetColor(ROOT.kGreen-2),
-        "title":"W+jets",#lower[-0.05]{#scale[0.9]{ #times1.8}}",
-        "weight":"((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)"
+        "title":"W+jets",
+        #"addtitle":"(#times 1.8)",
+        "weight":"((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)*(1+0.8*(Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==1))"
     },
     
     "DY":
@@ -253,7 +254,8 @@ sampleDict = {
         ],
         "color":ROOT.gROOT.GetColor(ROOT.kBlue-1),
         "title":"Drell-Yan",
-        "weight":"((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)"
+        #"addtitle":"(#times 1.8)",
+        "weight":"((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)*(1+0.8*(Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==1))"
     },
 
     "QCD":
@@ -262,8 +264,8 @@ sampleDict = {
             "QCD_Pt-20toInf_MuEnrichedPt15_TuneCUETP8M1_13TeV_pythia8",
         ],
         "color":ROOT.gROOT.GetColor(ROOT.kGray),
-        "title":"QCD #lower[-0.06]{#scale[0.85]{#times#frac{1}{5}}}",
-        "weight":"((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)*0.2"
+        "title":"QCD",# #lower[-0.06]{#scale[0.85]{#times#frac{1}{5}}}",
+        "weight":"((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)"
     },
     
     "data":
@@ -281,9 +283,9 @@ rootFiles=[]
 for f in os.listdir(os.path.join(os.getcwd(),"plot")):
     if f.endswith(".root"):
         rootFiles.append(os.path.join(os.getcwd(),"plot",f))
-for f in os.listdir(os.path.join(os.getcwd(),"plotData")):
+for f in os.listdir(os.path.join(os.getcwd(),"plotDataDCSBUGRA")):
     if f.endswith(".root"):
-        rootFiles.append(os.path.join(os.getcwd(),"plotData",f))
+        rootFiles.append(os.path.join(os.getcwd(),"plotDataDCSBUGRA",f))
 
 def addUnderflowOverflow(hist):
     hist.SetBinContent(1,hist.GetBinContent(0)+hist.GetBinContent(1))
@@ -376,19 +378,20 @@ for sample in sampleDict.keys():
         ["light_jet_E","SingleTop_1__LightJet_1__E","forward jet energy","GeV","1",30,0,2500],
 
 
+
+
 '''
 
 
 for category in [
     ["2j0t","(Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==0)"],
-    ["2j1t","(Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==1)"],
+    #["2j1t","(Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==1)"],
     ["3j0t","(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==0)"],
     ["3j1t","(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==1)"],
     ["3j2t","(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==2)"]
 ]:
-    for var in [
-        ["top_mass","SingleTop_1__Top_1__Mass","top mass","GeV","1",50,0,800],
-    
+    for var in [    
+
         ["nVertices","Reconstructed_1__PU_1__nVertices","#vertices","","1",51,-0.5,50.5],
         ["chi2ndof","(Reconstructed_1__PU_1__PVndof>0)*Reconstructed_1__PU_1__PVchi/Reconstructed_1__PU_1__PVndof","PV #chi^{2}/ndof","","1",50,0,2.0],
         ["PVz","Reconstructed_1__PU_1__PVz","PV z","cm","1",50,-25.0,25.0],
@@ -476,7 +479,6 @@ for category in [
         
                         
     ]:
-        
         for qcd in [
             ["qcdnone","1",""],
             #["qcdnone_central","(fabs(SingleTop_1__LightJet_1__Eta)<3.0)","|#eta|<3"],
@@ -520,7 +522,7 @@ for category in [
                         if (tree):
                             tempHist=sampleHist.Clone()
                             tempHist.SetName(sampleHist.GetName()+process+str(random.random()))
-                            tree.Project(tempHist.GetName(),variableName,"5.6*mc_weight*"+sample["weight"]+"*"+weight)
+                            tree.Project(tempHist.GetName(),variableName,"41.0*mc_weight*"+sample["weight"]+"*"+weight)
                             tempHist.SetDirectory(0)
                             addUnderflowOverflow(tempHist)
                             sampleHist.Add(tempHist)
@@ -533,7 +535,10 @@ for category in [
                 
                 print "\t",sampleName,sampleHist.GetEntries(),sampleHist.Integral()
                 stackMC.Add(sampleHist,"HIST F")
+                if sample.has_key("addtitle"):
+                    legendEntries.append(["",sample["addtitle"],""])
                 legendEntries.append([sampleHist,sample["title"],"F"])
+                
                 
                 
             sumHistData = None
@@ -582,7 +587,7 @@ for category in [
             cv.GetPad(2).SetPad(0.0, 0.00, 1.0,1.0)
             cv.GetPad(2).SetFillStyle(4000)
             
-            cvxmin=0.13
+            cvxmin=0.14
             cvxmax=0.74
             cvymin=0.14
             cvymax=0.92
@@ -649,7 +654,7 @@ for category in [
             #cv.GetPad(2).SetLogy(1)
             ROOT.gPad.RedrawAxis()
             
-            legend = ROOT.TLegend(0.755,0.9,0.99,0.35)
+            legend = ROOT.TLegend(0.745,0.9,0.99,0.745-0.052*len(legendEntries))
             legend.SetFillColor(ROOT.kWhite)
             legend.SetBorderSize(0)
             legend.SetTextFont(43)
@@ -667,7 +672,7 @@ for category in [
             pText.Draw("Same")
             
             
-            pCat=ROOT.TPaveText(0.46,0.94,0.46,0.94,"NDC")
+            pCat=ROOT.TPaveText(0.47,0.94,0.47,0.94,"NDC")
             pCat.SetFillColor(ROOT.kWhite)
             pCat.SetBorderSize(0)
             pCat.SetTextFont(63)
@@ -682,7 +687,7 @@ for category in [
             pLumi.SetTextFont(43)
             pLumi.SetTextSize(30)
             pLumi.SetTextAlign(31)
-            pLumi.AddText("5.6pb#lower[-0.7]{#scale[0.7]{-1}} (13TeV)")
+            pLumi.AddText("41pb#lower[-0.7]{#scale[0.7]{-1}} (13TeV)")
             pLumi.Draw("Same")
             
             
@@ -740,11 +745,12 @@ for category in [
             #hidePave.Draw("Same")
             
             cv.Update()
-            cv.Print("/home/mkomm/Analysis/ST13/plots/2015_07_21_goldenJSON/"+outputName+".pdf")
-            cv.Print("/home/mkomm/Analysis/ST13/plots/2015_07_21_goldenJSON/"+outputName+".png")
+            cv.Print("/home/mkomm/Analysis/ST13/plots/2015_07_22_DCSBUGRA/"+outputName+".pdf")
+            cv.Print("/home/mkomm/Analysis/ST13/plots/2015_07_22_DCSBUGRA/"+outputName+".png")
+            cv.Print("/home/mkomm/Analysis/ST13/plots/2015_07_22_DCSBUGRA/"+outputName+".C")
             cv.WaitPrimitive()
             #break
-        break
+        #break
     #break
    
 
