@@ -31,6 +31,8 @@ class JetSelection:
 
         bool _dRInvert;
         double _dR;
+        
+        bool _nhfBarrelOnly;
         std::vector<std::string> _dRObjects;
 
     public:
@@ -45,6 +47,8 @@ class JetSelection:
 
             _dRInvert(false),
             _dR(0.3),
+            _nhfBarrelOnly(false),
+            
             _dRObjects({"TightMuon","TightElectron"})
             /*Initial Values taken from TOP JetMET Analysis (Run2) */
             /*https://twiki.cern.ch/twiki/bin/view/CMS/TopJME#General_Information */
@@ -67,6 +71,8 @@ class JetSelection:
 
             addOption("PF Jet Minimum pT","",_pTMinJet);
             addOption("PF Jet Maximum Eta","",_etaMaxJet);
+            
+            addOption("apply NHF in barrel only","",_nhfBarrelOnly);
 
             addOption("invert dR","inverts dR cleaning",_dRInvert);
             addOption("dR cut","remove jets close to other objects, e.g. leptons",_dR);
@@ -113,6 +119,8 @@ class JetSelection:
             getOption("invert dR",_dRInvert);
             getOption("dR cut",_dR);
             getOption("dR objects",_dRObjects);
+            
+            getOption("apply NHF in barrel only",_nhfBarrelOnly);
             if (_dRObjects.size()==0)
             {
                 _dR=-1;
@@ -131,18 +139,21 @@ class JetSelection:
                 return false;
             }
             
-            float neutralhadronEnergyFraction = 0.0;
-            if (particle->hasUserRecord("HFHadronEnergyFraction"))
+            if ((_nhfBarrelOnly and fabs(particle->getEta())<2.4) or (not _nhfBarrelOnly))
             {
-                neutralhadronEnergyFraction += particle->getUserRecord("HFHadronEnergyFraction").toFloat();
-            }
-            if (particle->hasUserRecord("neutralHadronEnergyFraction"))
-            {
-                neutralhadronEnergyFraction += particle->getUserRecord("neutralHadronEnergyFraction").toFloat();
-            }
-            if (not (neutralhadronEnergyFraction<0.99))
-            {
-                return false;
+                float neutralhadronEnergyFraction = 0.0;
+                if (particle->hasUserRecord("HFHadronEnergyFraction"))
+                {
+                    neutralhadronEnergyFraction += particle->getUserRecord("HFHadronEnergyFraction").toFloat();
+                }
+                if (particle->hasUserRecord("neutralHadronEnergyFraction"))
+                {
+                    neutralhadronEnergyFraction += particle->getUserRecord("neutralHadronEnergyFraction").toFloat();
+                }
+                if (not (neutralhadronEnergyFraction<0.99))
+                {
+                    return false;
+                }
             }
             
             if (particle->hasUserRecord("neutralEmEnergyFraction"))

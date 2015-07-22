@@ -278,12 +278,12 @@ sampleDict = {
 }
 
 rootFiles=[]
-for f in os.listdir(os.path.join(os.getcwd(),"plotPU")):
+for f in os.listdir(os.path.join(os.getcwd(),"plot")):
     if f.endswith(".root"):
-        rootFiles.append(os.path.join(os.getcwd(),"plotPU",f))
-for f in os.listdir(os.path.join(os.getcwd(),"plotDataPU")):
+        rootFiles.append(os.path.join(os.getcwd(),"plot",f))
+for f in os.listdir(os.path.join(os.getcwd(),"plotData")):
     if f.endswith(".root"):
-        rootFiles.append(os.path.join(os.getcwd(),"plotDataPU",f))
+        rootFiles.append(os.path.join(os.getcwd(),"plotData",f))
 
 def addUnderflowOverflow(hist):
     hist.SetBinContent(1,hist.GetBinContent(0)+hist.GetBinContent(1))
@@ -387,6 +387,8 @@ for category in [
     ["3j2t","(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==2)"]
 ]:
     for var in [
+        ["top_mass","SingleTop_1__Top_1__Mass","top mass","GeV","1",50,0,800],
+    
         ["nVertices","Reconstructed_1__PU_1__nVertices","#vertices","","1",51,-0.5,50.5],
         ["chi2ndof","(Reconstructed_1__PU_1__PVndof>0)*Reconstructed_1__PU_1__PVchi/Reconstructed_1__PU_1__PVndof","PV #chi^{2}/ndof","","1",50,0,2.0],
         ["PVz","Reconstructed_1__PU_1__PVz","PV z","cm","1",50,-25.0,25.0],
@@ -420,7 +422,7 @@ for category in [
         ["top_pt","SingleTop_1__Top_1__Pt","top p_{T}","GeV","1",50,0,350],
         ["top_eta","SingleTop_1__Top_1__Eta","top #eta","","1",50,-6,6],
         ["top_abseta","fabs(SingleTop_1__Top_1__Eta)","top |#eta|","","1",50,0,6],
-        ["top_mass","SingleTop_1__Top_1__Mass","top mass","GeV","1",50,0,600],
+        ["top_mass","SingleTop_1__Top_1__Mass","top mass","GeV","1",50,0,800],
         
         #["hadronic_mass","SingleTop_1__Hadronic_1__Mass","hadronic mass","","1",50,0,1000],
         #["hadronic_eta","SingleTop_1__Hadronic_1__Eta","hadronic #eta","","1",50,-7,7],
@@ -738,8 +740,8 @@ for category in [
             #hidePave.Draw("Same")
             
             cv.Update()
-            cv.Print("/home/mkomm/Analysis/ST13/plots/2015_07_21_goldenJSON_Puppi/"+outputName+".pdf")
-            cv.Print("/home/mkomm/Analysis/ST13/plots/2015_07_21_goldenJSON_Puppi/"+outputName+".png")
+            cv.Print("/home/mkomm/Analysis/ST13/plots/2015_07_21_goldenJSON/"+outputName+".pdf")
+            cv.Print("/home/mkomm/Analysis/ST13/plots/2015_07_21_goldenJSON/"+outputName+".png")
             cv.WaitPrimitive()
             #break
         break
