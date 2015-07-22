@@ -92,8 +92,7 @@ class LumiMask:
                     f.close();
                 }
                 rapidjson::Document document;
-                const char* data = maskData.str().c_str();
-                document.Parse<0>(data);
+                document.Parse<0>(maskData.str().c_str());
 
                 printf("Parsing lumi mask .....\n");
                 for (rapidjson::Value::ConstMemberIterator itr = document.MemberBegin(); itr != document.MemberEnd(); ++itr)
