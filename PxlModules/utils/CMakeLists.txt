@@ -2,9 +2,9 @@ find_package(ROOT REQUIRED)
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR} 
+    ${PROJECT_SOURCE_DIR}/internal/TMVA/inc
     ${ROOT_INCLUDE_DIR}
     ${PROJECT_SOURCE_DIR}/internal/rapidjson
-    ${PROJECT_SOURCE_DIR}/internal/TMVA/inc
 )
 
 add_library(RootTreeWriter MODULE RootTreeWriter.cpp OutputStore.cpp)
