@@ -243,7 +243,7 @@ sampleDict = {
         ],
         "color":ROOT.gROOT.GetColor(ROOT.kGreen-2),
         "title":"W+jets",
-        #"addtitle":"(#times 1.8)",
+        "addtitle":"(#times 1.8)",
         "weight":"((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)*(1+0.8*(Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==1))"
     },
     
@@ -254,8 +254,32 @@ sampleDict = {
         ],
         "color":ROOT.gROOT.GetColor(ROOT.kBlue-1),
         "title":"Drell-Yan",
+        "addtitle":"(#times 1.8)",
+        "weight":"((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)*(1+0.8*(Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==1))"
+    },
+    
+    "EWK":
+    {
+        "processes":[
+            "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8",
+            "DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8"
+        ],
+        "color":ROOT.gROOT.GetColor(ROOT.kGreen-2),
+        "title":"W/Z+jets",
         #"addtitle":"(#times 1.8)",
         "weight":"((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)*(1+0.8*(Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==1))"
+    },
+    
+    "top":
+    {
+        "processes":[
+            "TT_TuneCUETP8M1_13TeV-powheg-pythia8",
+            "ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1",
+            "ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1"
+        ],
+        "color":ROOT.gROOT.GetColor(ROOT.kOrange-3),
+        "title":"t#bar{t}, tW, s-ch.",
+        "weight":"((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)"
     },
 
     "QCD":
@@ -280,12 +304,12 @@ sampleDict = {
 }
 
 rootFiles=[]
-for f in os.listdir(os.path.join(os.getcwd(),"plot")):
+for f in os.listdir(os.path.join(os.getcwd(),"plotPuppiMidiso")):
     if f.endswith(".root"):
-        rootFiles.append(os.path.join(os.getcwd(),"plot",f))
-for f in os.listdir(os.path.join(os.getcwd(),"plotDataDCSBUGRA")):
+        rootFiles.append(os.path.join(os.getcwd(),"plotPuppiMidiso",f))
+for f in os.listdir(os.path.join(os.getcwd(),"plotDataPuppiMidisoDCSBUGRA")):
     if f.endswith(".root"):
-        rootFiles.append(os.path.join(os.getcwd(),"plotDataDCSBUGRA",f))
+        rootFiles.append(os.path.join(os.getcwd(),"plotDataPuppiMidisoDCSBUGRA",f))
 
 def addUnderflowOverflow(hist):
     hist.SetBinContent(1,hist.GetBinContent(0)+hist.GetBinContent(1))
@@ -383,15 +407,30 @@ for sample in sampleDict.keys():
 '''
 
 
-for category in [
-    ["2j0t","(Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==0)"],
-    #["2j1t","(Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==1)"],
-    ["3j0t","(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==0)"],
-    ["3j1t","(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==1)"],
-    ["3j2t","(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==2)"]
-]:
-    for var in [    
 
+globalDataWeight="1"
+#globalDataWeight+="*(Reconstructed_1__Flag_CSCTightHaloFilter==1)"
+#globalDataWeight+="*(Reconstructed_1__Flag_EcalDeadCellTriggerPrimitiveFilter==1)"
+#globalDataWeight+="*(Reconstructed_1__Flag_HBHENoiseFilter==1)"
+#globalDataWeight+="*(Reconstructed_1__Flag_METFilters==1)"
+#globalDataWeight+="*(Reconstructed_1__Flag_ecalLaserCorrFilter==1)"
+#globalDataWeight+="*(Reconstructed_1__Flag_eeBadScFilter==1)"
+#globalDataWeight+="*(Reconstructed_1__Flag_goodVertices==1)"
+#globalDataWeight+="*(Reconstructed_1__Flag_hcalLaserEventFilter==1)"
+#globalDataWeight+="*(Reconstructed_1__Flag_trackingFailureFilter==1)"
+#globalDataWeight+="*(Reconstructed_1__Flag_trkPOGFilters==1)"
+
+globalMCWeight="1*(Reconstructed_1__HLT_IsoMu20_eta2p1_v1==1)*"+globalDataWeight
+
+for category in [
+    #["2j0t","(Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==0)"],
+    ["2j1t","(Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==1)"],
+    #["3j0t","(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==0)"],
+    #["3j1t","(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==1)"],
+    #["3j2t","(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==2)"]
+]:
+
+    for var in [   
         ["nVertices","Reconstructed_1__PU_1__nVertices","#vertices","","1",51,-0.5,50.5],
         ["chi2ndof","(Reconstructed_1__PU_1__PVndof>0)*Reconstructed_1__PU_1__PVchi/Reconstructed_1__PU_1__PVndof","PV #chi^{2}/ndof","","1",50,0,2.0],
         ["PVz","Reconstructed_1__PU_1__PVz","PV z","cm","1",50,-25.0,25.0],
@@ -407,10 +446,10 @@ for category in [
         ["bjet_abseta","fabs(SingleTop_1__BJet_1__Eta)","b-jet |#eta|","","1",50,0,2.5],
         ["bjet_mass","SingleTop_1__BJet_1__Mass","b-jet mass","GeV","1",50,0.0,50.0],
         
-        ["met","Reconstructed_1__MET_1__Pt","MET","GeV","1",50,0,200],
-        #["met","Reconstructed_1__PuppiMET_1__Pt","MET","GeV","1",50,0,200],
-        ["met_phi","Reconstructed_1__MET_1__Phi","MET #phi","","1",50,-3.2,3.2],
-        #["met_phi","Reconstructed_1__PuppiMET_1__Phi","MET #phi","","1",50,-3.2,3.2],
+        #["met","Reconstructed_1__MET_1__Pt","MET","GeV","1",50,0,200],
+        ["met","Reconstructed_1__PuppiMET_1__Pt","MET","GeV","1",50,0,200],
+        #["met_phi","Reconstructed_1__MET_1__Phi","MET #phi","","1",50,-3.2,3.2],
+        ["met_phi","Reconstructed_1__PuppiMET_1__Phi","MET #phi","","1",50,-3.2,3.2],
         ["mtw","SingleTop_1__mtw_beforePz","MTW","GeV","1",50,0,200],
         
         ["neutrino_pt","SingleTop_1__Neutrino_1__Pt","neutrino p_{T}","GeV","1",50,0,250],
@@ -506,6 +545,7 @@ for category in [
             sumHistMC = None
             
             for sampleName in ["tChannel","tWChannel","TTJets","WJets","DY","QCD"]:
+                #for sampleName in ["QCD","EWK","top","tChannel"]:
                 sample=sampleDict[sampleName]
                 sampleHist=ROOT.TH1F("sampleHist"+sampleName+str(random.random()),"",nbins,xmin,xmax)
                 sampleHist.Sumw2()
@@ -522,7 +562,7 @@ for category in [
                         if (tree):
                             tempHist=sampleHist.Clone()
                             tempHist.SetName(sampleHist.GetName()+process+str(random.random()))
-                            tree.Project(tempHist.GetName(),variableName,"41.0*mc_weight*"+sample["weight"]+"*"+weight)
+                            tree.Project(tempHist.GetName(),variableName,"41.0*mc_weight*"+sample["weight"]+"*"+weight+"*"+globalMCWeight)
                             tempHist.SetDirectory(0)
                             addUnderflowOverflow(tempHist)
                             sampleHist.Add(tempHist)
@@ -562,7 +602,7 @@ for category in [
                         if (tree):
                             tempHist=sampleHist.Clone()
                             tempHist.SetName(sampleHist.GetName()+process+str(random.random()))
-                            tree.Project(tempHist.GetName(),variableName,sample["weight"]+"*"+weight)
+                            tree.Project(tempHist.GetName(),variableName,sample["weight"]+"*"+weight+"*"+globalDataWeight)
                             tempHist.SetDirectory(0)
                             addUnderflowOverflow(tempHist)
                             sampleHist.Add(tempHist)
@@ -745,9 +785,9 @@ for category in [
             #hidePave.Draw("Same")
             
             cv.Update()
-            cv.Print("/home/mkomm/Analysis/ST13/plots/2015_07_22_DCSBUGRA/"+outputName+".pdf")
-            cv.Print("/home/mkomm/Analysis/ST13/plots/2015_07_22_DCSBUGRA/"+outputName+".png")
-            cv.Print("/home/mkomm/Analysis/ST13/plots/2015_07_22_DCSBUGRA/"+outputName+".C")
+            cv.Print("/home/mkomm/Analysis/ST13/plots/2015_07_23_DCSBUGRA_MCTRIG_PuppiJets_MidisoRegion/"+outputName+".pdf")
+            cv.Print("/home/mkomm/Analysis/ST13/plots/2015_07_23_DCSBUGRA_MCTRIG_PuppiJets_MidisoRegion/"+outputName+".png")
+            cv.Print("/home/mkomm/Analysis/ST13/plots/2015_07_23_DCSBUGRA_MCTRIG_PuppiJets_MidisoRegion/"+outputName+".C")
             cv.WaitPrimitive()
             #break
         #break
