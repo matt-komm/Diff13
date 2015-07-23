@@ -31,7 +31,7 @@ set(headers4 TNeuron.h TSynapse.h TActivationChooser.h TActivation.h TActivation
 	     VariableTransformBase.h VariableIdentityTransform.h VariableDecorrTransform.h VariablePCATransform.h 
 	     VariableGaussTransform.h VariableNormalizeTransform.h VariableRearrangeTransform.h)
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${ROOT_INCLUDE_DIR} ${PROJECT_SOURCE_DIR}/internal/TMVA/inc)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/internal/TMVA/inc ${ROOT_INCLUDE_DIR})
 
 foreach(hs headers1 headers2 headers3 headers4)
   foreach(h ${${hs}})
