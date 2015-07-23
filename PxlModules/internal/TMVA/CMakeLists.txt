@@ -56,7 +56,7 @@ file(GLOB SRCFILES
 )
 
 add_library(TMVA SHARED ${SRCFILES})# G__TMVA1.cxx G__TMVA2.cxx G__TMVA3.cxx G__TMVA4.cxx)
-target_link_libraries(TMVA ${ROOT_LIBRARIES} -lCint -lRIO -lHist -lTree -lMLP -lMinuit -lXMLIO)
+target_link_libraries(TMVA ${ROOT_LIBRARIES} -lRIO -lHist -lTree -lMLP -lMinuit -lXMLIO)
 
 #install(DIRECTORY inc/TMVA/ DESTINATION include/TMVA
 #                            PATTERN ".svn" EXCLUDE
