@@ -5,6 +5,8 @@
 #include "pxl/modules/Module.hh"
 #include "pxl/modules/ModuleFactory.hh"
 
+#include "BTagWeightCalculator.hpp"
+
 #include <string>
 #include <unordered_map>
 
@@ -54,6 +56,16 @@ class BTagReweighting:
 
         void beginJob() throw (std::runtime_error)
         {
+            
+            using namespace BWGHT;
+            BTagWeightCalculator calc;
+            WorkingPoint testWP(0.2);
+            testWP.setEfficiencyFunctionMC(new ConstEfficiencyFunction(1.0,1.0));
+            testWP.setEfficiencyFunctionData(new ConstEfficiencyFunction(1.0,1.0));
+            calc.addWorkingPoint(testWP);
+            calc.getEventWeight({Jet(0.1),Jet(0.7),Jet(0.5)});
+
+            
         }
 
         bool analyse(pxl::Sink *sink) throw (std::runtime_error)
@@ -79,6 +91,10 @@ class BTagReweighting:
 
             logger(pxl::LOG_LEVEL_ERROR , "Analysed event is not an pxl::Event !");
             return false;
+        }
+        
+        void endJob() throw (std::runtime_error)
+        {
         }
 
         void shutdown() throw(std::runtime_error)

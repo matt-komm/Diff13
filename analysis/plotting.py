@@ -431,13 +431,15 @@ for category in [
 ]:
 
     for var in [   
-        ["ljet_pt","SingleTop_1__LightJet_1__Pt","light jet p_{T}","GeV","1",10,0,250],
-        ["ljet_abseta","fabs(SingleTop_1__LightJet_1__Eta)","light jet p_{T}","","1",10,0,5.0],
-        ["bjet_pt","SingleTop_1__BJet_1__Pt","b-jet p_{T}","GeV","1",10,0,250],
-        ["bjet_abseta","fabs(SingleTop_1__BJet_1__Eta)","b-jet |#eta|","","1",10,0,5.0],
-        ["muon_pt","SingleTop_1__TightMuon_1__Pt","muon p_{T}","GeV","1",10,0,200],
-        ["muon_abseta","fabs(SingleTop_1__TightMuon_1__Eta)","muon |#eta|","","1",10,0,4],
-        ["mtw","SingleTop_1__mtw_beforePz","MTW","GeV","1",10,0,200],
+        #["ljet_pt","SingleTop_1__LightJet_1__Pt","light jet p_{T}","GeV","1",10,0,250],
+        #["ljet_abseta","fabs(SingleTop_1__LightJet_1__Eta)","light jet p_{T}","","1",10,0,5.0],
+        #["bjet_pt","SingleTop_1__BJet_1__Pt","b-jet p_{T}","GeV","1",10,0,250],
+        #["bjet_abseta","fabs(SingleTop_1__BJet_1__Eta)","b-jet |#eta|","","1",10,0,5.0],
+        #"muon_pt","SingleTop_1__TightMuon_1__Pt","muon p_{T}","GeV","1",10,0,200],
+        #["muon_abseta","fabs(SingleTop_1__TightMuon_1__Eta)","muon |#eta|","","1",10,0,4],
+        #["mtw","SingleTop_1__mtw_beforePz","MTW","GeV","1",10,0,200],
+        #["met","Reconstructed_1__MET_1__Pt","MET","GeV","1",10,0,200],
+        ["met_phi","Reconstructed_1__MET_1__Phi","MET #phi","","1",10,-3.2,3.2],
     ]:
         '''
         ["nVertices","Reconstructed_1__PU_1__nVertices","#vertices","","1",51,-0.5,50.5],
@@ -638,7 +640,7 @@ for category in [
             cv.GetPad(2).SetFillStyle(4000)
             
             cvxmin=0.14
-            cvxmax=0.98
+            cvxmax=0.97
             cvymin=0.14
             cvymax=0.92
             resHeight=0.35
@@ -715,7 +717,9 @@ for category in [
             ROOT.gPad.RedrawAxis()
             
             #legend = ROOT.TLegend(0.745,0.9,0.99,0.745-0.052*len(legendEntries))
-            legend = ROOT.TLegend(0.73,0.9,0.95,0.745-0.052*len(legendEntries))
+            #legend = ROOT.TLegend(0.73,0.9,0.95,0.745-0.052*len(legendEntries))
+            
+            legend = ROOT.TLegend(0.7,0.72,0.95,0.72-0.07*len(legendEntries))
             
             legend.SetFillColor(ROOT.kWhite)
             legend.SetBorderSize(0)
@@ -772,6 +776,7 @@ for category in [
             
             
             
+            
             cv.cd(1)
             axisRes=None
             if unit!="":
@@ -811,7 +816,7 @@ for category in [
             sumHistRes.Draw("Same")
             if len(rootObj)>0:
                 legend.AddEntry(rootObj[0],"MC stat.","F")
-            legend.Draw("Same")
+            
             
             axisLine = ROOT.TF1("axisLine"+str(random.random()),"1",xmin,xmax)
             axisLine.SetLineColor(ROOT.kBlack)
@@ -819,10 +824,15 @@ for category in [
             axisLine.Draw("SameL")
             ROOT.gPad.RedrawAxis()
             
+            
+            
             hidePave=ROOT.TPaveText(0.07,resHeight-0.04,cvxmin-0.005,resHeight+0.03,"NDC")
             hidePave.SetFillColor(ROOT.kGray)
             hidePave.SetFillStyle(1001)
             #hidePave.Draw("Same")
+            
+            cv.cd(2)
+            legend.Draw("Same")
             
             cv.Update()
             cv.Print("/home/mkomm/Analysis/ST13/plots/"+outputName+".pdf")
