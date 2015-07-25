@@ -60,12 +60,14 @@ class BTagReweighting:
             using namespace BWGHT;
             BTagWeightCalculator calc;
             WorkingPoint testWP(0.2);
-            testWP.setEfficiencyFunctionMC(new ConstEfficiencyFunction(1.0,1.0));
-            testWP.setEfficiencyFunctionData(new ConstEfficiencyFunction(1.0,1.0));
+            testWP.setEfficiencyFunction(new ConstEfficiencyFunction(0.7));
+            testWP.setScaleFactorFunction(new ConstScaleFactorFunction(1.0));
             calc.addWorkingPoint(testWP);
+            WorkingPoint testWP2(0.6);
+            testWP2.setEfficiencyFunction(new ConstEfficiencyFunction(0.25));
+            testWP2.setScaleFactorFunction(new ConstScaleFactorFunction(1.0));
+            calc.addWorkingPoint(testWP2);
             calc.getEventWeight({Jet(0.1),Jet(0.7),Jet(0.5)});
-
-            
         }
 
         bool analyse(pxl::Sink *sink) throw (std::runtime_error)
