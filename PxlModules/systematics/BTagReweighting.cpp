@@ -62,10 +62,10 @@ class BTagReweighting:
             WorkingPoint testWP(0.2);
             testWP.setEfficiencyFunction(new ConstEfficiencyFunction(0.7));
             testWP.setScaleFactorFunction(new ConstScaleFactorFunction(1.0));
-            calc.addWorkingPoint(testWP);
+            //calc.addWorkingPoint(testWP);
             WorkingPoint testWP2(0.6);
-            testWP2.setEfficiencyFunction(new ConstEfficiencyFunction(0.25));
-            testWP2.setScaleFactorFunction(new ConstScaleFactorFunction(1.0));
+            testWP2.setEfficiencyFunction(new ConstEfficiencyFunction(0.5));
+            testWP2.setScaleFactorFunction(new ConstScaleFactorFunction(1.5));
             calc.addWorkingPoint(testWP2);
             calc.getEventWeight({Jet(0.1),Jet(0.7),Jet(0.5)});
         }
