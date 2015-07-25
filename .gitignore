@@ -1,13 +1,16 @@
 # CMSSW
 CMSSW/CMSSW_*
-external/*
+external
 .*
 
 # CRAB
-CMSSW/crab/*
+CMSSW/crab
 
 #PXLMODULES
 PxlModules/build
+
+#analysis
+analysis
 
 # Compiled Object files
 *.slo
