@@ -1,6 +1,11 @@
 find_package(ROOT REQUIRED)
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${ROOT_INCLUDE_DIR})
+include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR} 
+    ${PROJECT_SOURCE_DIR}/internal/TMVA/inc
+    ${ROOT_INCLUDE_DIR}
+    ${PROJECT_SOURCE_DIR}/internal/rapidjson
+)
 
 add_library(RootTreeWriter MODULE RootTreeWriter.cpp OutputStore.cpp)
 target_link_libraries(RootTreeWriter ${PXL_LIBRARIES} ${ROOT_LIBRARIES})
@@ -16,3 +21,16 @@ install(
     LIBRARY DESTINATION ${PXL_PLUGIN_INSTALL_PATH}
 )
 
+add_library(LumiMask MODULE LumiMask.cpp)
+target_link_libraries(LumiMask ${PXL_LIBRARIES} ${ROOT_LIBRARIES})
+install(
+    TARGETS LumiMask
+    LIBRARY DESTINATION ${PXL_PLUGIN_INSTALL_PATH}
+)
+
+add_library(TMVATraining MODULE TMVATraining.cpp)
+target_link_libraries(TMVATraining ${PXL_LIBRARIES} ${ROOT_LIBRARIES} TMVA)
+install(
+    TARGETS TMVATraining
+    LIBRARY DESTINATION ${PXL_PLUGIN_INSTALL_PATH}
+)

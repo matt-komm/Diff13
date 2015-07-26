@@ -17,6 +17,7 @@ struct FileInfo
 };
 
 static const std::unordered_map<std::string,FileInfo> eventWeights = {
+    //PHYS14
     {"TToLeptons_t-channel-CSA14_Tune4C_13TeV-aMCatNLO-tauola",
         {
             1037660,
@@ -149,7 +150,73 @@ static const std::unordered_map<std::string,FileInfo> eventWeights = {
             4581841,
             18.81
         }
+    },
+    
+    
+    //DR74 50ns
+    {"ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1",
+        {
+            860070,
+            216.97 * 0.324
+        }
+    },
+    {"ST_t-channel_top_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1",
+        {
+            1273800,
+            136.02 * 0.324
+        }
+    },
+    {"ST_t-channel_antitop_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1",
+        {
+            681900,
+            80.95 * 0.324
+        }
+    },
+    {"ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1",
+        {
+            998400,
+            35.6
+        }
+    },
+    {"ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1",
+        {
+            1000000,
+            35.6
+        }
+    },
+    
+    {"ST_s-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1",
+        {
+            613384,
+            11.36 * 0.324
+        }
+    },
+    {"TT_TuneCUETP8M1_13TeV-powheg-pythia8",
+        {
+            19665194,
+            831.76
+        }
+    },
+    {"WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8",
+        {
+            16476437,
+            20508.9*3
+        }
+    },
+    {"DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8",
+        {
+            13351018,
+            2008.4*3
+        }
+    },
+    {"QCD_Pt-20toInf_MuEnrichedPt15_TuneCUETP8M1_13TeV_pythia8",
+        {
+            13227148,
+            866600000 * 0.00044
+        }
     }
+    
+    
 
 };
 
