@@ -44,20 +44,23 @@ if __name__=="__main__":
     config.General.transferLogs = False
 
     config.JobType.pluginName = 'Analysis'
-    config.JobType.psetName = 'EDM2PXLIO/phys14.py'
+    config.JobType.psetName = 'EDM2PXLIO/stea.py'
     config.JobType.pyCfgParams = []
     config.JobType.outputFiles = ["output.pxlio"]
 
     config.Data.inputDBS = 'global'
-    config.Data.splitting = 'FileBased'
-    config.Data.unitsPerJob = 5
+    #config.Data.splitting = 'FileBased'
+    config.Data.splitting = 'LumiBased'
+    #config.Data.lumiMask = 'https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions15/13TeV/DCSOnly/json_DCSONLY_Run2015B.txt'
+    #config.Data.runRange='251162-251883'
+    config.Data.unitsPerJob = 30
     config.Data.publication = False
 
 
     config.Site.storageSite = "T2_BE_UCL"
-    config.Site.whitelist = ['T2_CH_CERN','T2_DE_DESY','T2_BE_IIHE','T2_BE_UCL','T2_IT_Legnaro','T2_IT_Rome']
+    config.Site.whitelist = ['T2_CH_CERN','T2_DE_DESY','T2_BE_IIHE','T2_BE_UCL','T2_IT_Legnaro','T2_IT_Rome', 'T2_US_UCSD']
     
-    datasets = [
+    datasetsPHYS14 = [
         "/TToLeptons_t-channel-CSA14_Tune4C_13TeV-aMCatNLO-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM",
         "/TBarToLeptons_t-channel_Tune4C_CSA14_13TeV-aMCatNLO-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM",
         
@@ -88,20 +91,41 @@ if __name__=="__main__":
         "/QCD_Pt-80to170_EMEnriched_Tune4C_13TeV_pythia8/Phys14DR-PU20bx25_castor_PHYS14_25_V1-v1/MINIAODSIM",
     ]
     
-    for dataset in datasets:
-        processName = dataset.split("/")[1]
-    	jobName = processName+'_v5'
-    	print "kill... ",jobName
-    	kill("crab/"+jobName+"/crab_"+config.General.requestName)
+    datasets15DR74 = [
+        "/ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v1/MINIAODSIM",
+        "/ST_t-channel_top_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v1/MINIAODSIM",
+        "/ST_t-channel_antitop_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v1/MINIAODSIM",
         
+        #"/ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v1/MINIAODSIM",
+        #"/ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v2/MINIAODSIM",
+        
+        "/ST_s-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM",
+        
+        "/TT_TuneCUETP8M1_13TeV-powheg-pythia8/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v4/MINIAODSIM",
+
+        "/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v1/MINIAODSIM",
+        "/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v2/MINIAODSIM",
+        "/QCD_Pt-20toInf_MuEnrichedPt15_TuneCUETP8M1_13TeV_pythia8/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v2/MINIAODSIM",
+    ]
+    
+    datasetData=[
+        '/SingleMuon/Run2015B-PromptReco-v1/MINIAOD'
+    ]
     '''
-    dataset=datasets[int(args[0])]
-    processName = dataset.split("/")[1]
-    jobName = processName+'_v5'
+    for dataset in datasets15DR74:
+        processName = dataset.split("/")[1]
+    	jobName = processName+'_v150717'
+    	print "status... ",jobName
+    	status("crab/"+jobName+"/crab_"+config.General.requestName)
+    '''
+    '''
+    dataset=datasetData[int(args[0])]
+    processName = dataset.split("/")[1]+"_ALL"
+    jobName = processName+'_v150720'
     print "submitting... ",jobName
     config.General.workArea = "crab/"+jobName
     config.Data.inputDataset=dataset
-    config.JobType.pyCfgParams=['processName='+processName]
+    config.JobType.pyCfgParams=['processName='+processName,'isData=True']
     config.Data.outLFNDirBase='/store/user/mkomm/'+config.General.requestName+"/"+jobName
     submit(config)
     '''

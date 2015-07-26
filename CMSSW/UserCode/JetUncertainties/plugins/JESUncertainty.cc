@@ -79,8 +79,7 @@ class JESUncertainty:
             edm::ESHandle<JetCorrectorParametersCollection> JetCorParColl;
             edmSetup.get<JetCorrectionsRecord>().get(_jecES,JetCorParColl);
             const JetCorrectorParameters& JetCorPar = (*JetCorParColl)["Uncertainty"];
-            JetCorrectionUncertainty* jecUnc = new JetCorrectionUncertainty(JetCorPar);
-            (void)jecUnc;
+            JetCorrectionUncertainty jecUnc(JetCorPar);
             
             /*
             1: L2Relative
@@ -118,9 +117,9 @@ class JESUncertainty:
             for (unsigned int ijet = 0; ijet < jetCollection->size(); ++ijet)
             {
                 const pat::Jet& jet = jetCollection->at(ijet);
-                jecUnc->setJetEta(jet.eta());
-                jecUnc->setJetPt(jet.pt());
-                LorentzVector shiftedMomentum = jet.p4()*(1.0+jecUnc->getUncertainty(true)*_delta);
+                jecUnc.setJetEta(jet.eta());
+                jecUnc.setJetPt(jet.pt());
+                LorentzVector shiftedMomentum = jet.p4()*(1.0+jecUnc.getUncertainty(true)*_delta);
 
                 shiftedJets[ijet]=std::move(shiftedMomentum);
 
