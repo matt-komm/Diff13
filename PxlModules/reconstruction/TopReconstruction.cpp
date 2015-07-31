@@ -313,9 +313,9 @@ class TopReconstruction:
                 wboson = makeWboson(eventView,lepton,neutrino);
                 if (nljets==1)
                 {
-                    lightjet=(pxl::Particle*)lightjets[0]->clone();
-                    eventView->insertObject(lightjet);
-                    top = makeTop(eventView,wboson,lightjet);
+                    bjet=(pxl::Particle*)lightjets[0]->clone();
+                    eventView->insertObject(bjet);
+                    top = makeTop(eventView,wboson,bjet);
                 }
                 else if (nbjets==1)
                 {
