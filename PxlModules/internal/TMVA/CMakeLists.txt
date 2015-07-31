@@ -31,38 +31,29 @@ set(headers4 TNeuron.h TSynapse.h TActivationChooser.h TActivation.h TActivation
 	     VariableTransformBase.h VariableIdentityTransform.h VariableDecorrTransform.h VariablePCATransform.h 
 	     VariableGaussTransform.h VariableNormalizeTransform.h VariableRearrangeTransform.h)
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/internal/TMVA/inc ${ROOT_INCLUDE_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/internal/TMVA/inc ${ROOT_INCLUDE_DIR}) 
 
-foreach(hs headers1 headers2 headers3 headers4)
-  foreach(h ${${hs}})
-    set(t${hs} ${t${hs}} TMVA/${h})
-  endforeach()
-endforeach()
 
-#ROOT_GENERATE_DICTIONARY(G__TMVA1 ${theaders1} LINKDEF ${CMAKE_CURRENT_SOURCE_DIR}/inc/LinkDef1.h)
-#ROOT_GENERATE_DICTIONARY(G__TMVA2 ${theaders2} LINKDEF ${CMAKE_CURRENT_SOURCE_DIR}/inc/LinkDef2.h)
-#ROOT_GENERATE_DICTIONARY(G__TMVA3 ${theaders3} LINKDEF ${CMAKE_CURRENT_SOURCE_DIR}/inc/LinkDef3.h)
-#ROOT_GENERATE_DICTIONARY(G__TMVA4 ${theaders4} LINKDEF ${CMAKE_CURRENT_SOURCE_DIR}/inc/LinkDef4.h)
+foreach(n 1 2 3 4)
+    set(headers_full${n})
+    foreach(header ${headers${n}})
+        set(headers_full${n} ${headers_full${n}} ${PROJECT_SOURCE_DIR}/internal/TMVA/inc/TMVA/${header})
+    endforeach(header)
 
-#ROOT_GENERATE_ROOTMAP(TMVA LINKDEF LinkDef1.h LinkDef2.h LinkDef3.h LinkDef4.h DEPENDENCIES RIO Hist Matrix Tree Graf Gpad TreePlayer MLP Minuit MathCore XMLIO)
+    set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/dict${n}.C PROPERTIES GENERATED TRUE)
+    add_custom_target(generatedicts${n} ALL ${ROOTCINT_EXECUTABLE}
+        -f ${CMAKE_CURRENT_BINARY_DIR}/dict${n}.C
+        -c ${headers_full${n}} 
+        ${PROJECT_SOURCE_DIR}/internal/TMVA/inc/LinkDef${n}.h
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+endforeach(n)
 
-#ROOT_LINKER_LIBRARY(TMVA *.cxx G__TMVA1.cxx G__TMVA2.cxx G__TMVA3.cxx G__TMVA4.cxx LIBRARIES Core Cint  DEPENDENCIES RIO Hist Tree MLP Minuit XMLIO)
-
-#add_custom_target(DICTS)
-#add_dependencies(DICTS G__TMVA1)# G__TMVA2 G__TMVA3 G__TMVA4)
 
 file(GLOB SRCFILES
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cxx"
 )
 
-add_library(TMVA SHARED ${SRCFILES})# G__TMVA1.cxx G__TMVA2.cxx G__TMVA3.cxx G__TMVA4.cxx)
-target_link_libraries(TMVA ${ROOT_LIBRARIES} -lRIO -lHist -lTree -lMLP -lMinuit -lXMLIO)
-
-#install(DIRECTORY inc/TMVA/ DESTINATION include/TMVA
-#                            PATTERN ".svn" EXCLUDE
-#                           REGEX "LinkDef" EXCLUDE )
-#if(NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_INSTALL_PREFIX)
-#  install(DIRECTORY test DESTINATION tmva PATTERN ".svn" EXCLUDE)
-#endif()
+add_library(TMVA SHARED ${SRCFILES} dict1.C dict2.C dict3.C dict4.C)
 
 

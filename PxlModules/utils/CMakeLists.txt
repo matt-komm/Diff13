@@ -2,7 +2,7 @@ find_package(ROOT REQUIRED)
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR} 
-    ${PROJECT_SOURCE_DIR}/internal/TMVA/inc
+    ${PROJECT_SOURCE_DIR}/internal/TMVA/inc/TMVA
     ${ROOT_INCLUDE_DIR}
     ${PROJECT_SOURCE_DIR}/internal/rapidjson
 )
@@ -28,9 +28,5 @@ install(
     LIBRARY DESTINATION ${PXL_PLUGIN_INSTALL_PATH}
 )
 
-add_library(TMVATraining MODULE TMVATraining.cpp)
-target_link_libraries(TMVATraining ${PXL_LIBRARIES} ${ROOT_LIBRARIES} TMVA)
-install(
-    TARGETS TMVATraining
-    LIBRARY DESTINATION ${PXL_PLUGIN_INSTALL_PATH}
-)
+add_executable(TMVATraining TMVATraining.cpp)
+target_link_libraries(TMVATraining TMVA ${ROOT_LIBRARIES} -lRIO -lHist -lTree -lMLP -lMinuit -lXMLIO)

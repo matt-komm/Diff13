@@ -260,11 +260,11 @@ class BTagWeightCalculator
                     double mcEfficiency2 = wp2.getEfficiencyFunction()->getEfficiency(*jet,systematic);
                     double dataSF2 = wp2.getScaleFactorFunction()->getScaleFactor(*jet,systematic);
 
-                    
+                    /*
                     std::cout<<"MC: *( eff("<<mcEfficiency1<<"|wp"<<iwp-1<<"="<<wp1.getDiscriminatorValue()<<",jet"<<ijet<<"="<<jet->getDiscriminatorValue()<<") - eff("<<mcEfficiency2<<"|wp"<<iwp<<"="<<wp2.getDiscriminatorValue()<<",jet"<<ijet<<"="<<jet->getDiscriminatorValue()<<") = "<<(mcEfficiency1-mcEfficiency2)<<std::endl;
                     std::cout<<"data: *( eff*sf("<<dataSF1<<"| jet"<<ijet<<": pt="<<jet->vector.Pt()<<",eta="<<jet->vector.Eta()<<") - eff*sf("<<dataSF2<<"| jet"<<ijet<<": pt="<<jet->vector.Pt()<<",eta="<<jet->vector.Eta()<<") ) = "<<(dataSF1*mcEfficiency1-dataSF2*mcEfficiency2)<<std::endl; 
                     std::cout<<"w: *"<<(dataSF1*mcEfficiency1-dataSF2*mcEfficiency2)/(mcEfficiency1-mcEfficiency2)<<std::endl;
-
+                    */
                     if ((mcEfficiency1-mcEfficiency2)<0)
                     {
                         throw std::runtime_error("Found higher efficiency at tighter working point. Check the efficiency functions!");
