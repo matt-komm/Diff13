@@ -135,7 +135,8 @@ class SyntaxNode
                 {"Mass",[](const pxl::Particle* particle){ return particle->getMass();}},
                 {"Px",[](const pxl::Particle* particle){ return particle->getPx();}},
                 {"Py",[](const pxl::Particle* particle){ return particle->getPy();}},
-                {"Pz",[](const pxl::Particle* particle){ return particle->getPz();}}
+                {"Pz",[](const pxl::Particle* particle){ return particle->getPz();}},
+                {"Charge",[](const pxl::Particle* particle){ return particle->getCharge();}}
             };
             if (getField()=="ALL" or getField()=="KIN")
             {
