@@ -49,11 +49,11 @@ if __name__=="__main__":
     config.JobType.outputFiles = ["output.pxlio"]
 
     config.Data.inputDBS = 'global'
-    #config.Data.splitting = 'FileBased'
-    config.Data.splitting = 'LumiBased'
+    config.Data.splitting = 'FileBased'
+    #config.Data.splitting = 'LumiBased'
     #config.Data.lumiMask = 'https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions15/13TeV/DCSOnly/json_DCSONLY_Run2015B.txt'
     #config.Data.runRange='251162-251883'
-    config.Data.unitsPerJob = 30
+    config.Data.unitsPerJob = 2
     config.Data.publication = False
 
 
@@ -93,11 +93,11 @@ if __name__=="__main__":
     
     datasets15DR74 = [
         "/ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v1/MINIAODSIM",
-        "/ST_t-channel_top_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v1/MINIAODSIM",
-        "/ST_t-channel_antitop_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v1/MINIAODSIM",
+        #"/ST_t-channel_top_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v1/MINIAODSIM",
+        #"/ST_t-channel_antitop_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v1/MINIAODSIM",
         
-        #"/ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v1/MINIAODSIM",
-        #"/ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v2/MINIAODSIM",
+        "/ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v1/MINIAODSIM",
+        "/ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v2/MINIAODSIM",
         
         "/ST_s-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM",
         
@@ -111,21 +111,25 @@ if __name__=="__main__":
     datasetData=[
         '/SingleMuon/Run2015B-PromptReco-v1/MINIAOD'
     ]
-    '''
+    
+    
+    #for dataset in datasetData:
     for dataset in datasets15DR74:
+        #processName = dataset.split("/")[1]+"_ALL"
         processName = dataset.split("/")[1]
-    	jobName = processName+'_v150717'
+    	jobName = processName+'_v150731'
     	print "status... ",jobName
     	status("crab/"+jobName+"/crab_"+config.General.requestName)
     '''
-    '''
-    dataset=datasetData[int(args[0])]
-    processName = dataset.split("/")[1]+"_ALL"
-    jobName = processName+'_v150720'
+    
+    dataset=datasets15DR74[int(args[0])]
+    processName = dataset.split("/")[1]
+    jobName = processName+'_v150731'
     print "submitting... ",jobName
     config.General.workArea = "crab/"+jobName
     config.Data.inputDataset=dataset
-    config.JobType.pyCfgParams=['processName='+processName,'isData=True']
+    config.JobType.pyCfgParams=['processName='+processName]
+    #config.JobType.pyCfgParams=['processName='+processName,'isData=True']
     config.Data.outLFNDirBase='/store/user/mkomm/'+config.General.requestName+"/"+jobName
     submit(config)
     '''
