@@ -45,10 +45,13 @@ execute "git cms-init"
 #execute "git cms-merge-topic ikrav:egm_id_74X_v0"
 #execute "git read-tree -mu HEAD"
 
+execute "git cms-merge-topic -u cms-met:METCorUnc74X"
+
 execute "git clone -b CMSSW_744_patch2 https://github.com/matt-komm/EDM2PXLIO.git"
 execute "git reset EDM2PXLIO"
 execute "git clone https://github.com/matt-komm/Pxl.git"
 execute "git reset Pxl"
+
 
 #execute "git checkout official-cmssw/CMSSW_7_5_X -- CommonTools/PileupAlgos"
 #execute "rm CommonTools/PileupAlgos/plugins/SoftKillerProducer.cc"
@@ -56,6 +59,7 @@ execute "git reset Pxl"
 
 
 ln -s ../../UserCode
+ln -s ../../crab
 
 execute "scram b -j10"
 
