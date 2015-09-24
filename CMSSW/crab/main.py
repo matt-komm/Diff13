@@ -3,7 +3,7 @@ from httplib import HTTPException
 from CRABClient.UserUtilities import config
 
 from optparse import OptionParser
-
+import os
 
 def submit(config,*args,**kwargs):
     try:
@@ -54,17 +54,17 @@ if __name__=="__main__":
     ]
 
     config.Data.inputDBS = 'global'
-    config.Data.splitting = 'FileBased'
-    #config.Data.splitting = 'LumiBased'
+    #config.Data.splitting = 'FileBased'
+    config.Data.splitting = 'LumiBased'
     #config.Data.lumiMask = 'https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions15/13TeV/DCSOnly/json_DCSONLY_Run2015B.txt'
-    #config.Data.runRange='251162-251883'
-    config.Data.unitsPerJob = 3
+    config.Data.runRange='254833-254833'
+    config.Data.unitsPerJob = 30
     config.Data.publication = False
 
 
 
     config.Site.storageSite = "T2_BE_UCL"
-    config.Site.whitelist = ['T2_CH_CERN','T2_DE_DESY','T2_BE_IIHE','T2_BE_UCL','T2_IT_Legnaro','T2_IT_Rome', 'T2_US_UCSD']
+    #config.Site.whitelist = ['T2_CH_CERN','T2_DE_DESY','T2_BE_IIHE','T2_BE_UCL','T2_IT_Legnaro','T2_IT_Rome', 'T2_US_UCSD']
     
     datasetsPHYS14 = [
         "/TToLeptons_t-channel-CSA14_Tune4C_13TeV-aMCatNLO-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM",
@@ -147,30 +147,36 @@ if __name__=="__main__":
     
     datasetData=[
         '/SingleMuon/Run2015B-PromptReco-v1/MINIAOD',
-        '/SingleMuon/Run2015B-17Jul2015-v1/MINIAOD'
+        '/SingleMuon/Run2015B-17Jul2015-v1/MINIAOD',
+        '/SingleMuon/Run2015C-PromptReco-v1/MINIAOD', #run 254833 was 50ns as well
     ]
     
     '''
-    for dataset in datasetData:
+    for dataset in datasets15DR74:
         #for dataset in datasets15DR74:
-        #processName = dataset.split("/")[1]+"_ALL"
-        processName = dataset.split("/")[1]+"_"+dataset.split("/")[2]
-    	jobName = processName+'_v150818'
+        processName = dataset.split("/")[1]
+        #processName = dataset.split("/")[1]+"_"+dataset.split("/")[2]
+    	jobName = processName+'_v150825'
     	print "status... ",jobName
-    	#status("crab/"+jobName+"/crab_"+config.General.requestName)
+    	status("crab/"+jobName+"/crab_"+config.General.requestName)
     '''
-    '''
-    dataset=datasets15DR74[int(args[0])]
-    #dataset=datasetData[int(args[0])]
-    processName = dataset.split("/")[1]
-    #processName = dataset.split("/")[1]+"_"+dataset.split("/")[2]+"_ALL"
-    jobName = processName+'_v150818'
-    print "submitting... ",jobName
-    config.General.workArea = "crab/"+jobName
-    config.Data.inputDataset=dataset
-    config.JobType.pyCfgParams=['processName='+processName]
-    #config.JobType.pyCfgParams=['processName='+processName,'isData=True','onlyFiltered=True']
-    config.Data.outLFNDirBase='/store/user/mkomm/'+config.General.requestName+"/"+jobName
-    submit(config)
-    '''
+    
+    
+    #dataset=datasets15DR74[int(args[0])]
+    dataset=datasetData[int(args[0])]
+    #processName = dataset.split("/")[1]
+    processName = dataset.split("/")[1]+"_"+dataset.split("/")[2]+"_50ns"
+    jobName = processName+'_v150826'
+    if not os.path.isdir(os.path.join(os.getcwd(),"crab",jobName)):
+    
+        print "submitting... ",jobName
+        
+        
+        config.General.workArea = "crab/"+jobName
+        config.Data.inputDataset=dataset
+        #config.JobType.pyCfgParams=['processName='+processName]
+        config.JobType.pyCfgParams=['processName='+processName,'isData=True','onlyFiltered=True']
+        config.Data.outLFNDirBase='/store/user/mkomm/'+config.General.requestName+"/"+jobName
+        submit(config)
+    
 
