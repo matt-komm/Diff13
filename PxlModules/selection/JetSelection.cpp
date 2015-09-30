@@ -48,16 +48,12 @@ class JetSelection:
 
             _dRInvert(false),
             _dR(0.3),
-            _nhfBarrelOnly(false),
-            _emBarrelOnly(false),
             _dRObjects({"TightMuon","TightElectron"})
             /*Initial Values taken from TOP JetMET Analysis (Run2) */
             /*https://twiki.cern.ch/twiki/bin/view/CMS/TopJME#General_Information */
         {
             addSink("input", "input");
-
-
-
+            
             _outputOtherNJetsSource = addSource(">4 Jets", ">4 Jets");
             _output4JetsSource = addSource("4 Jets", "4 Jets");
             _output3JetsSource = addSource("3 Jets", "3 Jets");
@@ -73,8 +69,6 @@ class JetSelection:
             addOption("PF Jet Minimum pT","",_pTMinJet);
             addOption("PF Jet Maximum Eta","",_etaMaxJet);
             
-            addOption("apply NHF in barrel only","",_nhfBarrelOnly);
-            addOption("apply EM in barrel only","",_emBarrelOnly);
 
             addOption("invert dR","inverts dR cleaning",_dRInvert);
             addOption("dR cut","remove jets close to other objects, e.g. leptons",_dR);
@@ -115,15 +109,10 @@ class JetSelection:
             getOption("name of selected jets",_selectedJetName);
             getOption("clean event",_cleanEvent);
 
-            getOption("PF Jet Minimum pT",_pTMinJet);
-            getOption("PF Jet Maximum Eta",_etaMaxJet);
-
             getOption("invert dR",_dRInvert);
             getOption("dR cut",_dR);
             getOption("dR objects",_dRObjects);
             
-            getOption("apply NHF in barrel only",_nhfBarrelOnly);
-            getOption("apply EM in barrel only",_emBarrelOnly);
             if (_dRObjects.size()==0)
             {
                 _dR=-1;
@@ -142,24 +131,16 @@ class JetSelection:
                 return false;
             }
             
-            if ((_nhfBarrelOnly and fabs(particle->getEta())<2.4) or (not _nhfBarrelOnly))
+            if (fabs(particle->getEta())<3.0)
             {
-                float neutralhadronEnergyFraction = 0.0;
-                if (particle->hasUserRecord("HFHadronEnergyFraction"))
-                {
-                    neutralhadronEnergyFraction += particle->getUserRecord("HFHadronEnergyFraction").toFloat();
-                }
                 if (particle->hasUserRecord("neutralHadronEnergyFraction"))
                 {
-                    neutralhadronEnergyFraction += particle->getUserRecord("neutralHadronEnergyFraction").toFloat();
+                    if (not (particle->getUserRecord("neutralHadronEnergyFraction").toFloat()<0.99))
+                    {
+                        return false;
+                    }
                 }
-                if (not (neutralhadronEnergyFraction<0.99))
-                {
-                    return false;
-                }
-            }
-            if ((_emBarrelOnly and fabs(particle->getEta())<2.4) or (not _emBarrelOnly))
-            {
+                
                 if (particle->hasUserRecord("neutralEmEnergyFraction"))
                 {
                     if (not (particle->getUserRecord("neutralEmEnergyFraction").toFloat()<0.99))
@@ -167,32 +148,29 @@ class JetSelection:
                         return false;
                     }
                 }
-            }
-
-            if (not (particle->getUserRecord("nConstituents").toInt32()>1))
-            {
-                return false;
-            }
-            
-            if (particle->hasUserRecord("muonEnergyFraction"))
-            {
-                if (not (particle->getUserRecord("muonEnergyFraction").toFloat()<0.8))
+                
+                if (not (particle->getUserRecord("nConstituents").toInt32()>1))
                 {
                     return false;
                 }
             }
-
-            //additional selection if jet is central
+            
             if (fabs(particle->getEta())<2.4)
             {
                 if (particle->hasUserRecord("chargedHadronEnergyFraction"))
                 {
-                    if (not (particle->getUserRecord("chargedHadronEnergyFraction").toFloat()>0))
+                    if (not (particle->getUserRecord("chargedHadronEnergyFraction").toFloat()>0.0))
                     {
                         return false;
                     }
+                } 
+                else
+                {
+                    //CHF needs to be >0; if the entry does not exists -> CHF=0 so do not accept this jet
+                    return false;
                 }
-                if (not (particle->getUserRecord("chargedMultiplicity").toFloat()>0))
+                
+                if (not (particle->getUserRecord("chargedMultiplicity").toInt32()>0))
                 {
                     return false;
                 }
@@ -206,11 +184,26 @@ class JetSelection:
                     }
                 }
             }
+            
+            if (fabs(particle->getEta())>3.0)
+            {
+                if (particle->hasUserRecord("neutralEmEnergyFraction"))
+                {
+                    if (not (particle->getUserRecord("neutralEmEnergyFraction").toFloat()<0.90))
+                    {
+                        return false;
+                    }
+                }
+                if (not (particle->getUserRecord("neutralMultiplicity").toInt32()>10))
+                {
+                    return false;
+                }
+            }
 
             return true;
         }
 
-        void applyDRcleaning(pxl::EventView* eventView, std::vector<pxl::Particle*>& selectedJets, std::vector<pxl::Particle*>& dRCleaningObjects)
+        void applyDRcleaning(pxl::EventView* eventView, std::vector<pxl::Particle*>& selectedJets, const std::vector<pxl::Particle*>& dRCleaningObjects) const
         {
             for (std::vector<pxl::Particle*>::iterator it = selectedJets.begin(); it != selectedJets.end(); )
             {
@@ -220,7 +213,7 @@ class JetSelection:
                 {
                     pxl::Particle* dRCleanObj = dRCleaningObjects[iparticle];
                     double dR = selectedJet->getVector().deltaR(&dRCleanObj->getVector());
-                    if (!_dRInvert && dR<_dR)
+                    if ((!_dRInvert && dR<_dR) or (_dRInvert && dR>_dR))
                     {
                         eventView->removeObject(selectedJet);
                         selectedJets.erase(it);
@@ -302,7 +295,7 @@ class JetSelection:
                     {
                         if (!selectedJets[ijet]->hasUserRecord("partonFlavour"))
                         {
-                            //this jet was not matched to GenJet -> ignore
+                            //this jet was not matched to parton -> ignore
                             continue;
                         }
                         if (std::abs(selectedJets[ijet]->getUserRecord("partonFlavour").toInt32())==5)
@@ -322,13 +315,13 @@ class JetSelection:
                             nGFlavor+=1;
                         }
                     }
-                    inputEventView->setUserRecord("nBFlavor",nBFlavor);
-                    inputEventView->setUserRecord("nCFlavor",nCFlavor);
-                    inputEventView->setUserRecord("nLFlavor",nLFlavor);
-                    inputEventView->setUserRecord("nGFlavor",nGFlavor);
                     
                     if (inputEventView)
                     {
+                        inputEventView->setUserRecord("nBFlavor"+_selectedJetName,nBFlavor);
+                        inputEventView->setUserRecord("nCFlavor"+_selectedJetName,nCFlavor);
+                        inputEventView->setUserRecord("nLFlavor"+_selectedJetName,nLFlavor);
+                        inputEventView->setUserRecord("nGFlavor"+_selectedJetName,nGFlavor);
                         inputEventView->setUserRecord("n"+_selectedJetName,selectedJets.size());
                     }
                     else
