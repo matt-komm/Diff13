@@ -28,3 +28,9 @@ install(
     LIBRARY DESTINATION ${PXL_PLUGIN_INSTALL_PATH}
 )
 
+add_library(Splitter MODULE Splitter.cpp)
+target_link_libraries(Splitter ${PXL_LIBRARIES} ${ROOT_LIBRARIES})
+install(
+    TARGETS Splitter
+    LIBRARY DESTINATION ${PXL_PLUGIN_INSTALL_PATH}
+)
