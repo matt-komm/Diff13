@@ -101,7 +101,7 @@ class ElectronVeto:
             {
                 return false;
             }
-            if (not particle->getUserRecord("phys14eleIDVeto"))
+            if (not particle->getUserRecord("spring15eleIDVeto25ns"))
             {
                 return false;
             }
