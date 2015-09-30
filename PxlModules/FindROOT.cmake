@@ -129,15 +129,9 @@ IF (ROOT_FOUND)
 
   SET(LD_LIBRARY_PATH ${LD_LIBRARY_PATH} ${ROOT_LIBRARY_DIR})
 
-  #######################################
-  #
-  #       Check the executables of ROOT 
-  #          ( rootcint ) 
-  #
-  #######################################
 
-  FIND_PROGRAM(ROOT_CINT_EXECUTABLE
-    NAMES rootcint
+  FIND_PROGRAM(ROOT_CLING_EXECUTABLE
+    NAMES rootcling
     PATHS ${ROOT_BINARY_DIR}
     NO_DEFAULT_PATH
     )
