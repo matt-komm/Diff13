@@ -28,12 +28,3 @@ install(
     LIBRARY DESTINATION ${PXL_PLUGIN_INSTALL_PATH}
 )
 
-add_library(CandidateFractions MODULE CandidateFractions.cpp)
-target_link_libraries(CandidateFractions ${PXL_LIBRARIES} ${ROOT_LIBRARIES})
-install(
-    TARGETS CandidateFractions
-    LIBRARY DESTINATION ${PXL_PLUGIN_INSTALL_PATH}
-)
-
-add_executable(TMVATraining TMVATraining.cpp)
-target_link_libraries(TMVATraining TMVA ${ROOT_LIBRARIES} -lRIO -lHist -lTree -lMLP -lMinuit -lXMLIO)
