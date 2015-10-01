@@ -8,6 +8,8 @@
 #include "EventShapeVariables.hpp"
 #include "FoxWolfram.hpp"
 
+#include "TMath.h"
+
 static pxl::Logger logger("EventVariables");
 
 class EventVariables:
@@ -139,7 +141,7 @@ class EventVariables:
                                     eventView->setUserRecord(_prefix+"fox_"+std::to_string(iorder)+"_pt",fw.getMoment(FoxWolfram::PT,iorder));
                                     eventView->setUserRecord(_prefix+"fox_"+std::to_string(iorder)+"_eta",fw.getMoment(FoxWolfram::ETA,iorder));
                                     eventView->setUserRecord(_prefix+"fox_"+std::to_string(iorder)+"_psum",fw.getMoment(FoxWolfram::PSUM,iorder));
-                                    eventView->setUserRecord(_prefix+"fox_"+std::to_string(iorder)+"_pz",fw.getMoment(FoxWolfram::PZ,iorder));
+                                    eventView->setUserRecord(_prefix+"fox_"+std::to_string(iorder)+"_logpz",TMath::Log(fw.getMoment(FoxWolfram::PZ,iorder)));
                                     eventView->setUserRecord(_prefix+"fox_"+std::to_string(iorder)+"_one",fw.getMoment(FoxWolfram::ONE,iorder));
                                    
                                 

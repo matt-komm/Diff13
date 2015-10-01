@@ -34,3 +34,10 @@ install(
     TARGETS Splitter
     LIBRARY DESTINATION ${PXL_PLUGIN_INSTALL_PATH}
 )
+
+add_library(TMVAEvaluation MODULE TMVAEvaluation.cpp)
+target_link_libraries(TMVAEvaluation ${PXL_LIBRARIES} ${ROOT_LIBRARIES})
+install(
+    TARGETS TMVAEvaluation
+    LIBRARY DESTINATION ${PXL_PLUGIN_INSTALL_PATH}
+)
