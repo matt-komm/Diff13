@@ -7,7 +7,7 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/internal/rapidjson
 )
 
-add_library(RootTreeWriter MODULE RootTreeWriter.cpp OutputStore.cpp)
+add_library(RootTreeWriter MODULE RootTree.cpp RootTreeWriter.cpp OutputStore.cpp)
 target_link_libraries(RootTreeWriter ${PXL_LIBRARIES} ${ROOT_LIBRARIES})
 install(
     TARGETS RootTreeWriter
