@@ -36,7 +36,7 @@ install(
 )
 
 add_library(TMVAEvaluation MODULE TMVAEvaluation.cpp)
-target_link_libraries(TMVAEvaluation ${PXL_LIBRARIES} ${ROOT_LIBRARIES})
+target_link_libraries(TMVAEvaluation ${PXL_LIBRARIES} ${ROOT_LIBRARIES} TMVA)
 install(
     TARGETS TMVAEvaluation
     LIBRARY DESTINATION ${PXL_PLUGIN_INSTALL_PATH}

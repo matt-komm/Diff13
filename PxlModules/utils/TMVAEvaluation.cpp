@@ -247,7 +247,8 @@ class TMVAEvaluation:
             
             getOption("names",_names);
             _variableValues.resize(_names.size());
-            _methodNames.resize(_names.size());
+            
+            _methodNames.resize(_files.size());
             
             _reader = new TMVA::Reader("");
             for (unsigned int ivar = 0; ivar < _names.size(); ++ivar)
@@ -257,7 +258,7 @@ class TMVAEvaluation:
             
             for (unsigned int imethod = 0; imethod < _files.size(); ++imethod)
             {
-                const int pos = _files[imethod].find_last_of('/');
+                const int pos = _files[imethod].find_first_of('_',_files[imethod].find_last_of('/')+1)+1; //skip factory name
                 const int end = _files[imethod].find_first_of('.',pos+1);
                 std::string methodName = std::string(_files[imethod],pos,end-pos);
                 _methodNames[imethod]=methodName;
