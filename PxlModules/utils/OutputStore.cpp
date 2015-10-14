@@ -1,50 +1,18 @@
 #include "OutputStore.hpp"
 
-Tree::Tree(TFile* file, std::string name):
-    _file(file),
-    _count(0),
-    _logger("Tree")
-{
-    _tree = new TTree(name.c_str(),name.c_str());
-    _tree->SetDirectory(file);
-}
-
-
-void Tree::fill()
-{
-    ++_count;
-    _tree->Fill();
-    resetVariables();
-}
-
-void Tree::resetVariables()
-{
-    for (std::unordered_map<std::string,Variable*>::iterator it = _variables.begin(); it!=_variables.end(); ++it)
-    {
-        //std::cout<<it->first<<": "<<it->second->isDirty()<<std::endl;
-        it->second->reset();
-    }
-    //std::cout<<std::endl;
-}
-
-void Tree::write()
-{
-    _tree->Write();
-}
-
 OutputStore::OutputStore(std::string filename):
     _logger("OutputStore")
 {
     _file = new TFile(filename.c_str(),"RECREATE");
 }
 
-Tree* OutputStore::getTree(std::string treeName)
+RootTree* OutputStore::getTree(std::string treeName)
 {
-    std::unordered_map<std::string,Tree*>::iterator elem = _treeMap.find(treeName.c_str());
+    std::unordered_map<std::string,RootTree*>::iterator elem = _treeMap.find(treeName.c_str());
     if (elem==_treeMap.end())
     {
         _logger(pxl::LOG_LEVEL_INFO,"create new tree: ",treeName);
-        _treeMap[treeName]=new Tree(_file, treeName);
+        _treeMap[treeName]=new RootTree(_file, treeName);
         return _treeMap[treeName];
     } else {
         return elem->second;

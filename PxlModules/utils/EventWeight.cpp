@@ -16,8 +16,9 @@ struct FileInfo
     double crossSection;
 };
 
-static const std::unordered_map<std::string,FileInfo> eventWeights = {
+const std::unordered_map<std::string,FileInfo> eventWeights = {
     //PHYS14
+    /*
     {"TToLeptons_t-channel-CSA14_Tune4C_13TeV-aMCatNLO-tauola",
         {
             1037660,
@@ -151,9 +152,10 @@ static const std::unordered_map<std::string,FileInfo> eventWeights = {
             18.81
         }
     },
-    
+    */
     
     //DR74 50ns
+    /*
     {"ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1",
         {
             860070,
@@ -214,10 +216,78 @@ static const std::unordered_map<std::string,FileInfo> eventWeights = {
             13227148,
             866600000 * 0.00044
         }
+    },
+    */
+    
+    //DR74 25ns
+    {"ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1",
+        {
+            4280936,
+            216.97 * 0.324
+        }
+    },
+    {"ST_t-channel_5f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1",
+        {
+            1119438,
+            216.97 * 0.324
+        }
+    },
+    {"ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1",
+        {
+            995600,
+            35.6
+        }
+    },
+    {"ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1",
+        {
+            1000000,
+            35.6
+        }
+    },
+    
+    {"TT_TuneCUETP8M1_13TeV-powheg-pythia8",
+        {
+            19899500,
+            831.76
+        }
+    },
+    {"WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8",
+        {
+            16518218,
+            20508.9*3
+        }
+    },
+    {"DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8",
+        {
+            19310834,
+            2008.4*3
+        }
+    },
+    {"QCD_Pt-20toInf_MuEnrichedPt15_TuneCUETP8M1_13TeV_pythia8",
+        {
+            13201693,
+            866600000 * 0.00044
+        }
+    },
+    
+    {"WW_TuneCUETP8M1_13TeV-pythia8",
+        {
+            994416,
+            63.21,
+        }
+    },
+    {"WZ_TuneCUETP8M1_13TeV-pythia8",
+        {
+            991232,
+            22.82
+        }
+    },
+    {"ZZ_TuneCUETP8M1_13TeV-pythia8",
+        {
+            996168,
+            10.32
+        }
     }
-    
-    
-
 };
 
 class EventWeight:
@@ -229,6 +299,7 @@ class EventWeight:
         std::string _processNameField;
 
     public:
+    
         EventWeight():
             Module(),
             _processNameField("ProcessName")
@@ -279,14 +350,14 @@ class EventWeight:
                 if (event)
                 {
                     std::string processName = event->getUserRecord(_processNameField);
-		    auto it = eventWeights.find(processName);
+		            auto it = eventWeights.find(processName);
                     if (it==eventWeights.end())
                     {
-                        throw "no event weight information available for process name '"+processName+"'";
+                        throw std::runtime_error("no event weight information available for process name '"+processName+"'");
                     }
                     else
                     {
-		        event->setUserRecord("mc_weight",1.0*it->second.crossSection/it->second.nEvents);
+		                event->setUserRecord("mc_weight",1.0*it->second.crossSection/it->second.nEvents);
                     }
 
                     _outputSource->setTargets(event);

@@ -6,6 +6,8 @@
 #include "pxl/modules/ModuleFactory.hh"
 
 #include "OutputStore.hpp"
+#include "PxlParser.hpp"
+#include "RootTree.hpp"
 
 #include <vector>
 #include <string>
@@ -16,223 +18,6 @@
 
 static pxl::Logger logger("RootTreeWriter");
 
-
-class SyntaxNode
-{
-    private:
-        SyntaxNode* _parent;
-        std::vector<SyntaxNode*> _children;
-        const std::string _field;
-    public:
-
-        SyntaxNode(const std::string& field="", SyntaxNode* parent=nullptr):
-            _field(field),
-            _parent(parent)
-        {
-        }
-        
-        inline const std::string& getField() const
-        {
-            return _field;
-        }
-        
-        inline void print(unsigned int ident=0) const
-        {
-            for (unsigned int i = 0; i < ident; ++i)
-            {
-                std::cout<<" - ";
-            }
-            std::cout<<_field<<std::endl;
-            for (SyntaxNode* child: _children)
-            {
-                child->print(ident+1);
-            }
-        }
-        
-        void buildTree(const std::string& s)
-        {
-            std::string::size_type pos = s.find("->");
-            std::string childField = "";
-            if (pos!=std::string::npos)
-            {
-                childField = s.substr(0,pos);
-            }
-            else
-            {
-                childField=s;
-            }
-            SyntaxNode* foundChild = nullptr;
-            for (SyntaxNode* child: _children)
-            {
-                if (child->getField()==childField)
-                {
-                    foundChild=child;
-                    break;
-                }
-            }
-
-            if (!foundChild)
-            {
-                foundChild = new SyntaxNode(childField,this);
-                _children.push_back(foundChild);
-            }
-            if (pos!=std::string::npos)
-            {
-                foundChild->buildTree(s.substr(pos+2));
-            }
-        }
-        
-        template<class TYPE>
-        void evaluateChildren(const TYPE* object, Tree* tree, const std::string& prefix)
-        {
-            for (SyntaxNode* child: _children)
-            {
-                child->evaluate(object,tree,prefix);
-            }
-        }
-        
-        void evaluate(const pxl::Event* event, Tree* tree, const std::string& prefix)
-        {
-            std::vector<pxl::EventView*> eventViews;
-            event->getObjectsOfType(eventViews);
-            unsigned int multiplicity = 1;
-            for (pxl::EventView* eventView: eventViews)
-            {
-                if (eventView->getName()==_field)
-                {
-                    evaluateChildren(eventView,tree,prefix+getField()+"_"+std::to_string(multiplicity)+"__");
-                    ++multiplicity;
-                }
-            }
-            parseUserRecords(&event->getUserRecords(),tree,prefix);
-
-        }
-        
-        void evaluate(const pxl::EventView* eventView, Tree* tree, const std::string& prefix)
-        {
-            std::vector<pxl::Particle*> particles;
-            eventView->getObjectsOfType(particles);
-            unsigned int multiplicity = 1;
-            for (pxl::Particle* particle: particles)
-            {
-                if (particle->getName()==_field)
-                {
-                    evaluateChildren(particle,tree,prefix+getField()+"_"+std::to_string(multiplicity)+"__");
-                    ++multiplicity;
-                }
-            }
-            parseUserRecords(&eventView->getUserRecords(),tree,prefix);
-        }
-
-        void evaluate(const pxl::Particle* particle, Tree* tree, const std::string& prefix)
-        {
-            const static std::map<std::string,std::function<float(const pxl::Particle* particle)>> fct = {
-                {"Pt",[](const pxl::Particle* particle){ return particle->getPt();}},
-                {"Eta",[](const pxl::Particle* particle){ return particle->getEta();}},
-                {"Phi",[](const pxl::Particle* particle){ return particle->getPhi();}},
-                {"E",[](const pxl::Particle* particle){ return particle->getE();}},
-                {"P",[](const pxl::Particle* particle){ return particle->getP();}},
-                {"Mass",[](const pxl::Particle* particle){ return particle->getMass();}},
-                {"Px",[](const pxl::Particle* particle){ return particle->getPx();}},
-                {"Py",[](const pxl::Particle* particle){ return particle->getPy();}},
-                {"Pz",[](const pxl::Particle* particle){ return particle->getPz();}},
-                {"Charge",[](const pxl::Particle* particle){ return particle->getCharge();}}
-            };
-            if (getField()=="ALL" or getField()=="KIN")
-            {
-                for (auto it: fct)
-                {
-                    tree->storeVariable(prefix+it.first,it.second(particle));
-                }
-            }
-            else
-            {
-                auto it = fct.find(getField());
-                if (it!=fct.end())
-                {
-                    tree->storeVariable(prefix+getField(),it->second(particle));
-                }
-            }
-
-            parseUserRecords(&particle->getUserRecords(),tree,prefix);
-        }
-
-        void parseUserRecords(const pxl::UserRecords* ur, Tree* tree, const std::string& prefix)
-        {
-            if (getField()=="ALL" or getField()=="UR")
-            {
-                for (auto it: *ur->getContainer())
-                {
-                    std::string urName=it.first;
-                    std::replace(urName.begin(), urName.end(), ' ', '_');
-                    std::replace(urName.begin(), urName.end(), ':', '_');
-                    tree->storeVariable(prefix+urName,it.second);
-                }
-            }
-        }
-};
-
-
-class SyntaxTree
-{
-    public:
-        std::vector<SyntaxNode*> _children;
-    public:
-
-        SyntaxTree()
-        {
-        }
-        
-        void evaluate(pxl::Event* event, Tree* tree)
-        {
-            for (SyntaxNode* child: _children)
-            {
-                child->evaluate(event,tree,"");
-            }
-        }
-
-        inline void print() const
-        {
-            for (SyntaxNode* child: _children)
-            {
-                child->print();
-            }
-        }
-       
-
-        void buildTree(const std::string& s)
-        {
-            std::string::size_type pos = s.find("->");
-            std::string childField = "";
-            if (pos!=std::string::npos)
-            {
-                childField = s.substr(0,pos);
-            }
-            else
-            {
-                childField=s;
-            }
-            SyntaxNode* foundChild = nullptr;
-            for (SyntaxNode* child: _children)
-            {
-                if (child->getField()==childField)
-                {
-                    foundChild=child;
-                    break;
-                }
-            }
-
-            if (!foundChild)
-            {
-                foundChild = new SyntaxNode(childField);
-                _children.push_back(foundChild);
-            }
-            if (pos!=std::string::npos)
-            {
-                foundChild->buildTree(s.substr(pos+2));
-            }
-        }
-};
 
 /*
 #include <boost/spirit/include/qi.hpp>
@@ -292,13 +77,12 @@ class RootTreeWriter:
         
         std::vector<std::string> _selections;
         
-        SyntaxTree* _syntaxTree;
+        SyntaxTree<RootTree> _syntaxTree;
         
     public:
         RootTreeWriter():
             Module(),
-            _store(nullptr),
-            _syntaxTree(nullptr)
+            _store(nullptr)
         {
             addSink("input", "input");
             _outputSource = addSource("output", "output");
@@ -339,11 +123,10 @@ class RootTreeWriter:
         {
             getOption("root file",_outputFileName);
             _store = new OutputStore(_outputFileName);
-            _syntaxTree = new SyntaxTree();
             getOption("variables",_selections);
             for (const std::string& s: _selections)
             {
-                _syntaxTree->buildTree(s);
+                _syntaxTree.buildTree(s);
             }
             //_syntaxTree->print();
         }
@@ -355,32 +138,10 @@ class RootTreeWriter:
                 pxl::Event *event  = dynamic_cast<pxl::Event *> (sink->get());
                 if (event)
                 {
-                    Tree* tree = _store->getTree(event->getUserRecord("ProcessName"));
-                    //tree->storeVariable("event_number",(int)event->getUserRecord("Event number").asUInt64());
-                    _syntaxTree->evaluate(event,tree);
-                    /*
-                    std::vector<pxl::EventView*> eventViews;
-                    event->getObjectsOfType(eventViews);
-                    for (unsigned int iev = 0; iev < eventViews.size(); ++iev)
-                    {
-                        if (eventViews[iev]->getName()!="Reconstructed")
-                        {
-                            continue;
-                        }
-                        std::vector<pxl::Particle*> particles;
-                        eventViews[iev]->getObjectsOfType(particles);
-                        unsigned int njet = 1;
-                        for (unsigned int iparticle = 0; iparticle < particles.size(); ++iparticle)
-                        {
-                            if (particles[iparticle]->getName()!="SelectedJet")
-                            {
-                                continue;
-                            }
-                            tree->storeVariable("jet_pt_"+std::to_string(njet),particles[iparticle]->getPt());
-                            ++njet;
-                        }
-                    }
-                    */
+                    RootTree* tree = _store->getTree(event->getUserRecord("ProcessName"));
+
+                    _syntaxTree.evaluate(event,tree);
+                    
                     tree->fill();
                     
                      _outputSource->setTargets(event);

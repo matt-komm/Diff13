@@ -7,7 +7,7 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/internal/rapidjson
 )
 
-add_library(RootTreeWriter MODULE RootTreeWriter.cpp OutputStore.cpp)
+add_library(RootTreeWriter MODULE RootTree.cpp RootTreeWriter.cpp OutputStore.cpp)
 target_link_libraries(RootTreeWriter ${PXL_LIBRARIES} ${ROOT_LIBRARIES})
 install(
     TARGETS RootTreeWriter
@@ -28,12 +28,16 @@ install(
     LIBRARY DESTINATION ${PXL_PLUGIN_INSTALL_PATH}
 )
 
-add_library(CandidateFractions MODULE CandidateFractions.cpp)
-target_link_libraries(CandidateFractions ${PXL_LIBRARIES} ${ROOT_LIBRARIES})
+add_library(Splitter MODULE Splitter.cpp)
+target_link_libraries(Splitter ${PXL_LIBRARIES} ${ROOT_LIBRARIES})
 install(
-    TARGETS CandidateFractions
+    TARGETS Splitter
     LIBRARY DESTINATION ${PXL_PLUGIN_INSTALL_PATH}
 )
 
-add_executable(TMVATraining TMVATraining.cpp)
-target_link_libraries(TMVATraining TMVA ${ROOT_LIBRARIES} -lRIO -lHist -lTree -lMLP -lMinuit -lXMLIO)
+add_library(TMVAEvaluation MODULE TMVAEvaluation.cpp)
+target_link_libraries(TMVAEvaluation ${PXL_LIBRARIES} ${ROOT_LIBRARIES} TMVA)
+install(
+    TARGETS TMVAEvaluation
+    LIBRARY DESTINATION ${PXL_PLUGIN_INSTALL_PATH}
+)
