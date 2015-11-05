@@ -222,79 +222,81 @@ const std::unordered_map<std::string,FileInfo> eventWeights = {
     //DR74 25ns
     {"ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1",
         {
-            6456052,
+            //total=19788182 eff=12027285-7760897=4266388
+            4266388,
             216.97 * 0.324
         }
     },
-    /*{"ST_t-channel_5f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1",
+    {"ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1_ext",
         {
-            1119438,
+            //total=29511826 eff=17936536-11575290=6361246
+            6361246,
             216.97 * 0.324
         }
-    },*/
+    },
+    
     {"ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1",
         {
-            995600,
+            //total=773800 eff=773800-0=773800
+            773800
             35.6
         }
     },
     {"ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1",
         {
+            //total=988500 eff=988500-0=988500
             988500,
             35.6
         }
     },
     
-    {"TT_TuneCUETP8M1_13TeV-powheg-pythia8",
+    {"TT_TuneCUETP8M1_13TeV-powheg-pythia8_ext",
         {
-            96834559,
+            //total=96134394 eff=96134394-0=96134394
+            96134394,
             831.76
         }
     },
+    {"TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8",
+        {
+            //total=42496191 eff=28294599-14201592=14093007
+            14093007,
+            831.76
+        }
+    },
+    
+    
     {"WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8",
         {
-            16541248,
+            //total=23742033 eff=19990467-3751566=16238901
+            16238901,
             20508.9*3
         }
     },
     {"WJetsToLNu_TuneCUETP8M1_13TeV-madgraphMLM-pythia8",
         {
-            72207128,
+            //total=71533362 eff=71533362-0=71533362
+            71533362,
             20508.9*3
         }
     },
+    
     {"DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8",
         {
-            19259107,
+            //total=28255991 eff=23592814-4663177=18929637
+            18929637,
             2008.4*3
         }
     },
-    /*
+    
     {"QCD_Pt-20toInf_MuEnrichedPt15_TuneCUETP8M1_13TeV_pythia8",
         {
-            13201693,
+            //total=13101802 eff=13101802-0=13101802
+            13101802,
             866600000 * 0.00044
         }
     },
     
-    {"WW_TuneCUETP8M1_13TeV-pythia8",
-        {
-            994416,
-            63.21,
-        }
-    },
-    {"WZ_TuneCUETP8M1_13TeV-pythia8",
-        {
-            991232,
-            22.82
-        }
-    },
-    {"ZZ_TuneCUETP8M1_13TeV-pythia8",
-        {
-            996168,
-            10.32
-        }
-    }*/
 };
 
 class EventWeight:
@@ -302,19 +304,22 @@ class EventWeight:
 {
     private:
         pxl::Source* _outputSource;
-
         std::string _processNameField;
+
+        std::vector<std::string> _allowedPostfixes;
 
     public:
     
         EventWeight():
             Module(),
-            _processNameField("ProcessName")
+            _processNameField("ProcessName"),
+            _allowedPostfixes({"","_iso","_antiiso"})
         {
             addSink("input", "input");
             _outputSource = addSource("output","output");
             
             addOption("name of process field","",_processNameField);
+            addOption("allowed postfixes","",_allowedPostfixes);
         }
 
         ~EventWeight()
@@ -347,6 +352,7 @@ class EventWeight:
         void beginJob() throw (std::runtime_error)
         {
             getOption("name of process field",_processNameField);
+            getOption("allowed postfixes",_allowedPostfixes);
         }
 
         bool analyse(pxl::Sink *sink) throw (std::runtime_error)
@@ -357,16 +363,26 @@ class EventWeight:
                 if (event)
                 {
                     std::string processName = event->getUserRecord(_processNameField);
-		            auto it = eventWeights.find(processName);
-                    if (it==eventWeights.end())
+                    bool found = false;
+                    for (unsigned int ipostfix = 0; ipostfix<_allowedPostfixes.size(); ++ipostfix)
+                    {
+                        const std::string& postfix = _allowedPostfixes[ipostfix];
+                        //check if postfix matches
+                        if (0 == processName.compare (processName.length() - postfix.length(), postfix.length(), postfix))
+                        {
+		                    auto it = eventWeights.find(processName.substr(0,processName.length() - postfix.length()));
+                            if (it!=eventWeights.end())
+                            {
+		                        event->setUserRecord("mc_weight",1.0*it->second.crossSection/it->second.nEvents);
+                                found = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!found)
                     {
                         throw std::runtime_error("no event weight information available for process name '"+processName+"'");
                     }
-                    else
-                    {
-		                event->setUserRecord("mc_weight",1.0*it->second.crossSection/it->second.nEvents);
-                    }
-
                     _outputSource->setTargets(event);
                     return _outputSource->processTargets();
                 }
