@@ -29,11 +29,11 @@ class Example(modules.PythonModule):
         self._outputFile=self.__module.getOption("output")
         self._nEvents={}
         
-        self._nVertices=ROOT.TH1F("nVertices",";N vertices",51,-0.5,50.5)
-        self._nInteractions1D=ROOT.TH1F("nInteractions1D",";N interactions",51,-0.5,50.5)
-        self._nInteractions3D=ROOT.TH3F("nInteractions3D",";N interactions",51,-0.5,50.5,51,-0.5,50.5,51,-0.5,50.5)
-        self._nTrueInteractions1D=ROOT.TH1F("nTrueInteractions1D",";N true interactions",51,-0.5,50.5)
-        self._nTrueInteractions3D=ROOT.TH3F("nTrueInteractions3D",";N true interactions",51,-0.5,50.5,51,-0.5,50.5,51,-0.5,50.5)
+        self._nVertices=ROOT.TH1F("nVertices",";N vertices",52,0,52)
+        self._nInteractions1D=ROOT.TH1F("nInteractions1D",";N interactions",52,0,52)
+        self._nInteractions3D=ROOT.TH3F("nInteractions3D",";N interactions",52,0,52,52,0,52,52,0,52)
+        self._nTrueInteractions1D=ROOT.TH1F("nTrueInteractions1D",";N true interactions",52,0,52)
+        self._nTrueInteractions3D=ROOT.TH3F("nTrueInteractions3D",";N true interactions",52,0,52,52,0,52,52,0,52)
 
     def beginRun(self):
         ''' Executed before each run '''

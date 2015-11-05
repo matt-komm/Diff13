@@ -49,3 +49,11 @@ install(
     TARGETS TMVAEvaluation
     LIBRARY DESTINATION ${PXL_PLUGIN_INSTALL_PATH}
 )
+
+add_library(PileUpReweighting MODULE PileUpReweighting.cpp)
+target_link_libraries(PileUpReweighting ${PXL_LIBRARIES} ${ROOT_LIBRARIES})
+install(
+    TARGETS PileUpReweighting
+    LIBRARY DESTINATION ${PXL_PLUGIN_INSTALL_PATH}
+)
+

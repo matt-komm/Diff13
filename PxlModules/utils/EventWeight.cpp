@@ -238,7 +238,7 @@ const std::unordered_map<std::string,FileInfo> eventWeights = {
     {"ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1",
         {
             //total=773800 eff=773800-0=773800
-            773800
+            773800,
             35.6
         }
     },
