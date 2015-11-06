@@ -108,6 +108,9 @@ class JetSelection:
             getOption("input jet name",_inputJetName);
             getOption("name of selected jets",_selectedJetName);
             getOption("clean event",_cleanEvent);
+            
+            getOption("PF Jet Minimum pT",_pTMinJet);
+            getOption("PF Jet Maximum Eta",_etaMaxJet);
 
             getOption("invert dR",_dRInvert);
             getOption("dR cut",_dR);
