@@ -33,19 +33,25 @@ set(headers4 TNeuron.h TSynapse.h TActivationChooser.h TActivation.h TActivation
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/internal/TMVA/inc ${ROOT_INCLUDE_DIR}) 
 
+
+
 foreach(n 1 2 3 4)
     set(headers_full${n})
     foreach(header ${headers${n}})
         set(headers_full${n} ${headers_full${n}} ${PROJECT_SOURCE_DIR}/internal/TMVA/inc/TMVA/${header})
     endforeach(header)
 
-    set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/dict${n}.C PROPERTIES GENERATED TRUE)
-    add_custom_target(generatedicts${n} ALL ${ROOT_DICT_EXECUTABLE}
-        -f ${CMAKE_CURRENT_BINARY_DIR}/dict${n}.C
-        -c ${headers_full${n}} 
-        ${PROJECT_SOURCE_DIR}/internal/TMVA/inc/LinkDef${n}.h
+    add_custom_command(
+        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/dict${n}.C 
+        COMMAND ${ROOT_DICT_EXECUTABLE} 
+            -f ${CMAKE_CURRENT_BINARY_DIR}/dict${n}.C 
+            -c ${headers_full${n}}  
+            ${PROJECT_SOURCE_DIR}/internal/TMVA/inc/LinkDef${n}.h
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMENT "generating dictionaries for TMVA... ${n}/4"
     )
+
+    
 endforeach(n)
 
 
@@ -54,6 +60,7 @@ file(GLOB SRCFILES
 )
 
 add_library(TMVA SHARED ${SRCFILES} dict1.C dict2.C dict3.C dict4.C)
-add_dependencies(generatedicts1 generatedicts2 generatedicts3 generatedicts4)
+
+#add_dependencies(generatedicts1 generatedicts2 generatedicts3 generatedicts4)
 target_link_libraries(TMVA ${ROOT_LIBRARIES} -lRIO -lHist -lTree -lMLP -lMinuit -lXMLIO)
 
