@@ -27,6 +27,7 @@ struct SortByPt
 {
     bool operator()(const pxl::Particle* p1, const pxl::Particle* p2) const
     {
+        //sort descending
         return p1->getPt()>p2->getPt();
     }
 };
@@ -35,6 +36,7 @@ struct SortByEta
 {
     bool operator()(const pxl::Particle* p1, const pxl::Particle* p2) const
     {
+        //sort descending
         return fabs(p1->getEta())>fabs(p2->getEta());
     }
 };
@@ -303,6 +305,10 @@ class TopReconstruction:
             pxl::Particle* lightjet = nullptr;
             pxl::Particle* bjet = nullptr;
             
+            //sort descending
+            std::sort(lightjets.begin(),lightjets.end(),SortByEta());
+            //sort descending
+            std::sort(bjets.begin(),bjets.end(),SortByPt());
             
             if (njets==0)
             {
@@ -324,97 +330,13 @@ class TopReconstruction:
                     top = makeTop(eventView,wboson,bjet);
                 }
             }
-            /*
-            else if (njets==2)
-            {   
-                if (nbjets==0)
-                {
-                    //take the central jet as the one from the top
-                    wboson = makeWboson(eventView,lepton,neutrino);
-                    std::sort(lightjets.begin(),lightjets.end(),SortByEta());
-                    lightjet=(pxl::Particle*)lightjets[0]->clone();
-                    bjet=(pxl::Particle*)lightjets[1]->clone();
-                    eventView->insertObject(lightjet);
-                    eventView->insertObject(bjet);
-                    top = makeTop(eventView,wboson,bjet);
-                }
-                else if (nbjets==1)
-                {
-                    wboson = makeWboson(eventView,lepton,neutrino);
-                    lightjet=(pxl::Particle*)lightjets[0]->clone();
-                    bjet=(pxl::Particle*)bjets[0]->clone();
-                    eventView->insertObject(lightjet);
-                    eventView->insertObject(bjet);
-                    top = makeTop(eventView,wboson,bjet);
-                }
-                else if (nbjets==2)
-                {
-                    //take the jet with the higher pT as the one from the top
-                    wboson = makeWboson(eventView,lepton,neutrino);
-                    std::sort(bjets.begin(),bjets.end(),SortByPt());
-                    lightjet=(pxl::Particle*)bjets[1]->clone();
-                    bjet=(pxl::Particle*)bjets[0]->clone();
-                    eventView->insertObject(lightjet);
-                    eventView->insertObject(bjet);
-                    top = makeTop(eventView,wboson,bjet);
-                }
-            }
-            else if (njets==3)
-            {
-                if (nbjets==0)
-                {
-                    //take the central jet as the one from the top
-                    wboson = makeWboson(eventView,lepton,neutrino);
-                    std::sort(lightjets.begin(),lightjets.end(),SortByEta());
-                    lightjet=(pxl::Particle*)lightjets[0]->clone();
-                    bjet=(pxl::Particle*)lightjets[2]->clone();
-                    eventView->insertObject(lightjet);
-                    eventView->insertObject(bjet);
-                    top = makeTop(eventView,wboson,bjet);
-                }
-                else if (nbjets==1)
-                {
-                    //take the central jet as the one from the top
-                    wboson = makeWboson(eventView,lepton,neutrino);
-                    std::sort(lightjets.begin(),lightjets.end(),SortByEta());
-                    lightjet=(pxl::Particle*)lightjets[0]->clone();
-                    bjet=(pxl::Particle*)bjets[0]->clone();
-                    eventView->insertObject(lightjet);
-                    eventView->insertObject(bjet);
-                    top = makeTop(eventView,wboson,bjet);
-                }
-                else if (nbjets==2)
-                {
-                    //take the jet with the higher pT as the one from the top
-                    wboson = makeWboson(eventView,lepton,neutrino);
-                    std::sort(bjets.begin(),bjets.end(),SortByPt());
-                    lightjet=(pxl::Particle*)lightjets[0]->clone();
-                    bjet=(pxl::Particle*)bjets[0]->clone();
-                    eventView->insertObject(lightjet);
-                    eventView->insertObject(bjet);
-                    top = makeTop(eventView,wboson,bjet);
-                }
-                else if (nbjets==3)
-                {
-                    //take the jet with the higher pT as the one from the top
-                    wboson = makeWboson(eventView,lepton,neutrino);
-                    std::sort(bjets.begin(),bjets.end(),SortByPt());
-                    lightjet=(pxl::Particle*)bjets[2]->clone();
-                    bjet=(pxl::Particle*)bjets[0]->clone();
-                    eventView->insertObject(lightjet);
-                    eventView->insertObject(bjet);
-                    top = makeTop(eventView,wboson,bjet);
-                }
-            }
-            */
             
             else if (njets==2)
             {   
                 if (nbjets==0)
                 {
-                    //take the central jet as the one from the top
+                    //take the most foward jet as the light jet
                     wboson = makeWboson(eventView,lepton,neutrino);
-                    std::sort(lightjets.begin(),lightjets.end(),SortByUserRecord("pfCombinedInclusiveSecondaryVertexV2BJetTags"));
                     lightjet=(pxl::Particle*)lightjets[0]->clone();
                     bjet=(pxl::Particle*)lightjets[1]->clone();
                     eventView->insertObject(lightjet);
@@ -434,7 +356,7 @@ class TopReconstruction:
                 {
                     //take the jet with the higher pT as the one from the top
                     wboson = makeWboson(eventView,lepton,neutrino);
-                    std::sort(bjets.begin(),bjets.end(),SortByUserRecord("pfCombinedInclusiveSecondaryVertexV2BJetTags"));
+                    std::sort(bjets.begin(),bjets.end(),SortByPt());
                     lightjet=(pxl::Particle*)bjets[1]->clone();
                     bjet=(pxl::Particle*)bjets[0]->clone();
                     eventView->insertObject(lightjet);
@@ -446,9 +368,8 @@ class TopReconstruction:
             {
                 if (nbjets==0)
                 {
-                    //take the central jet as the one from the top
+                    //take the most foward jet as the light jet and most central as b-jet
                     wboson = makeWboson(eventView,lepton,neutrino);
-                    std::sort(lightjets.begin(),lightjets.end(),SortByUserRecord("pfCombinedInclusiveSecondaryVertexV2BJetTags"));
                     lightjet=(pxl::Particle*)lightjets[0]->clone();
                     bjet=(pxl::Particle*)lightjets[2]->clone();
                     eventView->insertObject(lightjet);
@@ -457,9 +378,8 @@ class TopReconstruction:
                 }
                 else if (nbjets==1)
                 {
-                    //take the central jet as the one from the top
+                    //take the most foward jet as the light jet
                     wboson = makeWboson(eventView,lepton,neutrino);
-                    std::sort(lightjets.begin(),lightjets.end(),SortByUserRecord("pfCombinedInclusiveSecondaryVertexV2BJetTags"));
                     lightjet=(pxl::Particle*)lightjets[0]->clone();
                     bjet=(pxl::Particle*)bjets[0]->clone();
                     eventView->insertObject(lightjet);
@@ -470,7 +390,6 @@ class TopReconstruction:
                 {
                     //take the jet with the higher pT as the one from the top
                     wboson = makeWboson(eventView,lepton,neutrino);
-                    std::sort(bjets.begin(),bjets.end(),SortByUserRecord("pfCombinedInclusiveSecondaryVertexV2BJetTags"));
                     lightjet=(pxl::Particle*)lightjets[0]->clone();
                     bjet=(pxl::Particle*)bjets[0]->clone();
                     eventView->insertObject(lightjet);
@@ -479,9 +398,8 @@ class TopReconstruction:
                 }
                 else if (nbjets==3)
                 {
-                    //take the jet with the higher pT as the one from the top
+                    //take the jet with the higher pT as the one from the top and least pT as light jet
                     wboson = makeWboson(eventView,lepton,neutrino);
-                    std::sort(bjets.begin(),bjets.end(),SortByUserRecord("pfCombinedInclusiveSecondaryVertexV2BJetTags"));
                     lightjet=(pxl::Particle*)bjets[2]->clone();
                     bjet=(pxl::Particle*)bjets[0]->clone();
                     eventView->insertObject(lightjet);
@@ -504,24 +422,15 @@ class TopReconstruction:
             {
                 bjet->setName("BJet");
             }
-            if (lepton && neutrino && wboson && bjet && top && lightjet)
+            if (lepton and neutrino and wboson and bjet and top and lightjet)
             {
                 calculateAngles(eventView, lepton, neutrino, wboson, bjet, top, lightjet);
             }
-            if (bjet && lightjet)
+            if (bjet and lightjet)
             {
                 makeCMSystem(eventView,"Dijet",{{bjet,lightjet}});
                 makeCMSystem(eventView,"Shat",{{bjet,lightjet,lepton,neutrino}});
             }
-            /*
-            if (njets>0)
-            {
-                std::vector<pxl::Particle*> allHadronic;
-                std::copy (lightjets.begin(),lightjets.end(),back_inserter(allHadronic));
-                std::copy (bjets.begin(),bjets.end(),back_inserter(allHadronic));
-                makeCMSystem(eventView,"Hadronic",allHadronic);
-            }
-            */
         }
         
         bool analyse(pxl::Sink *sink) throw (std::runtime_error)
