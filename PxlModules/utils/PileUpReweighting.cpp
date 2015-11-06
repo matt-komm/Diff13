@@ -95,7 +95,7 @@ class PileUpReweighting:
                 const int pos = _dataFiles[idataFile].find_last_of('/')+1;
                 const int end = _dataFiles[idataFile].find_first_of('.',pos+1);
                 std::string puName = std::string(_dataFiles[idataFile],pos,end-pos);
-                _reweightingHists.push_back(std::make_pair(puName,TH1F("reweightingHist",";N true interactions; weight",52,0,52)));
+                _reweightingHists.push_back(std::make_pair(puName,TH1F((std::string("reweightingHist")+std::to_string(idataFile)).c_str(),";N true interactions; weight",52,0,52)));
                 
                 TH1F& weightHist = _reweightingHists.back().second;
                 weightHist.SetDirectory(0);
