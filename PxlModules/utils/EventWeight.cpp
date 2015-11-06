@@ -234,6 +234,20 @@ const std::unordered_map<std::string,FileInfo> eventWeights = {
             216.97 * 0.324
         }
     },
+    {"ST_t-channel_top_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1",
+        {
+            //total=3299800 eff=3299800-0=3299800
+            3299800,
+            136.02 * 0.324
+        }
+    },
+    {"ST_t-channel_antitop_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1",
+        {
+            //total=1472500 eff=1472500-0=1472500
+            1472500,
+            80.95 * 0.324
+        }
+    },
     
     {"ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1",
         {
