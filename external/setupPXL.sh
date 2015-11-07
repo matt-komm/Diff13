@@ -49,6 +49,8 @@ execute cmake .. \
     -DENABLE_NUMPY=OFF \
     -DENABLETESTING=OFF \
     -DENABLESWIGDOCSTRINGS=OFF
+    -DCMAKE_CXX_COMPILER=`which g++` \
+    -DCMAKE_C_COMPILER=`which gcc`
 execute make -j8
 execute make install
 

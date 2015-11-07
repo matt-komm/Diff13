@@ -12,8 +12,14 @@ addVar BASEDIR $BASEDIR
 echo $VARS > global-vars.txt
 
 source CMSSW/setupCMSSW.sh  
-#source external/setupSWIG.sh && \
-#source external/setupPXL.sh
+
+source external/setupCMake.sh
+source external/setupSWIG.sh
+source external/setupPXL.sh
+
+source external/setupBoost.sh
+source external/setupTheta.sh
+
 
 
 
