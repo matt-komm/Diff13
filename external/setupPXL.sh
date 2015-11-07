@@ -42,13 +42,13 @@ addVar PKG_CONFIG_PATH $PXLBASEDIR/lib/pkgconfig:"$"PKG_CONFIG_PATH
 execute mkdir build
 cd build
 
-execute `which cmake` .. \
+execute $CMAKEBASEDIR/bin/cmake .. \
     -DCMAKE_INSTALL_PREFIX=$PXLBASEDIR \
     -DSWIG_DIR=$SWIGBASEDIR \
     -DSWIG_EXECUTABLE=$SWIGBASEDIR/bin/swig \
     -DENABLE_NUMPY=OFF \
     -DENABLETESTING=OFF \
-    -DENABLESWIGDOCSTRINGS=OFF
+    -DENABLESWIGDOCSTRINGS=OFF \
     -DCMAKE_CXX_COMPILER=`which g++` \
     -DCMAKE_C_COMPILER=`which gcc`
 execute make -j8

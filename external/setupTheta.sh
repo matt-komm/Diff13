@@ -40,8 +40,8 @@ addVar PATH $THETABASEDIR/bin:"$"PATH
 mkdir build
 cd build
 
-execute `which cmake` .. \
-    -DBOOST_DIR=$BOOST_ROOT \
+execute $CMAKEBASEDIR/bin/cmake .. \
+    -DBOOST_ROOT=$BOOSTBASEDIR \
     -DCMAKE_CXX_COMPILER=`which g++` \
     -DCMAKE_C_COMPILER=`which gcc`
     
