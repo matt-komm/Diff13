@@ -42,6 +42,7 @@ cd build
 
 execute $CMAKEBASEDIR/bin/cmake .. \
     -DBOOST_ROOT=$BOOSTBASEDIR \
+    -DSQLITE_ROOT=$SQLITEBASEDIR \
     -DCMAKE_CXX_COMPILER=`which g++` \
     -DCMAKE_C_COMPILER=`which gcc`
     
