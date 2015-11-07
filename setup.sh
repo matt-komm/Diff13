@@ -5,7 +5,6 @@ VARS=""
 function addVar
 {
     VARS=$VARS" "$1"="$2
-    export $1"="$2
 }
 
 BASEDIR=`pwd`

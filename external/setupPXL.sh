@@ -7,7 +7,6 @@ VARS=""
 function addVar
 {
     VARS=$VARS" "$1"="$2
-    export $1"="$2
 }
 
 function execute 
@@ -43,7 +42,7 @@ addVar PKG_CONFIG_PATH $PXLBASEDIR/lib/pkgconfig:"$"PKG_CONFIG_PATH
 execute mkdir build
 cd build
 
-execute cmake .. \
+execute `which cmake` .. \
     -DCMAKE_INSTALL_PREFIX=$PXLBASEDIR \
     -DSWIG_DIR=$SWIGBASEDIR \
     -DSWIG_EXECUTABLE=$SWIGBASEDIR/bin/swig \

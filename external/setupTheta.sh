@@ -7,7 +7,6 @@ VARS=""
 function addVar
 {
     VARS=$VARS" "$1"="$2
-    export $1"="$2
 }
 
 function execute 
@@ -41,7 +40,7 @@ addVar PATH $THETABASEDIR/bin:"$"PATH
 mkdir build
 cd build
 
-execute cmake .. \
+execute `which cmake` .. \
     -DBOOST_DIR=$BOOST_ROOT \
     -DCMAKE_CXX_COMPILER=`which g++` \
     -DCMAKE_C_COMPILER=`which gcc`
