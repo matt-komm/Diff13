@@ -16,6 +16,8 @@ class Variable
         virtual unsigned int getSize() const = 0;
         virtual void print() const = 0;
         
+        virtual float toFloat() const = 0;
+        
         template<class TYPE>
         Variable* operator=(const TYPE& value);
         template<class TYPE> TYPE get() const;
@@ -68,6 +70,11 @@ class VariableTmpl:
         }
         
         TYPE getValue()
+        {
+            return *_value;
+        }
+        
+        virtual float toFloat() const
         {
             return *_value;
         }

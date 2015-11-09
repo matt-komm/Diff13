@@ -301,15 +301,7 @@ class TMVAEvaluation:
                     Variable* var = _cacheTree.findVariable(_names[ivar]);
                     if (var)
                     {
-                        VariableTmpl<float>* varCast = dynamic_cast<VariableTmpl<float>*>(var);
-                        if (varCast)
-                        {
-                            _variableValues[ivar]=varCast->getValue();
-                        }
-                        else
-                        {
-                            throw std::runtime_error("variable '"+_names[ivar]+"' is not a float!");
-                        }
+                        _variableValues[ivar]=var->toFloat();
                     }
                     else
                     {
