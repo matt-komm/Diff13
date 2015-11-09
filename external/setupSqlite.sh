@@ -27,7 +27,7 @@ function execute
 
 cd $BASEDIR/external
 
-execute wget https://www.sqlite.org/2015/sqlite-autoconf-3090200.tar.gz
+execute wget --no-check-certificate https://www.sqlite.org/2015/sqlite-autoconf-3090200.tar.gz
 execute tar -zxvf sqlite-autoconf-3090200.tar.gz
 
 cd $BASEDIR/external/sqlite-autoconf-3090200

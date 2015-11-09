@@ -27,7 +27,7 @@ function execute
 
 cd $BASEDIR/external
 
-execute wget https://forge.physik.rwth-aachen.de/attachments/download/391/pxl-3.5.1.tar.gz
+execute wget --no-check-certificate https://forge.physik.rwth-aachen.de/attachments/download/391/pxl-3.5.1.tar.gz
 execute tar -zxvf pxl-3.5.1.tar.gz
 
 cd pxl-3.5.1

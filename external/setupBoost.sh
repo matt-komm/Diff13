@@ -27,7 +27,7 @@ function execute
 
 cd $BASEDIR/external
 
-execute wget http://downloads.sourceforge.net/project/boost/boost/1.52.0/boost_1_52_0.tar.gz
+execute wget --no-check-certificate http://downloads.sourceforge.net/project/boost/boost/1.52.0/boost_1_52_0.tar.gz
 execute tar -zxvf boost_1_52_0.tar.gz
 
 cd $BASEDIR/external/boost_1_52_0

@@ -28,7 +28,7 @@ function execute
 
 cd $BASEDIR/external
 
-execute wget http://sourceforge.net/projects/swig/files/swig/swig-2.0.12/swig-2.0.12.tar.gz
+execute wget --no-check-certificate http://sourceforge.net/projects/swig/files/swig/swig-2.0.12/swig-2.0.12.tar.gz
 execute tar -zxvf swig-2.0.12.tar.gz
 
 cd swig-2.0.12
