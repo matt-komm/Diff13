@@ -200,12 +200,13 @@ class TMVAEvaluation:
         
         CacheTree _cacheTree;
         
-        TMVA::Reader* _reader;
+        TMVA::Reader _reader;
         
         
     public:
         TMVAEvaluation():
-            Module()
+            Module(),
+            _reader("")
         {
             addSink("input", "input");
             _outputSource = addSource("output","output");
@@ -218,7 +219,6 @@ class TMVAEvaluation:
 
         ~TMVAEvaluation()
         {
-            delete _reader;
         }
 
         // every Module needs a unique type
@@ -253,10 +253,9 @@ class TMVAEvaluation:
             
             _methodNames.resize(_files.size());
             
-            _reader = new TMVA::Reader("");
             for (unsigned int ivar = 0; ivar < _names.size(); ++ivar)
             {
-                _reader->AddVariable(_names[ivar],&_variableValues[ivar]);
+                _reader.AddVariable(_names[ivar],&_variableValues[ivar]);
             }
             
             for (unsigned int imethod = 0; imethod < _files.size(); ++imethod)
@@ -265,7 +264,7 @@ class TMVAEvaluation:
                 const int end = _files[imethod].find_first_of('.',pos+1);
                 std::string methodName = std::string(_files[imethod],pos,end-pos);
                 _methodNames[imethod]=methodName;
-                _reader->BookMVA(methodName,_files[imethod]);
+                _reader.BookMVA(methodName,_files[imethod]);
             }
             
             
@@ -318,7 +317,7 @@ class TMVAEvaluation:
                 {
                     for (unsigned int imethod = 0; imethod < _methodNames.size(); ++imethod)
                     {
-                        outputEventView->setUserRecord(_methodNames[imethod]+_suffix,(float)_reader->EvaluateMVA(_methodNames[imethod])); 
+                        outputEventView->setUserRecord(_methodNames[imethod]+_suffix,(float)_reader.EvaluateMVA(_methodNames[imethod])); 
                     }
                 }
                 
