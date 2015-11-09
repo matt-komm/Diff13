@@ -191,6 +191,8 @@ class TMVAEvaluation:
         std::vector<std::string> _names;
         std::vector<std::string> _selections;
         
+        std::string _suffix;
+        
         std::vector<float> _variableValues;
         std::vector<std::string> _methodNames;
         
@@ -211,6 +213,7 @@ class TMVAEvaluation:
             addOption("weights","",_files, pxl::OptionDescription::USAGE_FILE_OPEN);
             addOption("names","variables names (same order as in training)",_names);
             addOption("variables","for parsing the variables from the event",_selections);
+            addOption("suffix","",_suffix);
         }
 
         ~TMVAEvaluation()
@@ -272,6 +275,8 @@ class TMVAEvaluation:
             {
                 _syntaxTree.buildTree(s);
             }
+            
+            getOption("suffix",_suffix);
         }
 
         bool analyse(pxl::Sink *sink) throw (std::runtime_error)
@@ -313,7 +318,7 @@ class TMVAEvaluation:
                 {
                     for (unsigned int imethod = 0; imethod < _methodNames.size(); ++imethod)
                     {
-                        outputEventView->setUserRecord(_methodNames[imethod],(float)_reader->EvaluateMVA(_methodNames[imethod])); 
+                        outputEventView->setUserRecord(_methodNames[imethod]+_suffix,(float)_reader->EvaluateMVA(_methodNames[imethod])); 
                     }
                 }
                 
