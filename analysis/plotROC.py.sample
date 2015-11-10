@@ -392,6 +392,7 @@ rocCurves=[]
 for precuts in [
     ["2j1t","(Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==1)"],
 ]:
+    
     for var in [
         ["BDT_boost02_minnode005_maxvar2_ntree1000_invboost","Reconstructed_1__BDT_boost02_minnode005_maxvar2_ntree1000_invboost","BDT (#beta=0.2, min=5%)","","1",binning,-0.8,0.8],
         ["BDT_boost03_minnode005_maxvar2_ntree1000_invboost","Reconstructed_1__BDT_boost03_minnode005_maxvar2_ntree1000_invboost","BDT (#beta=0.3, min=5%)","","1",binning,-0.8,0.8],
@@ -411,11 +412,13 @@ for precuts in [
     
         ["ljet_pt","SingleTop_1__LightJet_1__Pt","light jet p_{T}","GeV","1",binning,0,250],
         ["ljet_abseta","fabs(SingleTop_1__LightJet_1__Eta)","light jet |#eta|","","1",binning,0,5.0],
+        ["ljet_mass","SingleTop_1__LightJet_1__Mass","light jet mass","GeV","1",binning,0.0,40.0],
         ["ljet_n90","SingleTop_1__LightJet_1__n90","light jet n90","","1",51,-0.5,50.5],
         ["ljet_n60","SingleTop_1__LightJet_1__n60","light jet n60","","1",41,-0.5,40.5],
         
         ["bjet_pt","SingleTop_1__BJet_1__Pt","b-jet p_{T}","GeV","1",binning,0,250],
         ["bjet_abseta","fabs(SingleTop_1__BJet_1__Eta)","b-jet |#eta|","","1",binning,0,2.5],
+        ["bjet_mass","SingleTop_1__BJet_1__Mass","b-jet mass","GeV","1",binning,0.0,40.0],
         ["bjet_n90","SingleTop_1__BJet_1__n90","b jet n90","","1",51,-0.5,50.5],
         ["bjet_n60","SingleTop_1__BJet_1__n60","b jet n60","","1",41,-0.5,40.5],
         
@@ -441,9 +444,10 @@ for precuts in [
         ["nLooseJets","Reconstructed_1__nSelectedLooseJet","# 30<jets<40 GeV","","1",6,-0.5,5.5],
         ["fox_eta_1","Reconstructed_1__fox_1_eta","H_{1}(#eta)","","1",binning,0.0,1.0],
         ["fox_pz_1","Reconstructed_1__fox_1_logpz","log(H_{1}(p_{z}))","","1",binning,-2,5.0],
-        ["jet_muon_charge","Reconstructed_1__TightMuon_1__Charge*SingleTop_1__BJet_1__jetCharge+SingleTop_1__LightJet_1__jetCharge","Q_{b jet} #upoint Q_{#mu} + Q_{light jet}","","1",binning,-1.5,1.5],
-    ]:
     
+        ["jet_muon_charge","Reconstructed_1__TightMuon_1__Charge*SingleTop_1__BJet_1__jetCharge","Q_{b jet} #upoint Q_{#mu}","","1",binning,-1.5,1.5],
+    ]:
+        
         
         variableName=var[1]
         variableTitle=var[2]
@@ -453,8 +457,7 @@ for precuts in [
         xmin=var[6]
         xmax=var[7]
         
-        
-        legendEntries=[]
+        print var[0]
         
         sumHistBackgroundTraining = ROOT.TH1F("hist_bg"+str(random.random),"",nbins,xmin,xmax)
         sumHistBackgroundTraining.Sumw2()
@@ -475,7 +478,7 @@ for precuts in [
                         tempHist.SetName("hist_"+sampleName+str(random.random))
                         tree.Project(tempHist.GetName(),variableName,"mc_weight*"+sample["weight"]+"*"+weight+"*"+globalMCWeight)
                         tempHist.SetDirectory(0)
-                        print "background: ",process,sumHistBackgroundTraining.GetEntries()
+                        #print "background: ",process,sumHistBackgroundTraining.GetEntries()
                         addUnderflowOverflow(tempHist)
 
                         sumHistBackgroundTraining.Add(tempHist)
@@ -490,7 +493,7 @@ for precuts in [
                         tempHist.SetName("hist_"+sampleName+str(random.random))
                         tree.Project(tempHist.GetName(),variableName,"mc_weight*"+sample["weight"]+"*"+weight+"*"+globalMCWeight)
                         tempHist.SetDirectory(0)
-                        print "background: ",process,sumHistBackgroundTesting.GetEntries()
+                        #print "background: ",process,sumHistBackgroundTesting.GetEntries()
                         addUnderflowOverflow(tempHist)
 
                         sumHistBackgroundTesting.Add(tempHist)
@@ -520,7 +523,7 @@ for precuts in [
                         tempHist.SetName("hist_"+sampleName+str(random.random))
                         tree.Project(tempHist.GetName(),variableName,"mc_weight*"+sample["weight"]+"*"+weight+"*"+globalMCWeight)
                         tempHist.SetDirectory(0)
-                        print "background: ",process,sumHistSignalTraining.GetEntries()
+                        #print "background: ",process,sumHistSignalTraining.GetEntries()
                         addUnderflowOverflow(tempHist)
 
                         sumHistSignalTraining.Add(tempHist)
@@ -535,7 +538,7 @@ for precuts in [
                         tempHist.SetName("hist_"+sampleName+str(random.random))
                         tree.Project(tempHist.GetName(),variableName,"mc_weight*"+sample["weight"]+"*"+weight+"*"+globalMCWeight)
                         tempHist.SetDirectory(0)
-                        print "background: ",process,sumHistBackgroundTesting.GetEntries()
+                        #print "background: ",process,sumHistBackgroundTesting.GetEntries()
                         addUnderflowOverflow(tempHist)
 
                         sumHistSignalTesting.Add(tempHist)
@@ -549,11 +552,12 @@ for precuts in [
         drawROC("roc/"+precuts[0]+"_"+var[0]+"_roc",signalEff,backgroundRej)
         auc = getAUC(signalEff,backgroundRej)
         
-        sumHistSignalTraining.Rebin(10)
-        sumHistSignalTesting.Rebin(10)
-        
-        sumHistBackgroundTraining.Rebin(10)
-        sumHistBackgroundTesting.Rebin(10)
+        if sumHistSignalTraining.GetNbinsX()>200:
+            sumHistSignalTraining.Rebin(10)
+            sumHistSignalTesting.Rebin(10)
+            
+            sumHistBackgroundTraining.Rebin(10)
+            sumHistBackgroundTesting.Rebin(10)
 
         cv = ROOT.TCanvas("cv_dist"+str(random.random()),"",800,600)
         cv.SetPad(0.0, 0.0, 1.0, 1.0)
