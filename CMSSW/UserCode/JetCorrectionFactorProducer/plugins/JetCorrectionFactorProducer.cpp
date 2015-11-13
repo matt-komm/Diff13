@@ -119,41 +119,13 @@ class JetCorrectionFactorProducer:
             
             FactorizedJetCorrector factorizedJetCorrector(_jetCorrectionParameters);
             
-            /*
-            JetCorrectorParameters *ResJetPar = new JetCorrectorParameters("YYYY_L2L3Residual_AK5PF.txt"); 
-            JetCorrectorParameters *L3JetPar  = new JetCorrectorParameters("YYYY_L3Absolute_AK5PF.txt");
-            JetCorrectorParameters *L2JetPar  = new JetCorrectorParameters("YYYY_L2Relative_AK5PF.txt");
-            JetCorrectorParameters *L1JetPar  = new JetCorrectorParameters("YYYY_L1FastJet_AK5PF.txt");
-
-            std::vector<JetCorrectorParameters> vPar;
-            vPar.push_back(*L1JetPar);
-            vPar.push_back(*L2JetPar);
-            vPar.push_back(*L3JetPar);
-            vPar.push_back(*ResJetPar);
-            
-            FactorizedJetCorrector JetCorrector(vPar);
-            
-            JetCorrector.setJetEta(eta);
-            JetCorrector.setJetPt(pt);
-            JetCorrector.setJetA(area);
-            JetCorrector.setRho(rho); 
-            double correction = JetCorrector.getCorrection();
-            vector<double> factors = JetCorrector.getSubCorrections();
-            
-            
-        	level=0, Uncorrected
-            level=1, L1FastJet
-            level=2, L2Relative
-            level=3, L3Absolute
-
-            */
-            
             std::vector<pat::JetCorrFactors> output;
             for (unsigned int ijet = 0; ijet < jetCollection->size(); ++ijet)
             {
                 const pat::Jet& jet = jetCollection->at(ijet);
-                factorizedJetCorrector.setJetEta(jet.eta());
-                factorizedJetCorrector.setJetPt(jet.pt());
+                factorizedJetCorrector.setJetEta(jet.correctedP4(0).eta());
+                factorizedJetCorrector.setJetPt(jet.correctedP4(0).pt());
+                factorizedJetCorrector.setJetE(jet.correctedP4(0).energy());
                 factorizedJetCorrector.setNPV(primaryVerticesCollection->size());
                 
                 factorizedJetCorrector.setJetPhi(jet.phi());
