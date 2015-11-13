@@ -10,6 +10,8 @@
 
 #include "TMath.h"
 
+#include <cmath>
+
 static pxl::Logger logger("EventVariables");
 
 class EventVariables:
@@ -127,7 +129,7 @@ class EventVariables:
                             eventView->setUserRecord(_prefix+"isotropy",esv.isotropy());
                             eventView->setUserRecord(_prefix+"circularity",esv.circularity());
                             eventView->setUserRecord(_prefix+"sphericity",esv.sphericity());
-                            eventView->setUserRecord(_prefix+"aplanarity",esv.aplanarity());
+                            eventView->setUserRecord(_prefix+"logaplanarity",std::log(esv.aplanarity()));
                             eventView->setUserRecord(_prefix+"C",esv.C());
                             eventView->setUserRecord(_prefix+"D",esv.D());
                             
