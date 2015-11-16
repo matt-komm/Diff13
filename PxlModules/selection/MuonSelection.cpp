@@ -201,12 +201,14 @@ class MuonSelection:
                                 {
                                     if (passesTightCriteria(particle))
                                     {
-                                        if (pfRelIsoCorrectedDeltaBetaR04(particle,_pfRelIsoCorDbBetaTightMuon)<_pfRelIsoLessCorDbTightMuon)
+                                        const float relIso = pfRelIsoCorrectedDeltaBetaR04(particle,_pfRelIsoCorDbBetaTightMuon);
+                                        particle->setUserRecord("relIso",relIso);
+                                        if (relIso<_pfRelIsoLessCorDbTightMuon)
                                         {
                                             //highly isolated muons
                                             tightIsoLessMuons.push_back(particle);
                                         }
-                                        else if (pfRelIsoCorrectedDeltaBetaR04(particle,_pfRelIsoCorDbBetaTightMuon)>_pfRelIsoLessCorDbTightMuon && pfRelIsoCorrectedDeltaBetaR04(particle,_pfRelIsoCorDbBetaTightMuon)<_pfRelIsoMoreCorDbTightMuon)
+                                        else if (relIso>_pfRelIsoLessCorDbTightMuon && relIso<_pfRelIsoMoreCorDbTightMuon)
                                         {
                                             //intermediate isolated muons
                                             tightIsoMoreMuons.push_back(particle);
