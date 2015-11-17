@@ -236,7 +236,7 @@ sampleDict = {
         "color":ROOT.gROOT.GetColor(ROOT.kGreen-2),
         "title":"W+jets",
         "addtitle":"(aMC@NLO)",
-        "weight":"((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)*(1+0.8*(Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==1))"
+        "weight":"((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)"
     },
     
     "WJetsMG":
@@ -247,7 +247,7 @@ sampleDict = {
         "color":ROOT.gROOT.GetColor(ROOT.kGreen-2),
         "title":"W+jets",
         "addtitle":"(MadGraph)",
-        "weight":"((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)*(1+0.8*(Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==1))"
+        "weight":"((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)"
     },
     
     
@@ -259,7 +259,7 @@ sampleDict = {
         "color":ROOT.gROOT.GetColor(ROOT.kBlue-1),
         "title":"Drell-Yan",
         #"addtitle":"(#times 1.8)",
-        "weight":"((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)*(1+0.8*(Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==1))"
+        "weight":"((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)"
     },
 
     "QCD":

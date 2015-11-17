@@ -52,7 +52,7 @@ sampleDict = {
         "color":ROOT.gROOT.GetColor(ROOT.kGreen-2),
         "title":"W+jets",
         "addtitle":"(aMC@NLO)",
-        "weight":"((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)*(1+0.8*(Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==1))"
+        "weight":"((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)"
     },
     
     "WJetsMG":
@@ -63,7 +63,7 @@ sampleDict = {
         "color":ROOT.gROOT.GetColor(ROOT.kGreen-2),
         "title":"W+jets",
         "addtitle":"(MadGraph)",
-        "weight":"((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)*(1+0.8*(Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==1))"
+        "weight":"((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)"
     },
     
     
@@ -75,7 +75,7 @@ sampleDict = {
         "color":ROOT.gROOT.GetColor(ROOT.kBlue-1),
         "title":"Drell-Yan",
         #"addtitle":"(#times 1.8)",
-        "weight":"((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)*(1+0.8*(Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==1))"
+        "weight":"((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)"
     },
 
     "QCD":
@@ -149,7 +149,7 @@ observables = {
 components={
     "other":
     {
-        "sets":["DY"],
+        "sets":["WJetsAMC","DY"],
         "uncertainties":["other"],
         "weight":"1",
         "color":ROOT.kGreen+1
@@ -168,13 +168,13 @@ components={
         "weight":"1",
         "color":ROOT.kMagenta
     },
-    "QCD":
-    {
-        "sets":["QCD"],
-        "uncertainties":["qcd"],
-        "weight":"1",
-        "color":ROOT.kGray+1
-    }
+#    "QCD":
+#    {
+#        "sets":["QCD"],
+#        "uncertainties":["qcd"],
+#        "weight":"1",
+#        "color":ROOT.kGray+1
+#    }
 }
 
 data = {
@@ -185,7 +185,10 @@ data = {
     }
 }
 
-globalMCWeight="(Reconstructed_1__HLT_IsoMu20_v1==1)*(Reconstructed_1__PU69000_weight)"
+globalWeight="(SingleTop_1__mtw_beforePz>50.0)"
+globalMCWeight=globalWeight+"*(Reconstructed_1__HLT_IsoMu20_v1==1)*(Reconstructed_1__PU69000_weight)*1640.217/0.7*mc_weight"
+globalDataWeight=globalWeight+"*1"
+
 binning=20
 ranges=[-1.0,1.0]
 file=open("fit.cfg","w")
