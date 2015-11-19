@@ -9,6 +9,9 @@ function addVar
 
 BASEDIR=`pwd`
 addVar BASEDIR $BASEDIR
+addVar PATH $BASEDIR/scripts:"$"PATH
+addVar PYTHONPATH $BASEDIR/scripts:"$"PYTHONPATH
+
 echo $VARS > global-vars.txt
 
 source external/setupCMake.sh
