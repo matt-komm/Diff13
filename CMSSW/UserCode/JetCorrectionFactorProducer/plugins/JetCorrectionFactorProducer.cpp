@@ -25,6 +25,8 @@
 
 #include "DataFormats/Common/interface/View.h"
 
+#include "UserCode/JetCorrectionFactorProducer/interface/JetCorrectionLevel.h"
+
 #include <string>
 #include <vector>
 
@@ -87,10 +89,14 @@ class JetCorrectionFactorProducer:
             for (unsigned int ilevel = 0; ilevel <_jecCorrections.size(); ++ilevel)
             {
                 _jetCorrectionParameters.emplace_back(_jecCorrections[ilevel].file.fullPath());
+                
+                produces<JetCorrectionLevel>(_jecCorrections[ilevel].level);
             }
             
             
             produces<edm::ValueMap<pat::JetCorrFactors>>();
+            
+            
         }
         
         ~JetCorrectionFactorProducer()
@@ -117,36 +123,62 @@ class JetCorrectionFactorProducer:
             edm::Handle<double> rhoCollection;
             edmEvent.getByToken(_rhoToken,rhoCollection);
             
-            FactorizedJetCorrector factorizedJetCorrector(_jetCorrectionParameters);
+            std::shared_ptr<FactorizedJetCorrector> factorizedJetCorrector(new FactorizedJetCorrector(_jetCorrectionParameters));
             
             std::vector<pat::JetCorrFactors> output;
             for (unsigned int ijet = 0; ijet < jetCollection->size(); ++ijet)
             {
                 const pat::Jet& jet = jetCollection->at(ijet);
-                factorizedJetCorrector.setJetEta(jet.correctedP4(0).eta());
-                factorizedJetCorrector.setJetPt(jet.correctedP4(0).pt());
-                factorizedJetCorrector.setJetE(jet.correctedP4(0).energy());
-                factorizedJetCorrector.setNPV(primaryVerticesCollection->size());
+                factorizedJetCorrector->setJetEta(jet.correctedP4(0).eta());
+                factorizedJetCorrector->setJetPt(jet.correctedP4(0).pt());
+                factorizedJetCorrector->setJetE(jet.correctedP4(0).energy());
+                factorizedJetCorrector->setNPV(primaryVerticesCollection->size());
                 
-                factorizedJetCorrector.setJetPhi(jet.phi());
-                factorizedJetCorrector.setJetA(jet.jetArea());
-                factorizedJetCorrector.setRho(*rhoCollection);
+                factorizedJetCorrector->setJetPhi(jet.correctedP4(0).phi());
+                factorizedJetCorrector->setJetA(jet.jetArea());
+                factorizedJetCorrector->setRho(*rhoCollection);
                 
                 std::vector<std::pair<std::string, std::vector<float> >> corrections;
                 //GLUON, UDS, CHARM, BOTTOM
                 corrections.push_back(std::make_pair<std::string, std::vector<float>>("Uncorrected",{1}));
                 
-                std::vector<float> factors = factorizedJetCorrector.getSubCorrections();
+                std::vector<float> factors = factorizedJetCorrector->getSubCorrections();
                 for (unsigned int ilevel = 0; ilevel < _jecCorrections.size(); ++ilevel)
                 {
                     corrections.push_back(std::pair<std::string, std::vector<float>>(_jecCorrections[ilevel].level,{factors[ilevel]}));
                 }
                 
                 output.emplace_back(_moduleLabel,corrections);
-
             }
             
             putValueMap(edmEvent,jetCollection,output,"");
+            
+            
+            const unsigned int Nvertices = primaryVerticesCollection->size();
+            const double rho = *rhoCollection;
+            for (unsigned int ilevel = 0; ilevel <_jecCorrections.size(); ++ilevel)
+            {
+                std::unique_ptr<JetCorrectionLevel> jetCorrectionLevel(new JetCorrectionLevel());
+                std::shared_ptr<std::function<float(const pat::Jet&)>> fct(new std::function<float(const pat::Jet&)>(
+                    [ilevel,Nvertices,rho,factorizedJetCorrector]
+                    (const pat::Jet& jet) -> float
+                    {
+                        factorizedJetCorrector->setJetEta(jet.correctedP4(0).eta());
+                        factorizedJetCorrector->setJetPt(jet.correctedP4(0).pt());
+                        factorizedJetCorrector->setJetE(jet.correctedP4(0).energy());
+                        factorizedJetCorrector->setNPV(Nvertices);
+                        
+                        factorizedJetCorrector->setJetPhi(jet.correctedP4(0).phi());
+                        factorizedJetCorrector->setJetA(jet.jetArea());
+                        factorizedJetCorrector->setRho(rho);
+                        std::vector<float> factors = factorizedJetCorrector->getSubCorrections();
+                        
+                        return factors[ilevel];
+                    }
+                ));
+                jetCorrectionLevel->setFunction(fct);
+                edmEvent.put(std::move(jetCorrectionLevel),_jecCorrections[ilevel].level);
+            }
         }
         virtual void endJob() override
         {

@@ -1,0 +1,4 @@
+<lcgdict>
+  <class pattern="edm::Wrapper<*>"/>
+  <class name="JetCorrectionLevel"/>
+</lcgdict>
