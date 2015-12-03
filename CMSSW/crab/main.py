@@ -60,7 +60,7 @@ if __name__=="__main__":
     #config.Data.splitting = 'LumiBased'
     #config.Data.lumiMask = 'https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions15/13TeV/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt'
     #config.Data.runRange='254833-254833'
-    config.Data.unitsPerJob = 4
+    config.Data.unitsPerJob = 5
     #config.Data.ignoreLocality = True #use to circumvent crab/dbs bug with open data blocks (while its being writing)
 
     config.Data.publication = False
@@ -172,7 +172,6 @@ if __name__=="__main__":
         '/ST_t-channel_top_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM',
         '/ST_t-channel_antitop_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM',
         
-        
         '/ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v2/MINIAODSIM',
         '/ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM',
         
@@ -212,9 +211,11 @@ if __name__=="__main__":
     if dataset.split("/")[2].find("_ext")!=-1:
         processName+="_ext"
 
-    jobName = processName+'_v151203'
+    jobName = processName+'_v151204'
     
     print "submitting... ",jobName
+    #status(os.path.join(os.getcwd(),"crab",jobName,"crab_"+config.General.requestName))
+    
     if not os.path.isdir(os.path.join(os.getcwd(),"crab",jobName)):
     
         config.General.workArea = "crab/"+jobName
@@ -225,4 +226,5 @@ if __name__=="__main__":
         submit(config)
     else:
         print "job folder already exists!"
+    
 

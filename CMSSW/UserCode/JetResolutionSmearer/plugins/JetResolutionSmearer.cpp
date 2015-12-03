@@ -132,6 +132,7 @@ class JetResolutionSmearer:
                 }
                 
                 (*output)[ijet]=std::move(*smearedJet);
+                delete smearedJet;
             }
             edmEvent.put(std::move(output));
         }
