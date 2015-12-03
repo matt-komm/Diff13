@@ -37,6 +37,8 @@ THETABASEDIR=$BASEDIR/external/slim-theta/build
 addVar THETABASEDIR $THETABASEDIR
 addVar PATH $THETABASEDIR/bin:"$"PATH
 
+addVar PYTHONPATH $BASEDIR/external/slim-theta/python:"$"PYTHONPATH
+
 mkdir build
 cd build
 

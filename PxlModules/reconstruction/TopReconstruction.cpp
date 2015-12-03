@@ -47,8 +47,18 @@ struct SortByEta
 class TopReconstruction:
     public pxl::Module
 {
+
     private:
-        pxl::Source* _outputSource;
+        enum Category
+        {
+            OTHER,
+            C0J,
+            C1J,
+            C2J0T,C2J1T,C2J2T,
+            C3J0T,C3J1T,C3J2T,C3J3T
+        };
+    
+        std::map<Category,pxl::Source*> _outputSources;
         
         std::string _inputEventViewNameLepton;
         std::string _leptonName;
@@ -57,15 +67,15 @@ class TopReconstruction:
         std::string _neutrinoName;
         
         std::string _inputEventViewNameJets;
-        std::string _bJetName;
-        std::string _lightJetName;
+        std::vector<std::string> _bJetNames;
+        std::vector<std::string> _lightJetNames;
         
         std::string _outputEventViewName;
         std::string _wbosonName;
         std::string _topName;
         
 
-
+        
         
     public:
         TopReconstruction():
@@ -77,15 +87,27 @@ class TopReconstruction:
             _neutrinoName("Neutrino"),
             
             _inputEventViewNameJets("Reconstructed"),
-            _bJetName("SelectedBJet"),
-            _lightJetName("SelectedJet"),
+            _bJetNames({"SelectedBJet"}),
+            _lightJetNames({"SelectedJet","SelectedBLooseJet"}),
             
             _outputEventViewName("SingleTop"),
             _wbosonName("W"),
             _topName("Top")
         {
             addSink("input", "input");
-            _outputSource = addSource("selected","selected");
+            
+            _outputSources[OTHER] = addSource("other","other");
+            
+            _outputSources[C1J] = addSource("0j","0j");
+            _outputSources[C1J] = addSource("1j","1j");
+            
+            _outputSources[C2J0T] = addSource("2j0t","2j0t");
+            _outputSources[C2J1T] = addSource("2j1t","2j1t");
+            _outputSources[C2J2T] = addSource("2j2t","2j2t");
+            _outputSources[C3J0T] = addSource("3j0t","3j0t");
+            _outputSources[C3J1T] = addSource("3j1t","3j1t");
+            _outputSources[C3J2T] = addSource("3j2t","3j2t");
+            _outputSources[C3J3T] = addSource("3j3t","3j3t");
 
             addOption("input event view lepton","",_inputEventViewNameLepton);
             addOption("lepton","",_leptonName);
@@ -94,14 +116,12 @@ class TopReconstruction:
             addOption("neutrino","",_neutrinoName);
             
             addOption("input event view jets","",_inputEventViewNameJets);
-            addOption("b-jet","",_bJetName);   
-            addOption("light jet","",_lightJetName);
+            addOption("b jets","",_bJetNames);   
+            addOption("light jets","",_lightJetNames);
             
             addOption("output event view","",_outputEventViewName);
             addOption("W boson","",_wbosonName);
             addOption("top","",_topName);
-
-
         }
 
         ~TopReconstruction()
@@ -140,8 +160,8 @@ class TopReconstruction:
             getOption("neutrino",_neutrinoName);
             
             getOption("input event view jets",_inputEventViewNameJets);
-            getOption("b-jet",_bJetName);   
-            getOption("light jet",_lightJetName);
+            getOption("b jets",_bJetNames);   
+            getOption("light jets",_lightJetNames);
             
             getOption("output event view",_outputEventViewName);
             getOption("W boson",_wbosonName);
@@ -218,22 +238,23 @@ class TopReconstruction:
             pxl::Particle* cm = eventView->create<pxl::Particle>();
             cm->setName(name);
             //linking too much will crash the gui :-(
+            
+            float minCosTheta = 100;
+            float maxCosTheta = -100;
+            float minDY = 100;
+            float maxDY = -100;
+            float minDEta = 100;
+            float maxDEta = -100;
+            float minDR = 100;
+            float maxDR = -100;
+            float minDPhi = 100;
+            float maxDPhi = -100;
             for (pxl::Particle* p: particles)
             {
                 cm->addP4(p);
             }
             if (particles.size()>=2)
             {
-                float minCosTheta = 100;
-                float maxCosTheta = -100;
-                float minDY = 100;
-                float maxDY = -100;
-                float minDEta = 100;
-                float maxDEta = -100;
-                float minDR = 100;
-                float maxDR = -100;
-                float minDPhi = 100;
-                float maxDPhi = -100;
                 for (unsigned int i = 0; i < particles.size(); ++i)
                 {
                     for (unsigned int j = i+1; j < particles.size(); ++j)
@@ -264,6 +285,7 @@ class TopReconstruction:
                         maxDPhi=std::max(maxDPhi,deltaPhi);
                     }
                 }
+                /*
                 if (particles.size()>2)
                 {
                     cm->setUserRecord("minCosTheta",minCosTheta);
@@ -281,20 +303,20 @@ class TopReconstruction:
                     cm->setUserRecord("minDPhi",minDPhi);
                     cm->setUserRecord("maxDPhi",maxDPhi);
                 }
-                else if (particles.size()==2)
-                {
-                    cm->setUserRecord("CosTheta",minCosTheta);
-                    cm->setUserRecord("DY",minDY);
-                    cm->setUserRecord("DEta",minDEta);
-                    cm->setUserRecord("DR",minDR);
-                    cm->setUserRecord("DPhi",minDPhi);
-                }
+                */
+
+                cm->setUserRecord("CosTheta",minCosTheta);
+                cm->setUserRecord("DY",minDY);
+                cm->setUserRecord("DEta",minDEta);
+                cm->setUserRecord("DR",minDR);
+                cm->setUserRecord("DPhi",minDPhi);
+
             }
         
             return cm;
         }
         
-        void reconstructEvent(pxl::EventView* eventView, pxl::Particle* lepton, pxl::Particle* neutrino, std::vector<pxl::Particle*>& lightjets, std::vector<pxl::Particle*>& bjets) 
+        Category reconstructEvent(pxl::EventView* eventView, pxl::Particle* lepton, pxl::Particle* neutrino, std::vector<pxl::Particle*>& lightjets, std::vector<pxl::Particle*>& bjets) 
         {
             const unsigned int nljets = lightjets.size();
             const unsigned int nbjets = bjets.size();
@@ -310,9 +332,12 @@ class TopReconstruction:
             //sort descending
             std::sort(bjets.begin(),bjets.end(),SortByPt());
             
+            Category category = OTHER;
+            
             if (njets==0)
             {
                 wboson = makeWboson(eventView,lepton,neutrino);
+                category=C0J;
             }
             if (njets==1)
             {
@@ -329,6 +354,7 @@ class TopReconstruction:
                     eventView->insertObject(bjet);
                     top = makeTop(eventView,wboson,bjet);
                 }
+                category=C1J;
             }
             
             else if (njets==2)
@@ -342,6 +368,8 @@ class TopReconstruction:
                     eventView->insertObject(lightjet);
                     eventView->insertObject(bjet);
                     top = makeTop(eventView,wboson,bjet);
+                    
+                    category=C2J0T;
                 }
                 else if (nbjets==1)
                 {
@@ -351,6 +379,8 @@ class TopReconstruction:
                     eventView->insertObject(lightjet);
                     eventView->insertObject(bjet);
                     top = makeTop(eventView,wboson,bjet);
+                    
+                    category=C2J1T;
                 }
                 else if (nbjets==2)
                 {
@@ -362,6 +392,8 @@ class TopReconstruction:
                     eventView->insertObject(lightjet);
                     eventView->insertObject(bjet);
                     top = makeTop(eventView,wboson,bjet);
+                    
+                    category=C2J2T;
                 }
             }
             else if (njets==3)
@@ -375,6 +407,8 @@ class TopReconstruction:
                     eventView->insertObject(lightjet);
                     eventView->insertObject(bjet);
                     top = makeTop(eventView,wboson,bjet);
+                    
+                    category=C3J0T;
                 }
                 else if (nbjets==1)
                 {
@@ -385,6 +419,8 @@ class TopReconstruction:
                     eventView->insertObject(lightjet);
                     eventView->insertObject(bjet);
                     top = makeTop(eventView,wboson,bjet);
+                    
+                    category=C3J1T;
                 }
                 else if (nbjets==2)
                 {
@@ -395,6 +431,8 @@ class TopReconstruction:
                     eventView->insertObject(lightjet);
                     eventView->insertObject(bjet);
                     top = makeTop(eventView,wboson,bjet);
+                    
+                    category=C3J2T;
                 }
                 else if (nbjets==3)
                 {
@@ -405,14 +443,14 @@ class TopReconstruction:
                     eventView->insertObject(lightjet);
                     eventView->insertObject(bjet);
                     top = makeTop(eventView,wboson,bjet);
+                    
+                    category=C3J3T;
                 }
             }
             else
             {
-                return;
+                return category;
             }
-            
-            
             
             if (lightjet)
             {
@@ -428,9 +466,11 @@ class TopReconstruction:
             }
             if (bjet and lightjet)
             {
-                makeCMSystem(eventView,"Dijet",{{bjet,lightjet}});
-                makeCMSystem(eventView,"Shat",{{bjet,lightjet,lepton,neutrino}});
+                makeCMSystem(eventView,"Dijet",{bjet,lightjet});
+                makeCMSystem(eventView,"Shat",{bjet,lightjet,lepton,neutrino});
             }
+            
+            return category;
         }
         
         bool analyse(pxl::Sink *sink) throw (std::runtime_error)
@@ -502,25 +542,22 @@ class TopReconstruction:
                             }
                             if (inputEventView->getName()==_inputEventViewNameJets)
                             {
-                                if ( particle->getName()==_bJetName)
+                                if (std::find(_bJetNames.begin(),_bJetNames.end(), particle->getName())!=_bJetNames.end())
                                 {
                                     bjets.push_back(particle);
                                 }
-                                else if (particle->getName()==_lightJetName)
+                                else if (std::find(_lightJetNames.begin(),_lightJetNames.end(), particle->getName())!=_lightJetNames.end())
                                 {
                                     lightjets.push_back(particle);
                                 }
                             }
                         }
                     }
-                    
-                    if (lepton && neutrino)
-                    {
-                        reconstructEvent(outputEventView,lepton,neutrino,lightjets,bjets);
-                    }
-                    
-                    _outputSource->setTargets(event);
-                    return _outputSource->processTargets();
+
+                    Category category = reconstructEvent(outputEventView,lepton,neutrino,lightjets,bjets);
+                    _outputSources[category]->setTargets(event);
+                    return _outputSources[category]->processTargets();
+
                 }
             }
             catch(std::exception &e)

@@ -279,6 +279,14 @@ const std::unordered_map<std::string,FileInfo> eventWeights = {
         }
     },
     
+    {"TT_TuneZ2star_13TeV-powheg-pythia6-tauola",
+        {
+            //total=18666925 eff=18666925-0=18666925
+            18666925,
+            831.76
+        }
+    },
+    
     
     {"WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8",
         {
