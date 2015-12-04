@@ -1,4 +1,4 @@
-#include "BTagCalibrationStandalone.h"
+#include "BTagCalibrationStandalone.hpp"
 #include <iostream>
 #include <exception>
 #include <algorithm>

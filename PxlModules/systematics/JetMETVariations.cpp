@@ -126,7 +126,7 @@ class JetMETVariations:
         }
         
         
-        void renameJetMET(pxl::Event* event, const std::string& sysVariation)
+        void renameJetMET(pxl::Event* event, const std::string& jetName, const std::string& metName)
         {
             std::vector<pxl::EventView*> eventViews;
             event->getObjectsOfType(eventViews);
@@ -139,11 +139,11 @@ class JetMETVariations:
                     eventView->getObjectsOfType(particles);
                     for (pxl::Particle* particle: particles)
                     {
-                        if (particle->getName()==(_variationJetNamePrefix+sysVariation))
+                        if (particle->getName()==jetName)
                         {
                             particle->setName(_renamedJet);
                         }
-                        else if (particle->getName()==(_variationMETNamePrefix+sysVariation))
+                        else if (particle->getName()==metName)
                         {
                             particle->setName(_renamedMET);
                         }
@@ -178,7 +178,7 @@ class JetMETVariations:
                             {
                                 throw std::runtime_error("cloning of Event failed");
                             }
-                            renameJetMET(eventShiftedUp,variation+"Up");
+                            renameJetMET(eventShiftedUp,_variationJetNamePrefix+variation+"Up",_variationMETNamePrefix+variation+"Up");
                             _sources[variation][0]->setTargets(eventShiftedUp);
                             success &= _sources[variation][0]->processTargets();
                             delete eventShiftedUp;
@@ -190,18 +190,18 @@ class JetMETVariations:
                             {
                                 throw std::runtime_error("cloning of Event failed");
                             }
-                            renameJetMET(eventShiftedDown,variation+"Down");
+                            renameJetMET(eventShiftedDown,_variationJetNamePrefix+variation+"Down",_variationMETNamePrefix+variation+"Down");
                             _sources[variation][1]->setTargets(eventShiftedDown);
                             success &= _sources[variation][1]->processTargets();
                             delete eventShiftedDown;
                         }
                     }
                     
+                    renameJetMET(event,_nominalJetName,_nominalMETName);
+                    _nominalSource->setTargets(event);
+                    success &= _nominalSource->processTargets();
+                    
                     return success;
-                    
-                    
-                    //_outputSource->setTargets(event);
-                    //return _outputSource->processTargets();
                 }
             }
             catch(std::exception &e)
