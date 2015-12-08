@@ -96,7 +96,7 @@ ROOT.gStyle.SetStatBorderSize(1)
 ROOT.gStyle.SetStatH(0.1)
 ROOT.gStyle.SetStatW(0.15)
 
-ROOT.gStyle.SetHatchesSpacing(0.5)
+ROOT.gStyle.SetHatchesSpacing(0.8)
 ROOT.gStyle.SetHatchesLineWidth(2)
 
 # ROOT.gStyle.SetStaROOT.TStyle(Style_t style = 1001)
@@ -157,7 +157,6 @@ ROOT.gStyle.SetOptLogz(0)
 #ROOT.gStyle.SetPalette(1) #(1,0)
 
 # another top group addition
-ROOT.gStyle.SetHatchesSpacing(1.0)
 
 # Postscript options:
 #ROOT.gStyle.SetPaperSize(20., 20.)
@@ -196,216 +195,39 @@ def getDarkerColor(color):
     darkerColor=newColor(color.GetRed()*0.6,color.GetGreen()*0.6,color.GetBlue()*0.6)
     return darkerColor
 
-sampleDict = {
-    "tChannel":
-    {
-        "processes":[
-            "ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1",
-        ],
-        "color":ROOT.gROOT.GetColor(ROOT.kRed),
-        "title":"t-channel",
-        "weight":"((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)"
-    },
-
-    "tWChannel":
-    {
-        "processes":[
-            "ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1",
-            "ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1"
-        ],
-        "color":ROOT.gROOT.GetColor(ROOT.kOrange),
-        "title":"tW-channel",
-        "weight":"((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)"
-    },
-
-    "TTJets":
-    {
-        "processes":[
-            "TT_TuneCUETP8M1_13TeV-powheg-pythia8_ext"
-        ],
-        "color":ROOT.gROOT.GetColor(ROOT.kOrange-3),
-        "title":"t#bar{t}",
-        "weight":"((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)"
-    },
-    
-    "WJetsAMC":
-    {
-        "processes":[
-            "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8"
-        ],
-        "color":ROOT.gROOT.GetColor(ROOT.kGreen-2),
-        "title":"W+jets",
-        "addtitle":"(aMC@NLO)",
-        "weight":"((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)"
-    },
-    
-    "WJetsMG":
-    {
-        "processes":[
-            "WJetsToLNu_TuneCUETP8M1_13TeV-madgraphMLM-pythia8"
-        ],
-        "color":ROOT.gROOT.GetColor(ROOT.kGreen-2),
-        "title":"W+jets",
-        "addtitle":"(MadGraph)",
-        "weight":"((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)"
-    },
-    
-    
-    "DY":
-    {
-        "processes":[
-            "DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8"
-        ],
-        "color":ROOT.gROOT.GetColor(ROOT.kBlue-1),
-        "title":"Drell-Yan",
-        #"addtitle":"(#times 1.8)",
-        "weight":"((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)"
-    },
-
-    "QCD":
-    {
-        "processes":[
-            "QCD_Pt-20toInf_MuEnrichedPt15_TuneCUETP8M1_13TeV_pythia8",
-        ],
-        "color":ROOT.gROOT.GetColor(ROOT.kGray),
-        "title":"QCD (MC)",# #lower[-0.06]{#scale[0.85]{#times#frac{1}{5}}}",
-        "weight":"((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)"
-    },
-    
-    "data1":
-    {
-        "processes":[
-            "SingleMuon_Run2015D-05Oct2015-v1",
-        ],
-        "color":ROOT.gROOT.GetColor(ROOT.kBlack),
-        "title":"Data",
-        "weight":"((Reconstructed_1__HLT_IsoMu20_v2==1)+(Reconstructed_1__HLT_IsoMu20_v3==1))"
-    },
-    
-    "data2":
-    {
-        "processes":[
-            "SingleMuon_Run2015D-PromptReco-v4",
-        ],
-        "color":ROOT.gROOT.GetColor(ROOT.kBlack),
-        "title":"Data",
-        "weight":"(Reconstructed_1__HLT_IsoMu20_v3==1)"
-    }
-}
-
-rootFilesMC=[]
-rootFilesData=[]
-
-basedirMC = os.path.join(os.getcwd(),"evaluate25ns")
-matchMC = re.compile("mc[0-9]+.root")
-basedirData = os.path.join(os.getcwd(),"evaluate25nsData")
-matchData = re.compile("data[0-9]+.root")
-
-for f in os.listdir(basedirMC):
-    if matchMC.match(f):
-        rootFilesMC.append(os.path.join(basedirMC,f))
-
-for f in os.listdir(basedirData):
-    if matchData.match(f):
-        rootFilesData.append(os.path.join(basedirData,f))
-        
-print "found MC=",len(rootFilesMC)," and data=",len(rootFilesData)," files"
-
-def addUnderflowOverflow(hist):
-    hist.SetBinContent(1,hist.GetBinContent(0)+hist.GetBinContent(1))
-    N=hist.GetNbinsX()
-    hist.SetBinContent(N,hist.GetBinContent(N)+hist.GetBinContent(N+1))
-    hist.SetBinContent(0,0)
-    hist.SetBinContent(N+1,0)
-    hist.SetEntries(hist.GetEntries()-4)
-        
-
-for sample in sampleDict.keys():
-    sampleDict[sample]["darkColor"]=getDarkerColor(sampleDict[sample]["color"])
+#MG
 '''
-        ["fox_1_eta","SingleTop_1__fox_1_eta","H_{1}[#eta]","1",50,0,1],
-        ["fox_2_eta","SingleTop_1__fox_2_eta","H_{2}[#eta]","1",50,0,1],
-        ["fox_3_eta","SingleTop_1__fox_3_eta","H_{3}[#eta]","1",50,0,1],
-        ["fox_4_eta","SingleTop_1__fox_4_eta","H_{4}[#eta]","1",50,0,1],
-        ["fox_5_eta","SingleTop_1__fox_5_eta","H_{5}[#eta]","1",50,0,1],
-        ["fox_6_eta","SingleTop_1__fox_6_eta","H_{6}[#eta]","1",50,0,1],
-        ["fox_7_eta","SingleTop_1__fox_7_eta","H_{7}[#eta]","1",50,0,1],
-        ["fox_8_eta","SingleTop_1__fox_8_eta","H_{8}[#eta]","1",50,0,1],
-        ["fox_9_eta","SingleTop_1__fox_9_eta","H_{9}[#eta]","1",50,0,1],
-        ["fox_10_eta","SingleTop_1__fox_10_eta","H_{10}[#eta]","1",50,0,1],
-        
-        ["fox_1_one","SingleTop_1__fox_1_one","H_{1}[1]","1",50,0,25],
-        ["fox_2_one","SingleTop_1__fox_2_one","H_{2}[1]","1",50,0,25],
-        ["fox_3_one","SingleTop_1__fox_3_one","H_{3}[1]","1",50,0,20],
-        ["fox_4_one","SingleTop_1__fox_4_one","H_{4}[1]","1",50,0,20],
-        ["fox_5_one","SingleTop_1__fox_5_one","H_{5}[1]","1",50,0,15],
-        ["fox_6_one","SingleTop_1__fox_6_one","H_{6}[1]","1",50,0,15],
-        ["fox_7_one","SingleTop_1__fox_7_one","H_{7}[1]","1",50,0,15],
-        ["fox_8_one","SingleTop_1__fox_8_one","H_{8}[1]","1",50,0,15],
-        ["fox_9_one","SingleTop_1__fox_9_one","H_{9}[1]","1",50,0,10],
-        ["fox_10_one","SingleTop_1__fox_10_one","H_{10}[1]","1",50,0,10],
-        
-        ["fox_1_psum","SingleTop_1__fox_1_psum","H_{1}[#Sigma p]","1",50,0,1],
-        ["fox_2_psum","SingleTop_1__fox_2_psum","H_{2}[#Sigma p]","1",50,0,1],
-        ["fox_3_psum","SingleTop_1__fox_3_psum","H_{3}[#Sigma p]","1",50,0,1],
-        ["fox_4_psum","SingleTop_1__fox_4_psum","H_{4}[#Sigma p]","1",50,0,1],
-        ["fox_5_psum","SingleTop_1__fox_5_psum","H_{5}[#Sigma p]","1",50,0,1],
-        ["fox_6_psum","SingleTop_1__fox_6_psum","H_{6}[#Sigma p]","1",50,0,1],
-        ["fox_7_psum","SingleTop_1__fox_7_psum","H_{7}[#Sigma p]","1",50,0,1],
-        ["fox_8_psum","SingleTop_1__fox_8_psum","H_{8}[#Sigma p]","1",50,0,1],
-        ["fox_9_psum","SingleTop_1__fox_9_psum","H_{9}[#Sigma p]","1",50,0,1],
-        ["fox_10_psum","SingleTop_1__fox_10_psum","H_{10}[#Sigma p]","1",50,0,1],
-        
-        ["fox_1_pt","SingleTop_1__fox_1_pt","H_{1}[#Sigma p_{T}]","1",50,0,1],
-        ["fox_2_pt","SingleTop_1__fox_2_pt","H_{2}[#Sigma p_{T}]","1",50,0,1],
-        ["fox_3_pt","SingleTop_1__fox_3_pt","H_{3}[#Sigma p_{T}]","1",50,0,1],
-        ["fox_4_pt","SingleTop_1__fox_4_pt","H_{4}[#Sigma p_{T}]","1",50,0,1],
-        ["fox_5_pt","SingleTop_1__fox_5_pt","H_{5}[#Sigma p_{T}]","1",50,0,1],
-        ["fox_6_pt","SingleTop_1__fox_6_pt","H_{6}[#Sigma p_{T}]","1",50,0,1],
-        ["fox_7_pt","SingleTop_1__fox_7_pt","H_{7}[#Sigma p_{T}]","1",50,0,1],
-        ["fox_8_pt","SingleTop_1__fox_8_pt","H_{8}[#Sigma p_{T}]","1",50,0,1],
-        ["fox_9_pt","SingleTop_1__fox_9_pt","H_{9}[#Sigma p_{T}]","1",50,0,1],
-        ["fox_10_pt","SingleTop_1__fox_10_pt","H_{10}[#Sigma p_{T}]","1",50,0,1],
-        
-        ["fox_1_pz","TMath::Log(SingleTop_1__fox_1_pz)","ln(H_{1}[#Sigma p_{z}])","1",50,-3,9],
-        ["fox_2_pz","TMath::Log(SingleTop_1__fox_2_pz)","ln(H_{2}[#Sigma p_{z}])","1",50,-3,9],
-        ["fox_3_pz","TMath::Log(SingleTop_1__fox_3_pz)","ln(H_{3}[#Sigma p_{z}])","1",50,-3,9],
-        ["fox_4_pz","TMath::Log(SingleTop_1__fox_4_pz)","ln(H_{4}[#Sigma p_{z}])","1",50,-3,9],
-        ["fox_5_pz","TMath::Log(SingleTop_1__fox_5_pz)","ln(H_{5}[#Sigma p_{z}])","1",50,-3,9],
-        ["fox_6_pz","TMath::Log(SingleTop_1__fox_6_pz)","ln(H_{6}[#Sigma p_{z}])","1",50,-3,9],
-        ["fox_7_pz","TMath::Log(SingleTop_1__fox_7_pz)","ln(H_{7}[#Sigma p_{z}])","1",50,-3,9],
-        ["fox_8_pz","TMath::Log(SingleTop_1__fox_8_pz)","ln(H_{8}[#Sigma p_{z}])","1",50,-3,9],
-        ["fox_9_pz","TMath::Log(SingleTop_1__fox_9_pz)","ln(H_{9}[#Sigma p_{z}])","1",50,-3,9],
-        ["fox_10_pz","TMath::Log(SingleTop_1__fox_10_pz)","ln(H_{10}[#Sigma p_{z}])","1",50,-3,9],
-
-        ["fox_1_shat","TMath::Log(SingleTop_1__fox_1_shat)","ln(H_{1}[#hat{s}])","1",50,-3.5,6.5],
-        ["fox_2_shat","TMath::Log(SingleTop_1__fox_2_shat)","ln(H_{2}[#hat{s}])","1",50,-3.5,6.5],
-        ["fox_3_shat","TMath::Log(SingleTop_1__fox_3_shat)","ln(H_{3}[#hat{s}])","1",50,-3.5,6.5],
-        ["fox_4_shat","TMath::Log(SingleTop_1__fox_4_shat)","ln(H_{4}[#hat{s}])","1",50,-3.5,6.5],
-        ["fox_5_shat","TMath::Log(SingleTop_1__fox_5_shat)","ln(H_{5}[#hat{s}])","1",50,-3.5,6.5],
-        ["fox_6_shat","TMath::Log(SingleTop_1__fox_6_shat)","ln(H_{6}[#hat{s}])","1",50,-3.5,6.5],
-        ["fox_7_shat","TMath::Log(SingleTop_1__fox_7_shat)","ln(H_{7}[#hat{s}])","1",50,-3.5,6.5],
-        ["fox_8_shat","TMath::Log(SingleTop_1__fox_8_shat)","ln(H_{8}[#hat{s}])","1",50,-3.5,6.5],
-        ["fox_9_shat","TMath::Log(SingleTop_1__fox_9_shat)","ln(H_{9}[#hat{s}])","1",50,-3.5,6.5],
-        ["fox_10_shat","TMath::Log(SingleTop_1__fox_10_shat)","ln(H_{10}[#hat{s}])","1",50,-3.5,6.5],
-
-        ["light_jet_nhf","(SingleTop_1__LightJet_1__neutralHadronMultiplicity>0)*SingleTop_1__LightJet_1__neutralHadronEnergyFraction","neutral hadron frac.","","1",25,0,1,"y"],
-        ["light_jet_hff","(SingleTop_1__LightJet_1__HFHadronMultiplicity>0)*SingleTop_1__LightJet_1__HFHadronEnergyFraction","neutral hadron HF frac.","","1",25,0,1,"y"],
-        ["light_jet_nhf_hff","(SingleTop_1__LightJet_1__neutralHadronMultiplicity>0)*SingleTop_1__LightJet_1__neutralHadronEnergyFraction+(SingleTop_1__LightJet_1__HFHadronMultiplicity>0)*SingleTop_1__LightJet_1__HFHadronEnergyFraction","neutral hadron+HF frac.","","1",25,0,1,"y"],
-        
-        ["light_jet_nem","(SingleTop_1__LightJet_1__neutralMultiplicity>0)*SingleTop_1__LightJet_1__neutralEmEnergyFraction","neutral EM frac.","","1",25,0,1,"y"],
-        
-        ["light_jet_neutralHadronEnergy","(SingleTop_1__LightJet_1__neutralHadronMultiplicity>0)*SingleTop_1__LightJet_1__neutralHadronEnergy","neutral hadron energy","GeV","1",25,0,500,"y"],
-        ["light_jet_HFHadronEnergy","(SingleTop_1__LightJet_1__HFHadronMultiplicity>0)*SingleTop_1__LightJet_1__HFHadronEnergy","neutral hadron HF energy","GeV","1",25,0,3500,"y"],
-        ["light_jet_neutralEmEnergy","(SingleTop_1__LightJet_1__neutralMultiplicity>0)*SingleTop_1__LightJet_1__neutralEmEnergy","EM energy","GeV","1",25,0,500,"y"],
-        
-        ["light_jet_E","SingleTop_1__LightJet_1__E","forward jet energy","GeV","1",25,0,2500,"y"],
-
-
+qcdFitResult="((Reconstructed_1__nSelectedJet==1)*0.240+"
+qcdFitResult+="(Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==0)*0.219+"
+qcdFitResult+="(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==0)*0.176+"
+qcdFitResult+="(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==1)*0.149+"
+qcdFitResult+="(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==2)*0.132)"
+'''
+'''
+#MG barrel
+qcdFitResult="((Reconstructed_1__nSelectedJet==1)*0.234+"
+qcdFitResult+="(Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==0)*0.208+"
+qcdFitResult+="(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==0)*0.158+"
+qcdFitResult+="(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==1)*0.135+"
+qcdFitResult+="(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==2)*0.072)"
+'''
+'''
+#MG forward
+qcdFitResult="((Reconstructed_1__nSelectedJet==1)*0.277+"
+qcdFitResult+="(Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==0)*0.270+"
+qcdFitResult+="(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==0)*0.226+"
+qcdFitResult+="(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==1)*0.177+"
+qcdFitResult+="(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==2)*1.615)"
+'''
+'''
+#AMC
+qcdFitResult="((Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==0)*0.247+"
+qcdFitResult+="(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==0)*0.222+"
+qcdFitResult+="(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==1)*0.059+"
+qcdFitResult+="(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==2)*0.223)"
 
 '''
-
-
+#qcdFitResult="1"
 
 globalDataWeight="1"
 #globalDataWeight+="*(Reconstructed_1__Flag_CSCTightHaloFilter==1)"
@@ -419,21 +241,322 @@ globalDataWeight="1"
 #globalDataWeight+="*(Reconstructed_1__Flag_trackingFailureFilter==1)"
 #globalDataWeight+="*(Reconstructed_1__Flag_trkPOGFilters==1)"
 
-globalMCWeight="(Reconstructed_1__HLT_IsoMu20_v1==1)*(Reconstructed_1__PU69000_weight)"
+globalMCWeight="(Reconstructed_1__HLT_IsoMu20_v1==1)*(Reconstructed_1__PU69000_weight)*2119.4/0.7*mc_weight"
+
+#MG
+'''
+mcFitResult="((Reconstructed_1__nSelectedJet==1)*1.130+"
+mcFitResult+="(Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==0)*1.197+"
+mcFitResult+="(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==0)*1.213+"
+mcFitResult+="(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==1)*0.982+"
+mcFitResult+="(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==2)*0.838)"
+'''
+'''
+#MG barrel
+mcFitResult="((Reconstructed_1__nSelectedJet==1)*1.174+"
+mcFitResult+="(Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==0)*1.271+"
+mcFitResult+="(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==0)*1.286+"
+mcFitResult+="(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==1)*1.011+"
+mcFitResult+="(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==2)*0.853)"
+'''
+'''
+#MG foward
+mcFitResult="((Reconstructed_1__nSelectedJet==1)*0.634+"
+mcFitResult+="(Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==0)*0.783+"
+mcFitResult+="(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==0)*0.845+"
+mcFitResult+="(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==1)*0.698+"
+mcFitResult+="(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==2)*0.412)"
+'''
+'''
+#AMC
+mcFitResult="((Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==0)*0.997+"
+mcFitResult+="(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==0)*0.915+"
+mcFitResult+="(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==1)*0.965+"
+mcFitResult+="(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==2)*0.800)"
+'''
+#mcFitResult="1"
+
+#tChanYield="0.62"
+tChanYield="1.0"
+topbgYield="0.99"
+otherYield="1.26"
+qcdMCYield="1"
+qcdDDYield="0.14"
+
+sampleDict = {
+    "tChannel":
+    {
+        "processes":[
+            "ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1_iso",
+        ],
+        "weight":"((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)*"+globalMCWeight+"*"+tChanYield
+    },
+
+    "tWChannel":
+    {
+        "processes":[
+            "ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1_iso",
+            "ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1_iso"
+        ],
+        "weight":"((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)*"+globalMCWeight+"*"+topbgYield
+    },
+
+    "TTJets":
+    {
+        "processes":[
+            "TT_TuneCUETP8M1_13TeV-powheg-pythia8_ext_iso"
+        ],
+        "weight":"((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)*"+globalMCWeight+"*"+topbgYield,
+    },
+    
+    "WJetsAMC":
+    {
+        "processes":[
+            "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_iso"
+        ],
+        "weight":"((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)*"+globalMCWeight+"*"+otherYield,
+    },
+    
+    "WJetsMG":
+    {
+        "processes":[
+            "WJetsToLNu_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_iso"
+        ],
+        
+        "weight":"((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)*"+globalMCWeight+"*"+otherYield,
+    },
+    
+    
+    "DY":
+    {
+        "processes":[
+            "DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_iso"
+        ],
+        "weight":"((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)*"+globalMCWeight+"*"+otherYield
+    },
+
+    "QCD":
+    {
+        "processes":[
+            "QCD_Pt-20toInf_MuEnrichedPt15_TuneCUETP8M1_13TeV_pythia8_iso",
+        ],
+        "weight":"((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)*"+globalMCWeight
+    },
+    
+    
+    
+    
+    "MC_antiiso":
+    {
+        "processes":[
+            "ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1_antiiso",
+            "ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1_antiiso",
+            "ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1_antiiso",
+            "TT_TuneCUETP8M1_13TeV-powheg-pythia8_ext_antiiso",
+            "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_antiiso",
+            #"WJetsToLNu_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_antiiso",
+            "DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_antiiso"
+        ],
+        "weight":"(-1.0)*((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)*"+globalMCWeight
+    },
+    
+    "data1_antiiso":
+    {
+        "processes":[
+            "SingleMuon_Run2015D-05Oct2015-v1_antiiso",
+        ],
+        "weight":"((Reconstructed_1__HLT_IsoMu20_v2==1)+(Reconstructed_1__HLT_IsoMu20_v3==1))*"+globalDataWeight
+    },
+    
+    "data2_antiiso":
+    {
+        "processes":[
+            "SingleMuon_Run2015D-PromptReco-v4_antiiso",
+        ],
+        "weight":"(Reconstructed_1__HLT_IsoMu20_v3==1)*"+globalDataWeight
+    },
+    
+    
+    
+    "data1":
+    {
+        "processes":[
+            "SingleMuon_Run2015D-05Oct2015-v1_iso",
+        ],
+        "weight":"((Reconstructed_1__HLT_IsoMu20_v2==1)+(Reconstructed_1__HLT_IsoMu20_v3==1))*"+globalDataWeight
+    },
+    
+    "data2":
+    {
+        "processes":[
+            "SingleMuon_Run2015D-PromptReco-v4_iso",
+        ],
+        
+        "weight":"(Reconstructed_1__HLT_IsoMu20_v3==1)*"+globalDataWeight
+    }
+}
+
+
+
+
+
+
+sets = {
+    "tChannel": {
+        "samples": ["tChannel"],
+        "weight":"1",
+        "color":ROOT.gROOT.GetColor(ROOT.kRed),
+        "title":"t-channel",
+    },
+    "tWChannel": {
+        "samples": ["tWChannel"],
+        "weight":"1",
+        "color":ROOT.gROOT.GetColor(ROOT.kOrange),
+        "title":"tW-channel",
+    },
+    "TTJets": {
+        "samples": ["TTJets"],
+        "weight":"1",
+        "color":ROOT.gROOT.GetColor(ROOT.kOrange-3),
+        "title":"t#bar{t}",
+    },
+    "WJetsMG": {
+        "samples": ["WJetsMG"],
+        "weight":"1",
+        "color":ROOT.gROOT.GetColor(ROOT.kGreen-2),
+        "title":"W+jets",
+        "addtitle":"(MadGraph)",
+    },
+    "WJetsMGBF": {
+        "samples": ["WJetsMG"],
+        "weight":"(Reconstructed_1__nBFlavorSelectedJet>0)",
+        "color":ROOT.gROOT.GetColor(ROOT.kGreen+2),
+        "title":"W+bX",
+        "addtitle":"(MadGraph)",
+    },
+    "WJetsMGCF": {
+        "samples": ["WJetsMG"],
+        "weight":"(Reconstructed_1__nBFlavorSelectedJet==0)*(Reconstructed_1__nCFlavorSelectedJet>0)",
+        "color":ROOT.gROOT.GetColor(ROOT.kGreen-3),
+        "title":"W+cX",
+        #"addtitle":"(MadGraph)",
+    },
+    "WJetsMGLF": {
+        "samples": ["WJetsMG"],
+        "weight":"(Reconstructed_1__nBFlavorSelectedJet==0)*(Reconstructed_1__nCFlavorSelectedJet==0)",
+        "color":ROOT.gROOT.GetColor(ROOT.kGreen-7),
+        "title":"W+LF",
+        #"addtitle":"(MadGraph)",
+    },
+    "WJetsAMC": {
+        "samples": ["WJetsAMC"],
+        "weight":"1",
+        "color":ROOT.gROOT.GetColor(ROOT.kGreen-2),
+        "title":"W+jets",
+        "addtitle":"(aMC@NLO)",
+    },
+    "DY": {
+        "samples": ["DY"],
+        "weight":"1",
+        "color":ROOT.gROOT.GetColor(ROOT.kBlue-1),
+        "title":"Drell-Yan",
+        #"addtitle":"(#times 1.8)",
+    },
+    "QCD_MC": {
+        "samples": ["QCD"],
+        "weight":qcdMCYield,
+        "color":ROOT.gROOT.GetColor(ROOT.kGray),
+        "title":"QCD (MC)",# #lower[-0.06]{#scale[0.85]{#times#frac{1}{5}}}",
+    },
+            
+    "QCD_DD": {
+        "samples": ["data1_antiiso","data2_antiiso","MC_antiiso"],
+        "weight":qcdDDYield,
+        "color":ROOT.gROOT.GetColor(ROOT.kGray),
+        "title":"QCD (DD)",# #lower[-0.06]{#scale[0.85]{#times#frac{1}{5}}}",
+    },
+    "data": {
+        "samples": ["data1","data2"],
+        "weight":"1",
+        "color":ROOT.gROOT.GetColor(ROOT.kBlack),
+        "title":"Data",
+    }
+}
+
+rootFiles=[]
+
+basedirMC = os.path.join(os.getcwd(),"evaluate25ns")
+matchMC = re.compile("mc[0-9]+.root")
+basedirData = os.path.join(os.getcwd(),"evaluate25nsData")
+matchData = re.compile("data[0-9]+.root")
+
+for f in os.listdir(basedirMC):
+    if matchMC.match(f):
+        rootFiles.append(os.path.join(basedirMC,f))
+
+for f in os.listdir(basedirData):
+    if matchData.match(f):
+        rootFiles.append(os.path.join(basedirData,f))
+        
+print "found ",len(rootFiles)," files"
+
+def addUnderflowOverflow(hist):
+    hist.SetBinContent(1,hist.GetBinContent(0)+hist.GetBinContent(1))
+    N=hist.GetNbinsX()
+    hist.SetBinContent(N,hist.GetBinContent(N)+hist.GetBinContent(N+1))
+    hist.SetBinContent(0,0)
+    hist.SetBinContent(N+1,0)
+    hist.SetEntries(hist.GetEntries()-4)
+        
+
+for setName in sets.keys():
+    sets[setName]["darkColor"]=getDarkerColor(sets[setName]["color"])
+
+
 
 binning=30
 
 for category in [
-    ["2j0t","(Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==0)"],
-    #["2j1t","(Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==1)"],
+    #["1j","(Reconstructed_1__nSelectedJet==1)"],
+    #["2j0t","(Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==0)"],
+    ["2j1t","(Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==1)"],
 
-    ["3j0t","(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==0)"],
+    #["3j0t","(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==0)"],
     #["3j1t","(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==1)"],
     #["3j2t","(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==2)"]
 ]:
     
     for var in [
     
+        ["fit","(SingleTop_1__mtw_beforePz<50.0)*SingleTop_1__mtw_beforePz+(SingleTop_1__mtw_beforePz>50.0)*(Reconstructed_1__BDT_boost02_minnode005_maxvar2_ntree1000_invboost*50.0+100.0)","fit var","","1",binning,0,150],
+        ["BDT_boost02_minnode005_maxvar2_ntree1000_invboost","Reconstructed_1__BDT_boost02_minnode005_maxvar2_ntree1000_invboost","BDT (#beta=0.2, min=5%)","","1",binning,-0.8,0.8],
+        ["top_pt","SingleTop_1__Top_1__Pt","top p_{T}","GeV","1",binning,0,350],
+        ["top_eta","SingleTop_1__Top_1__Eta","top #eta","","1",binning/2,-6,6],
+        ["top_abseta","fabs(SingleTop_1__Top_1__Eta)","top |#eta|","","1",binning/2,0,6],
+        ["top_mass","SingleTop_1__Top_1__Mass","top mass","GeV","1",binning,0,800],
+        ["cosTheta_tPL","SingleTop_1__cosTheta_tPL","cos#theta_{l,q}^{top}","","1",binning/2,-1,1],
+    
+        ["mtw","SingleTop_1__mtw_beforePz","MTW","GeV","1",binning,0,200],
+        
+        ["muon_logpt","Reconstructed_1__TightMuon_1__Pt","muon p_{T}","GeV","1",binning,numpy.logspace(1.3,2.35,num=(binning+1)),0,"logx"],
+        ["muon_pt","Reconstructed_1__TightMuon_1__Pt","muon p_{T}","GeV","1",binning,0,200],
+        
+        ["ljet_logpt","SingleTop_1__LightJet_1__Pt","light jet p_{T}","GeV","1",binning,numpy.logspace(1.5,2.5,num=(binning+1)),0,"logx"],
+        ["ljet_pt","SingleTop_1__LightJet_1__Pt","light jet p_{T}","GeV","1",binning,0,250],
+        ["ljet_abseta","fabs(SingleTop_1__LightJet_1__Eta)","light jet |#eta|","","1",binning,0,5.0],
+        
+        #["ljet_logpt","SingleTop_1__BJet_1__Pt","light jet p_{T}","GeV","1",binning,numpy.logspace(1.5,2.5,num=(binning+1)),0,"logx"],
+        #["ljet_pt","SingleTop_1__BJet_1__Pt","light jet p_{T}","GeV","1",binning,0,250],
+        #["ljet_abseta","fabs(SingleTop_1__BJet_1__Eta)","light jet |#eta|","","1",binning,0,5.0],
+        
+        ["met","Reconstructed_1__MET_1__Pt","MET","GeV","1",binning,0,200],
+        ["met_phi","Reconstructed_1__MET_1__Phi","MET #phi","","1",binning/2,-3.2,3.2],
+        
+        ["muon_pt","Reconstructed_1__TightMuon_1__Pt","muon p_{T}","GeV","1",binning,0,200],
+        ["muon_eta","Reconstructed_1__TightMuon_1__Eta","muon #eta","","1",binning,-2.6,2.6],
+         
+    ]:
+        '''
         ["BDT_boost02_minnode005_maxvar2_ntree1000_invboost","Reconstructed_1__BDT_boost02_minnode005_maxvar2_ntree1000_invboost","BDT (#beta=0.2, min=5%)","","1",binning,-0.8,0.8],
         #["BDT_boost03_minnode005_maxvar2_ntree1000_invboost","Reconstructed_1__BDT_boost03_minnode005_maxvar2_ntree1000_invboost","BDT (#beta=0.3, min=5%)","","1",binning,-0.8,0.8],
         #["BDT_boost04_minnode005_maxvar2_ntree1000_invboost","Reconstructed_1__BDT_boost04_minnode005_maxvar2_ntree1000_invboost","BDT (#beta=0.4, min=5%)","","1",binning,-0.8,0.8],
@@ -533,387 +656,377 @@ for category in [
         ["jet_muon_charge","Reconstructed_1__TightMuon_1__Charge*SingleTop_1__BJet_1__jetCharge+SingleTop_1__LightJet_1__jetCharge","Q_{b jet} #upoint Q_{#mu} + Q_{light jet}","","1",binning/2,-1.5,1.5],  
     
     ]:
-
+        '''
         for qcd in [
-            ["qcdnone","1",""],
-            ["qcdmtw","(SingleTop_1__mtw_beforePz>50.0)","MTW>50#kern[-0.5]{ }GeV"],
-            ["barrel","(fabs(SingleTop_1__LightJet_1__Eta)<3.0)*(fabs(SingleTop_1__BJet_1__Eta)<3.0)","Barrel"],
-            ["foward","((fabs(SingleTop_1__LightJet_1__Eta)>3.0)+(fabs(SingleTop_1__BJet_1__Eta)>3.0))","Forward"],
+            #["qcdnone","1",""],
+            #["qcdmtw","(SingleTop_1__mtw_beforePz>50.0)","MTW>50#kern[-0.5]{ }GeV"],
+            #["bdt","(SingleTop_1__mtw_beforePz>50.0)*(Reconstructed_1__BDT_boost02_minnode005_maxvar2_ntree1000_invboost>0.2)","MTW>50#kern[-0.5]{ }GeV & BDT>0.2"],
+            ["bdtonly","(Reconstructed_1__BDT_boost02_minnode005_maxvar2_ntree1000_invboost>0.2)","BDT>0.2"],
+            #["barrel","(Reconstructed_1__isBarrel==1)","Barrel"],
+            #["foward","(Reconstructed_1__isBarrel==0)","Forward"],
             
         ]:
-            for isolation in [
-                "iso",
-                #"midiso",
-                #"antiiso"
-            ]:
-                print category[0],var[0],qcd[0],isolation
-                
-                outputName=category[0]+"_"+var[0]+"_"+qcd[0]+"_"+isolation
-                variableName=var[1]
-                variableTitle=var[2]
-                unit=var[3]
-                weight=var[4]+"*"+category[1]+"*"+qcd[1]
-                nbins=var[5]
-                if type(var[6])==numpy.ndarray:
-                    binarray=var[6]
-                else:
-                    binarray=numpy.linspace(var[6],var[7],num=(nbins+1),endpoint=True)
-                
-                logx=False
-                logy=False
-                if len(var)==9:
-                    logx=var[8].find("x")!=-1
-                    logy=var[8].find("y")!=-1
-                
-                stackMC = ROOT.THStack()
-                stackMCHists=[]
-                
-                legendEntries=[]
-                
-                sumHistMC = None
-                
-                for sampleName in ["tChannel","tWChannel","TTJets","WJetsAMC","DY","QCD"]:
-                    #for sampleName in ["QCD","EWK","top","tChannel"]:
+            print category[0],var[0],qcd[0]
+            
+            outputName=category[0]+"_"+var[0]+"_"+qcd[0]
+            variableName=var[1]
+            variableTitle=var[2]
+            unit=var[3]
+            weight=var[4]+"*"+category[1]+"*"+qcd[1]
+            nbins=var[5]
+            if type(var[6])==numpy.ndarray:
+                binarray=var[6]
+            else:
+                binarray=numpy.linspace(var[6],var[7],num=(nbins+1),endpoint=True)
+            
+            logx=False
+            logy=False
+            if len(var)==9:
+                logx=var[8].find("x")!=-1
+                logy=var[8].find("y")!=-1
+            
+            stackMC = ROOT.THStack()
+            stackMCHists=[]
+            
+            legendEntries=[]
+            
+            sumHistMC = None
+            for setName in ["tChannel","tWChannel","TTJets","WJetsMGBF","WJetsMGCF","WJetsMGLF","DY","QCD_DD"]:
+                setHist=ROOT.TH1F("setHist"+setName+str(random.random()),"",nbins,binarray)
+                setHist.Sumw2()
+                setHist.SetFillColor(sets[setName]["color"].GetNumber())
+                setHist.SetFillStyle(1001)
+                setHist.SetLineStyle(1)
+                setHist.SetLineWidth(2)
+                setHist.SetLineColor(sets[setName]["darkColor"].GetNumber())
+                setHist.SetDirectory(0)
+                for sampleName in sets[setName]["samples"]:
+                    
                     sample=sampleDict[sampleName]
-                    sampleHist=ROOT.TH1F("sampleHist"+sampleName+str(random.random()),"",nbins,binarray)
-                    sampleHist.Sumw2()
-                    sampleHist.SetFillColor(sample["color"].GetNumber())
-                    sampleHist.SetFillStyle(1001)
-                    sampleHist.SetLineStyle(1)
-                    sampleHist.SetLineWidth(2)
-                    sampleHist.SetLineColor(sample["darkColor"].GetNumber())
-                    sampleHist.SetDirectory(0)
+                    
                     for process in sample["processes"]:
-                        for f in rootFilesMC:
+                        for f in rootFiles:
                             rootFile = ROOT.TFile(f)
-                            tree = rootFile.Get(process+"_"+isolation)
+                            tree = rootFile.Get(process)
                             if (tree):
-                                tempHist=sampleHist.Clone()
-                                tempHist.SetName(sampleHist.GetName()+process+str(random.random()))
-                                tree.Project(tempHist.GetName(),variableName,"1640.217/0.7*mc_weight*"+sample["weight"]+"*"+weight+"*"+globalMCWeight)
+                                tempHist=setHist.Clone()
+                                tempHist.SetName(setHist.GetName()+process+str(random.random()))
+                                tree.Project(tempHist.GetName(),variableName,sets[setName]["weight"]+"*"+sample["weight"]+"*"+weight)
                                 tempHist.SetDirectory(0)
                                 addUnderflowOverflow(tempHist)
-                                sampleHist.Add(tempHist)
+                                setHist.Add(tempHist)
                             rootFile.Close()
                             #break
                             
                             
-                    if sumHistMC==None:
-                        sumHistMC=sampleHist.Clone()
-                    else:
-                        sumHistMC.Add(sampleHist)
-                    #addUnderflowOverflow(sampleHist)
-                    print "\t",sampleName,sampleHist.GetEntries(),sampleHist.Integral()
-                    stackMC.Add(sampleHist,"HIST F")
-                    stackMCHists.append(sampleHist)
-                    if sample.has_key("addtitle"):
-                        legendEntries.append(["",sample["addtitle"],""])
-                    legendEntries.append([sampleHist,sample["title"],"F"])
-                    
-                    
-                 
-                sumHistData = None
-                    
-                for sampleName in ["data1","data2"]:
+                if sumHistMC==None:
+                    sumHistMC=setHist.Clone()
+                else:
+                    sumHistMC.Add(setHist)
+                #addUnderflowOverflow(sampleHist)
+                print "\t",setName,setHist.GetEntries(),setHist.Integral()
+                stackMC.Add(setHist,"HIST F")
+                stackMCHists.append(setHist)
+                if sets[setName].has_key("addtitle"):
+                    legendEntries.append(["",sets[setName]["addtitle"],""])
+                legendEntries.append([setHist,sets[setName]["title"],"F"])
+                
+                
+             
+            sumHistData = None
+                
+            for setName in ["data"]:
+                setHist=ROOT.TH1F("setHist"+setName+str(random.random()),"",nbins,binarray)
+                setHist.Sumw2()
+                setHist.SetMarkerColor(sets[setName]["color"].GetNumber())
+                setHist.SetMarkerStyle(20)
+                setHist.SetMarkerSize(1)
+                setHist.SetFillStyle(0)
+                setHist.SetLineStyle(1)
+                setHist.SetLineWidth(1)
+                setHist.SetDirectory(0)
+                for sampleName in sets[setName]["samples"]:
                     sample=sampleDict[sampleName]
-                    sampleHist=ROOT.TH1F("sampleHist"+sampleName+str(random.random()),"",nbins,binarray)
-                    sampleHist.Sumw2()
-                    sampleHist.SetMarkerColor(sample["color"].GetNumber())
-                    sampleHist.SetMarkerStyle(20)
-                    sampleHist.SetMarkerSize(1)
-                    sampleHist.SetFillStyle(0)
-                    sampleHist.SetLineStyle(1)
-                    sampleHist.SetLineWidth(1)
-                    sampleHist.SetDirectory(0)
+                    
                     for process in sample["processes"]:
-                        for f in rootFilesData:
+                        for f in rootFiles:
                             rootFile = ROOT.TFile(f)
-                            tree = rootFile.Get(process+"_"+isolation)
+                            tree = rootFile.Get(process)
                             if (tree):
-                                tempHist=sampleHist.Clone()
-                                tempHist.SetName(sampleHist.GetName()+process+str(random.random()))
-                                tree.Project(tempHist.GetName(),variableName,sample["weight"]+"*"+weight+"*"+globalDataWeight)
+                                tempHist=setHist.Clone()
+                                tempHist.SetName(setHist.GetName()+process+str(random.random()))
+                                tree.Project(tempHist.GetName(),variableName,sets[setName]["weight"]+"*"+sample["weight"]+"*"+weight)
                                 tempHist.SetDirectory(0)
                                 addUnderflowOverflow(tempHist)
-                                sampleHist.Add(tempHist)
+                                setHist.Add(tempHist)
                             rootFile.Close()
                             #break
                             
-                    if sumHistData==None:
-                        sumHistData=sampleHist.Clone()
-                    else:
-                        sumHistData.Add(sampleHist)
-                    #addUnderflowOverflow(sampleHist)
-                    print "\t",sampleName,sampleHist.GetEntries(),sampleHist.Integral()
-                    
-                legendEntries.append([sumHistData,"Data","P"])
-                    
-                scale = sumHistData.Integral()/sumHistMC.Integral()
-                print "\tMC=",sumHistMC.Integral(),", data=",sumHistData.Integral(),", L=",scale
-                            
-                '''
-                for h in stackMCHists:
-                    h.Scale(scale)
-                sumHistMC.Scale(scale)
-                '''
-                
-                cv = ROOT.TCanvas("cv"+outputName+str(random.random()),"",800,600)
-                cv.Divide(1,2,0,0)
-                cv.GetPad(1).SetPad(0.0, 0.0, 1.0, 1.0)
-                cv.GetPad(1).SetFillStyle(4000)
-                cv.GetPad(2).SetPad(0.0, 0.00, 1.0,1.0)
-                cv.GetPad(2).SetFillStyle(4000)
-                
-                cvxmin=0.14
-                cvxmax=0.74
-                cvymin=0.14
-                cvymax=0.935
-                resHeight=0.35
-                
-                for i in range(1,3):
-                    #for the canvas:
-                    cv.GetPad(i).SetBorderMode(0)
-                    cv.GetPad(i).SetGridx(False)
-                    cv.GetPad(i).SetGridy(False)
-
-
-                    #For the frame:
-                    cv.GetPad(i).SetFrameBorderMode(0)
-                    cv.GetPad(i).SetFrameBorderSize(1)
-                    cv.GetPad(i).SetFrameFillColor(0)
-                    cv.GetPad(i).SetFrameFillStyle(0)
-                    cv.GetPad(i).SetFrameLineColor(1)
-                    cv.GetPad(i).SetFrameLineStyle(1)
-                    cv.GetPad(i).SetFrameLineWidth(1)
-
-                    # Margins:
-                    cv.GetPad(i).SetLeftMargin(cvxmin)
-                    cv.GetPad(i).SetRightMargin(1-cvxmax)
-                    
-                    # For the Global title:
-                    cv.GetPad(i).SetTitle("")
-                    
-                    # For the axis:
-                    cv.GetPad(i).SetTickx(1)  # To get tick marks on the opposite side of the frame
-                    cv.GetPad(i).SetTicky(1)
-
-                    # Change for log plots:
-                    cv.GetPad(i).SetLogx(0)
-                    cv.GetPad(i).SetLogy(0)
-                    cv.GetPad(i).SetLogz(0)
-                
-                
-                
-                cv.GetPad(2).SetTopMargin(1-cvymax)
-                cv.GetPad(2).SetBottomMargin(resHeight)
-                cv.GetPad(1).SetTopMargin(1-resHeight)
-                cv.GetPad(1).SetBottomMargin(cvymin)
-                
-                cv.cd(2)
-                '''
-                diff=(xmax-xmin)/(1.0*nbins)
-                if diff==1.0*int(diff):
-                    diff=str(int(diff))
-                elif (round(diff,2)>=0.02):
-                    diff=str(round(diff,2))
-                elif int(10000.0*diff)==int(10.0*int(1000.0*diff)):
-                    diff=str(int(diff*1000))+"#scale[0.68]{#times10^{-3}}"
+                if sumHistData==None:
+                    sumHistData=setHist.Clone()
                 else:
-                    diff=str(round(diff*1000,2))+"#scale[0.68]{#times10^{-3}}"
+                    sumHistData.Add(setHist)
+                #addUnderflowOverflow(sampleHist)
+                print "\t",setName,setHist.GetEntries(),setHist.Integral()
+                
+            legendEntries.append([sumHistData,"Data","P"])
+                
+            scale = sumHistData.Integral()/sumHistMC.Integral()
+            print "\tMC=",sumHistMC.Integral(),", data=",sumHistData.Integral(),", L=",scale
+                        
+            '''
+            for h in stackMCHists:
+                h.Scale(scale)
+            sumHistMC.Scale(scale)
+            '''
+            
+            cv = ROOT.TCanvas("cv"+outputName+str(random.random()),"",800,600)
+            cv.Divide(1,2,0,0)
+            cv.GetPad(1).SetPad(0.0, 0.0, 1.0, 1.0)
+            cv.GetPad(1).SetFillStyle(4000)
+            cv.GetPad(2).SetPad(0.0, 0.00, 1.0,1.0)
+            cv.GetPad(2).SetFillStyle(4000)
+            
+            cvxmin=0.14
+            cvxmax=0.74
+            cvymin=0.14
+            cvymax=0.935
+            resHeight=0.35
+            
+            for i in range(1,3):
+                #for the canvas:
+                cv.GetPad(i).SetBorderMode(0)
+                cv.GetPad(i).SetGridx(False)
+                cv.GetPad(i).SetGridy(False)
+
+
+                #For the frame:
+                cv.GetPad(i).SetFrameBorderMode(0)
+                cv.GetPad(i).SetFrameBorderSize(1)
+                cv.GetPad(i).SetFrameFillColor(0)
+                cv.GetPad(i).SetFrameFillStyle(0)
+                cv.GetPad(i).SetFrameLineColor(1)
+                cv.GetPad(i).SetFrameLineStyle(1)
+                cv.GetPad(i).SetFrameLineWidth(1)
+
+                # Margins:
+                cv.GetPad(i).SetLeftMargin(cvxmin)
+                cv.GetPad(i).SetRightMargin(1-cvxmax)
+                
+                # For the Global title:
+                cv.GetPad(i).SetTitle("")
+                
+                # For the axis:
+                cv.GetPad(i).SetTickx(1)  # To get tick marks on the opposite side of the frame
+                cv.GetPad(i).SetTicky(1)
+
+                # Change for log plots:
+                cv.GetPad(i).SetLogx(0)
+                cv.GetPad(i).SetLogy(0)
+                cv.GetPad(i).SetLogz(0)
+            
+            
+            
+            cv.GetPad(2).SetTopMargin(1-cvymax)
+            cv.GetPad(2).SetBottomMargin(resHeight)
+            cv.GetPad(1).SetTopMargin(1-resHeight)
+            cv.GetPad(1).SetBottomMargin(cvymin)
+            
+            cv.cd(2)
+
+            if logy:
+                axis=ROOT.TH2F("axis"+str(random.random()),";"+variableTitle+";Events",50,binarray[0],binarray[-1],50,0.5,math.exp(1.3*math.log(max([sumHistMC.GetMaximum(),sumHistData.GetMaximum(),1.0]))))
+            else:
+                axis=ROOT.TH2F("axis"+str(random.random()),";"+variableTitle+";Events",50,binarray[0],binarray[-1],50,0.0,1.3*max([sumHistMC.GetMaximum(),sumHistData.GetMaximum(),1.0]))
+
+
+            axis.GetYaxis().SetNdivisions(506)
+            axis.GetXaxis().SetNdivisions(504)
+            axis.GetXaxis().SetLabelSize(0)
+            axis.GetXaxis().SetTitle("")
+            axis.GetXaxis().SetTickLength(0.015/(1-cv.GetPad(2).GetLeftMargin()-cv.GetPad(2).GetRightMargin()))
+            axis.GetYaxis().SetTickLength(0.015/(1-cv.GetPad(2).GetTopMargin()-cv.GetPad(2).GetBottomMargin()))
+            #axis.GetYaxis().SetNoExponent(True)
+            axis.Draw("AXIS")
+            
+            stackMC.Draw("Same")
+            stackMC.GetXaxis().SetTitle(variableTitle)
+            stackMC.GetYaxis().SetTitle("Events")
+            
+            sumHistData.Draw("PESame")
+            
+            if logy:
+                cv.GetPad(2).SetLogy(1)
+            if logx:
+                cv.GetPad(2).SetLogx(1)
+                cv.GetPad(1).SetLogx(1)
+            ROOT.gPad.RedrawAxis()
+            
+            legend = ROOT.TLegend(0.745,cvymax,0.99,cvymax-0.075*len(legendEntries))
+            #legend = ROOT.TLegend(0.73,0.9,0.95,0.745-0.052*len(legendEntries))
+            
+            #legend = ROOT.TLegend(0.7,0.72,0.95,0.72-0.07*len(legendEntries))
+            
+            legend.SetFillColor(ROOT.kWhite)
+            legend.SetBorderSize(0)
+            legend.SetTextFont(43)
+            legend.SetTextSize(28)
+            for entry in reversed(legendEntries):
+                legend.AddEntry(entry[0],entry[1],entry[2])
+            '''
+            pText=ROOT.TPaveText(cvxmin+0.1,0.86,cvxmin+0.1,0.86,"NDC")
+            pText.SetFillColor(ROOT.kWhite)
+            pText.SetBorderSize(0)
+            pText.SetTextFont(63)
+            pText.SetTextSize(24)
+            pText.SetTextAlign(11)
+            pText.AddText(qcd[2])
+            pText.Draw("Same")
+            '''
+            pCMS=ROOT.TPaveText(cvxmin+0.085,0.95,cvxmin+0.085,0.95,"NDC")
+            pCMS.SetFillColor(ROOT.kWhite)
+            pCMS.SetBorderSize(0)
+            pCMS.SetTextFont(63)
+            pCMS.SetTextSize(28)
+            pCMS.SetTextAlign(11)
+            pCMS.AddText("CMS")
+            pCMS.Draw("Same")
+            
+            pPreliminary=ROOT.TPaveText(cvxmin+0.165,0.95,cvxmin+0.165,0.95,"NDC")
+            pPreliminary.SetFillColor(ROOT.kWhite)
+            pPreliminary.SetBorderSize(0)
+            pPreliminary.SetTextFont(53)
+            pPreliminary.SetTextSize(28)
+            pPreliminary.SetTextAlign(11)
+            pPreliminary.AddText("Preliminary")
+            pPreliminary.Draw("Same")
+            
+            
+            pCat=ROOT.TPaveText(cvxmin+0.03,0.875,cvxmin+0.03,0.875,"NDC")
+            pCat.SetFillColor(ROOT.kWhite)
+            pCat.SetBorderSize(0)
+            pCat.SetTextFont(63)
+            pCat.SetTextSize(26)
+            pCat.SetTextAlign(11)
+            pCat.AddText(category[0])
+            pCat.Draw("Same")
+            
+            pCut=ROOT.TPaveText(cvxmin+0.03,0.82,cvxmin+0.03,0.82,"NDC")
+            pCut.SetFillColor(ROOT.kWhite)
+            pCut.SetBorderSize(0)
+            pCut.SetTextFont(43)
+            pCut.SetTextSize(24)
+            pCut.SetTextAlign(11)
+            pCut.AddText(qcd[2])
+            pCut.Draw("Same")
+            
+            pChi=ROOT.TPaveText(cvxmax-0.03,0.875,cvxmax-0.03,0.875,"NDC")
+            pChi.SetFillColor(ROOT.kWhite)
+            pChi.SetBorderSize(0)
+            pChi.SetTextFont(43)
+            pChi.SetTextSize(24)
+            pChi.SetTextAlign(31)
+            pChi.AddText("#lower[-0.18]{#chi^{2}}: %5.1f%%" % (100.0*sumHistData.Chi2Test(sumHistMC,"WW")))
+            pChi.Draw("Same")
+            
+            pKS=ROOT.TPaveText(cvxmax-0.03,0.82,cvxmax-0.03,0.82,"NDC")
+            pKS.SetFillColor(ROOT.kWhite)
+            pKS.SetBorderSize(0)
+            pKS.SetTextFont(43)
+            pKS.SetTextSize(24)
+            pKS.SetTextAlign(31)
+            pKS.AddText("KS: %5.1f%%" % (100.0*sumHistData.KolmogorovTest(sumHistMC)))
+            pKS.Draw("Same")
+            
+            pLumi=ROOT.TPaveText(cvxmax,0.95,cvxmax,0.95,"NDC")
+            pLumi.SetFillColor(ROOT.kWhite)
+            pLumi.SetBorderSize(0)
+            pLumi.SetTextFont(43)
+            pLumi.SetTextSize(28)
+            pLumi.SetTextAlign(31)
+            pLumi.AddText("2.1#kern[-0.5]{ }fb#lower[-0.7]{#scale[0.7]{-1}} (13TeV)")
+            pLumi.Draw("Same")
+            
+            
+            
+            
+            cv.cd(1)
+            axisRes=None
+            if unit!="":
+                axisRes=ROOT.TH2F("axisRes"+str(random.random()),";"+variableTitle+" ("+unit+");Data/MC",50,binarray[0],binarray[-1],50,0.2,1.8)
+            else:
+                axisRes=ROOT.TH2F("axisRes"+str(random.random()),";"+variableTitle+";Data/MC",50,binarray[0],binarray[-1],50,0.2,1.8)
+            axisRes.GetYaxis().SetNdivisions(406)
+            axisRes.GetXaxis().SetNdivisions(504)
+            axisRes.GetXaxis().SetTickLength(0.025/(1-cv.GetPad(1).GetLeftMargin()-cv.GetPad(1).GetRightMargin()))
+            axisRes.GetYaxis().SetTickLength(0.015/(1-cv.GetPad(1).GetTopMargin()-cv.GetPad(1).GetBottomMargin()))
+
+            axisRes.Draw("AXIS")
+            
+            
+            
+            rootObj=[]
+            sumHistRes=sumHistData.Clone()
+            for ibin in range(sumHistData.GetNbinsX()):
+                c = sumHistMC.GetBinCenter(ibin+1)
+                w = sumHistMC.GetBinWidth(ibin+1)
+                m = sumHistMC.GetBinContent(ibin+1)
+                d = sumHistData.GetBinContent(ibin+1)
+                
+                if m>0.0:
+                    sumHistRes.SetBinContent(ibin+1,d/m)
+                    sumHistRes.SetBinError(ibin+1,math.sqrt(d)/m)
+                else:
+                    sumHistRes.SetBinContent(ibin+1,0.0)
+                    sumHistRes.SetBinError(ibin+1,0)
                     
-                if unit!="":
-                    if logy:
-                        axis=ROOT.TH2F("axis"+str(random.random()),";"+variableTitle+" ("+unit+");Events / "+diff+" "+unit,50,xmin,xmax,50,0.5,math.exp(1.3*math.log(max([sumHistMC.GetMaximum(),sumHistData.GetMaximum(),1.0]))))
-                    else:
-                        axis=ROOT.TH2F("axis"+str(random.random()),";"+variableTitle+" ("+unit+");Events / "+diff+" "+unit,50,xmin,xmax,50,0.0,1.3*max([sumHistMC.GetMaximum(),sumHistData.GetMaximum(),1.0]))
-                else:
-                    if logy:
-                        axis=ROOT.TH2F("axis"+str(random.random()),";"+variableTitle+";Events / "+diff,50,xmin,xmax,50,0.5,math.exp(1.3*math.log(max([sumHistMC.GetMaximum(),sumHistData.GetMaximum(),1.0]))))
-                    else:
-                        axis=ROOT.TH2F("axis"+str(random.random()),";"+variableTitle+";Events / "+diff,50,xmin,xmax,50,0.0,1.3*max([sumHistMC.GetMaximum(),sumHistData.GetMaximum(),1.0]))
-                '''
-                if logy:
-                    axis=ROOT.TH2F("axis"+str(random.random()),";"+variableTitle+";Events",50,binarray[0],binarray[-1],50,0.5,math.exp(1.3*math.log(max([sumHistMC.GetMaximum(),sumHistData.GetMaximum(),1.0]))))
-                else:
-                    axis=ROOT.TH2F("axis"+str(random.random()),";"+variableTitle+";Events",50,binarray[0],binarray[-1],50,0.0,1.3*max([sumHistMC.GetMaximum(),sumHistData.GetMaximum(),1.0]))
+                if d>0:
+                    h = min(sumHistMC.GetBinError(ibin+1)/sumHistData.GetBinContent(ibin+1),0.8)
+                    box = ROOT.TBox(c-0.5*w,1-h,c+0.5*w,1+h)
+                    box.SetFillStyle(3245)
+                    box.SetLineColor(ROOT.kGray+1)
+                    box.SetFillColor(ROOT.kGray)
+                    box.SetLineWidth(2)
+                    rootObj.append(box)
+                    box.Draw("SameF")
+                    box2 = ROOT.TBox(c-0.5*w,1-h,c+0.5*w,1+h)
+                    box2.SetFillStyle(0)
+                    box2.SetLineColor(ROOT.kGray+1)
+                    box2.SetFillColor(ROOT.kGray)
+                    box2.SetLineWidth(2)
+                    rootObj.append(box2)
+                    box2.Draw("SameL")
 
-
-                axis.GetYaxis().SetNdivisions(506)
-                axis.GetXaxis().SetNdivisions(504)
-                axis.GetXaxis().SetLabelSize(0)
-                axis.GetXaxis().SetTitle("")
-                axis.GetXaxis().SetTickLength(0.015/(1-cv.GetPad(2).GetLeftMargin()-cv.GetPad(2).GetRightMargin()))
-                axis.GetYaxis().SetTickLength(0.015/(1-cv.GetPad(2).GetTopMargin()-cv.GetPad(2).GetBottomMargin()))
-                #axis.GetYaxis().SetNoExponent(True)
-                axis.Draw("AXIS")
-                
-                stackMC.Draw("Same")
-                stackMC.GetXaxis().SetTitle(variableTitle)
-                stackMC.GetYaxis().SetTitle("events")
-                
-                sumHistData.Draw("PESame")
-                
-                if logy:
-                    cv.GetPad(2).SetLogy(1)
-                if logx:
-                    cv.GetPad(2).SetLogx(1)
-                    cv.GetPad(1).SetLogx(1)
-                ROOT.gPad.RedrawAxis()
-                
-                legend = ROOT.TLegend(0.745,cvymax,0.99,cvymax-0.075*len(legendEntries))
-                #legend = ROOT.TLegend(0.73,0.9,0.95,0.745-0.052*len(legendEntries))
-                
-                #legend = ROOT.TLegend(0.7,0.72,0.95,0.72-0.07*len(legendEntries))
-                
-                legend.SetFillColor(ROOT.kWhite)
-                legend.SetBorderSize(0)
-                legend.SetTextFont(43)
-                legend.SetTextSize(28)
-                for entry in reversed(legendEntries):
-                    legend.AddEntry(entry[0],entry[1],entry[2])
-                '''
-                pText=ROOT.TPaveText(cvxmin+0.1,0.86,cvxmin+0.1,0.86,"NDC")
-                pText.SetFillColor(ROOT.kWhite)
-                pText.SetBorderSize(0)
-                pText.SetTextFont(63)
-                pText.SetTextSize(24)
-                pText.SetTextAlign(11)
-                pText.AddText(qcd[2])
-                pText.Draw("Same")
-                '''
-                pCMS=ROOT.TPaveText(cvxmin+0.085,0.95,cvxmin+0.085,0.95,"NDC")
-                pCMS.SetFillColor(ROOT.kWhite)
-                pCMS.SetBorderSize(0)
-                pCMS.SetTextFont(63)
-                pCMS.SetTextSize(28)
-                pCMS.SetTextAlign(11)
-                pCMS.AddText("CMS")
-                pCMS.Draw("Same")
-                
-                pPreliminary=ROOT.TPaveText(cvxmin+0.165,0.95,cvxmin+0.165,0.95,"NDC")
-                pPreliminary.SetFillColor(ROOT.kWhite)
-                pPreliminary.SetBorderSize(0)
-                pPreliminary.SetTextFont(53)
-                pPreliminary.SetTextSize(28)
-                pPreliminary.SetTextAlign(11)
-                pPreliminary.AddText("Preliminary")
-                pPreliminary.Draw("Same")
-                
-                
-                pCat=ROOT.TPaveText(cvxmin+0.03,0.875,cvxmin+0.03,0.875,"NDC")
-                pCat.SetFillColor(ROOT.kWhite)
-                pCat.SetBorderSize(0)
-                pCat.SetTextFont(63)
-                pCat.SetTextSize(26)
-                pCat.SetTextAlign(11)
-                pCat.AddText(category[0])
-                pCat.Draw("Same")
-                
-                pCut=ROOT.TPaveText(cvxmin+0.03,0.82,cvxmin+0.03,0.82,"NDC")
-                pCut.SetFillColor(ROOT.kWhite)
-                pCut.SetBorderSize(0)
-                pCut.SetTextFont(43)
-                pCut.SetTextSize(24)
-                pCut.SetTextAlign(11)
-                pCut.AddText(qcd[2])
-                pCut.Draw("Same")
-                
-                pChi=ROOT.TPaveText(cvxmax-0.03,0.875,cvxmax-0.03,0.875,"NDC")
-                pChi.SetFillColor(ROOT.kWhite)
-                pChi.SetBorderSize(0)
-                pChi.SetTextFont(43)
-                pChi.SetTextSize(24)
-                pChi.SetTextAlign(31)
-                pChi.AddText("#lower[-0.18]{#chi^{2}}: %5.1f%%" % (100.0*sumHistData.Chi2Test(sumHistMC,"UW")))
-                pChi.Draw("Same")
-                
-                pKS=ROOT.TPaveText(cvxmax-0.03,0.82,cvxmax-0.03,0.82,"NDC")
-                pKS.SetFillColor(ROOT.kWhite)
-                pKS.SetBorderSize(0)
-                pKS.SetTextFont(43)
-                pKS.SetTextSize(24)
-                pKS.SetTextAlign(31)
-                pKS.AddText("KS: %5.1f%%" % (100.0*sumHistMC.KolmogorovTest(sumHistData)))
-                pKS.Draw("Same")
-                
-                pLumi=ROOT.TPaveText(cvxmax,0.95,cvxmax,0.95,"NDC")
-                pLumi.SetFillColor(ROOT.kWhite)
-                pLumi.SetBorderSize(0)
-                pLumi.SetTextFont(43)
-                pLumi.SetTextSize(28)
-                pLumi.SetTextAlign(31)
-                pLumi.AddText("1.64#kern[-0.5]{ }fb#lower[-0.7]{#scale[0.7]{-1}} (13TeV)")
-                pLumi.Draw("Same")
-                
-                
-                
-                
-                cv.cd(1)
-                axisRes=None
-                if unit!="":
-                    axisRes=ROOT.TH2F("axisRes"+str(random.random()),";"+variableTitle+" ("+unit+");Data/MC",50,binarray[0],binarray[-1],50,0.2,1.8)
-                else:
-                    axisRes=ROOT.TH2F("axisRes"+str(random.random()),";"+variableTitle+";Data/MC",50,binarray[0],binarray[-1],50,0.2,1.8)
-                axisRes.GetYaxis().SetNdivisions(406)
-                axisRes.GetXaxis().SetNdivisions(504)
-                axisRes.GetXaxis().SetTickLength(0.025/(1-cv.GetPad(1).GetLeftMargin()-cv.GetPad(1).GetRightMargin()))
-                axisRes.GetYaxis().SetTickLength(0.015/(1-cv.GetPad(1).GetTopMargin()-cv.GetPad(1).GetBottomMargin()))
-
-                axisRes.Draw("AXIS")
-                
-                
-                
-                rootObj=[]
-                sumHistRes=sumHistData.Clone()
-                sumHistRes.Divide(sumHistMC)
-                for ibin in range(sumHistData.GetNbinsX()):
-                    c = sumHistMC.GetBinCenter(ibin+1)
-                    w = sumHistMC.GetBinWidth(ibin+1)
-                    if sumHistData.GetBinContent(ibin+1)>0:
-                        h = min(sumHistMC.GetBinError(ibin+1)/sumHistData.GetBinContent(ibin+1),0.8)
-                        box = ROOT.TBox(c-0.5*w,1-h,c+0.5*w,1+h)
-                        box.SetFillStyle(3244)
-                        box.SetLineColor(ROOT.kGray+1)
-                        box.SetFillColor(ROOT.kGray)
-                        rootObj.append(box)
-                        box.Draw("SameF")
-                        box2 = ROOT.TBox(c-0.5*w,1-h,c+0.5*w,1+h)
-                        box2.SetFillStyle(0)
-                        box2.SetLineColor(ROOT.kGray+1)
-                        box2.SetFillColor(ROOT.kGray)
-                        rootObj.append(box2)
-                        box2.Draw("SameL")
-
-                sumHistRes.Draw("PESame")
-                if len(rootObj)>0:
-                    legend.AddEntry(rootObj[0],"MC stat.","F")
-                
-                
-                axisLine = ROOT.TF1("axisLine"+str(random.random()),"1",binarray[0],binarray[-1])
-                axisLine.SetLineColor(ROOT.kBlack)
-                axisLine.SetLineWidth(1)
-                axisLine.Draw("SameL")
-                ROOT.gPad.RedrawAxis()
-                
-                
-                
-                hidePave=ROOT.TPaveText(0.07,resHeight-0.04,cvxmin-0.005,resHeight+0.03,"NDC")
-                hidePave.SetFillColor(ROOT.kGray)
-                hidePave.SetFillStyle(1001)
-                #hidePave.Draw("Same")
-                
-                cv.cd(2)
-                legend.Draw("Same")
-                
-                cv.Update()
-                cv.Print("plot25ns/"+category[0]+"/"+outputName+"_AMC.pdf")
-                cv.Print("plot25ns/"+category[0]+"/"+outputName+"_AMC.png")
-                cv.WaitPrimitive()
-                #break
+            sumHistRes.Draw("PESame")
+            if len(rootObj)>0:
+                legend.AddEntry(rootObj[0],"MC stat.","F")
+            
+            
+            axisLine = ROOT.TF1("axisLine"+str(random.random()),"1",binarray[0],binarray[-1])
+            axisLine.SetLineColor(ROOT.kBlack)
+            axisLine.SetLineWidth(1)
+            axisLine.Draw("SameL")
+            ROOT.gPad.RedrawAxis()
+            
+            
+            
+            hidePave=ROOT.TPaveText(0.07,resHeight-0.04,cvxmin-0.005,resHeight+0.03,"NDC")
+            hidePave.SetFillColor(ROOT.kGray)
+            hidePave.SetFillStyle(1001)
+            #hidePave.Draw("Same")
+            
+            cv.cd(2)
+            legend.Draw("Same")
+            
+            cv.Update()
+            cv.Print(""+outputName+"_MG.pdf")
+            cv.Print(""+outputName+"_MG.png")
+            cv.WaitPrimitive()
             #break
         #break
     #break
-   
+#break
+
 
 
 
