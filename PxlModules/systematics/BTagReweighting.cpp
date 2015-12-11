@@ -117,26 +117,30 @@ class BTagReweighting:
             tightWP.setScaleFactorFunction(new BWGHT::LambdaScaleFactorFunction([&](const BWGHT::Jet& jet, BWGHT::SYS::TYPE sys) -> double
             {
             
-                    float pt = jet.pt; 
-                    float eta = jet.eta;
-                    bool doubleUncertainty = false;
-                    if (pt>MaxBJetPt)  
-                    {
-                        pt = MaxBJetPt; 
-                        doubleUncertainty = true;
-                    }  
+                float pt = jet.pt; 
+                float eta = jet.eta;
+                bool doubleUncertainty = false;
+                if (pt>MaxBJetPt)  
+                {
+                    pt = MaxBJetPt; 
+                    doubleUncertainty = true;
+                }  
+                
+                unsigned int flavor jet.flavor;
+                
 
-                    // Note: this is for b jets, for c jets (light jets) use FLAV_C (FLAV_UDSG)
-                    double jet_scalefactor = reader.eval(BTagEntry::FLAV_B, eta, pt); 
-                    double jet_scalefactor_up =  reader_up.eval(BTagEntry::FLAV_B, eta, pt); 
-                    double jet_scalefactor_do =  reader_do.eval(BTagEntry::FLAV_B, eta, pt); 
+                // Note: this is for b jets, for c jets (light jets) use FLAV_C (FLAV_UDSG)
+                
+                double jet_scalefactor = reader.eval(BTagEntry::FLAV_B, eta, pt); 
+                double jet_scalefactor_up =  reader_up.eval(BTagEntry::FLAV_B, eta, pt); 
+                double jet_scalefactor_do =  reader_do.eval(BTagEntry::FLAV_B, eta, pt); 
 
-                    if (doubleUncertainty)
-                    {
-                        jet_scalefactor_up = 2*(jet_scalefactor_up - jet_scalefactor) + jet_scalefactor; 
-                        jet_scalefactor_do = 2*(jet_scalefactor_do - jet_scalefactor) + jet_scalefactor; 
-                    }
-                    return jet_scalefactor;
+                if (doubleUncertainty)
+                {
+                    jet_scalefactor_up = 2*(jet_scalefactor_up - jet_scalefactor) + jet_scalefactor; 
+                    jet_scalefactor_do = 2*(jet_scalefactor_do - jet_scalefactor) + jet_scalefactor; 
+                }
+                return jet_scalefactor;
             
             }));
             _btagWeightCalc.addWorkingPoint(tightWP);
