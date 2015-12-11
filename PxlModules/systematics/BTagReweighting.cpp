@@ -6,6 +6,7 @@
 #include "pxl/modules/ModuleFactory.hh"
 
 #include "BTagWeightCalculator.hpp"
+#include "BTagCalibrationStandalone.hpp"
 
 #include <string>
 #include <unordered_map>
@@ -17,13 +18,37 @@ class BTagReweighting:
 {
     private:
         pxl::Source* _outputSource;
+        
+        BWGHT::BTagWeightCalculator _btagWeightCalc;
+        
+        constexpr static float MaxBJetPt = 670;
+        constexpr static float MaxLJetPt = 1000;
+        
+        std::string _bTaggingAlgorithmName;
+        
+        std::string _sfFile;
+        std::string _mcFile;
+        std::string _eventViewName;
+        std::vector<std::string> _jetNames;
+        std::string _ljetName;
 
     public:
         BTagReweighting():
-            Module()
+            Module(),
+            _bTaggingAlgorithmName("pfCombinedInclusiveSecondaryVertexV2BJetTags"),
+            _eventViewName("Reconstructed"),
+            _jetNames({"SelectedBJet","SelectedJet"})
         {
             addSink("input", "input");
             _outputSource = addSource("output","output");
+            
+            addOption("b tagging algorithm","",_bTaggingAlgorithmName);
+            
+            addOption("SF csv file","",_sfFile,pxl::OptionDescription::USAGE_FILE_OPEN);
+            addOption("MC efficiency file","",_mcFile,pxl::OptionDescription::USAGE_FILE_OPEN);
+            addOption("event view name","",_eventViewName);
+            addOption("jet names","",_jetNames);
+            
             
         }
 
@@ -56,7 +81,7 @@ class BTagReweighting:
 
         void beginJob() throw (std::runtime_error)
         {
-            
+            /*
             using namespace BWGHT;
             BTagWeightCalculator calc;
             WorkingPoint testWP(0.2);
@@ -68,6 +93,27 @@ class BTagReweighting:
             testWP2.setScaleFactorFunction(new ConstScaleFactorFunction(1.5));
             calc.addWorkingPoint(testWP2);
             calc.getEventWeight({Jet(0.1),Jet(0.7),Jet(0.5)});
+            */
+            getOption("b tagging algorithm",_bTaggingAlgorithmName);
+            getOption("SF csv file",_sfFile);
+            getOption("MC efficiency file",_mcFile);
+            getOption("event view name",_eventViewName);
+            getOption("jet names",_jetNames);
+            
+            
+            BTagCalibration calib("csvv1", _sfFile);
+            BTagCalibrationReader reader(
+                &calib,               // calibration instance
+                BTagEntry::OP_TIGHT,  // operating point
+                "comb",               // measurement type
+                "central"             // systematics type
+            );           
+            BTagCalibrationReader reader_up(&calib, BTagEntry::OP_TIGHT, "comb", "up");  // sys up
+            BTagCalibrationReader reader_do(&calib, BTagEntry::OP_TIGHT, "comb", "down");  // sys down
+                        
+            BWGHT::WorkingPoint tightWP(0.97);
+            
+            _btagWeightCalc.addWorkingPoint(tightWP);
         }
 
         bool analyse(pxl::Sink *sink) throw (std::runtime_error)
@@ -77,6 +123,49 @@ class BTagReweighting:
                 pxl::Event *event  = dynamic_cast<pxl::Event*>(sink->get());
                 if (event)
                 {
+                
+                    
+                    std::vector<pxl::EventView*> eventViews;
+                    event->getObjectsOfType(eventViews);
+            
+                    for (pxl::EventView* eventView: eventViews)
+                    {
+                        if (eventView->getName()==_eventViewName)
+                        {
+                            std::vector<pxl::Particle*> particles;
+                            eventView->getObjectsOfType(particles);
+                            
+                            
+                            std::vector<BWGHT::Jet> jets;
+                            for (pxl::Particle* particle: particles)
+                            {
+                                if (std::find(_jetNames.cbegin(),_jetNames.cend(),particle->getName())!=_jetNames.cend())
+                                {
+                                    jets.emplace_back(particle->getUserRecord(_bTaggingAlgorithmName),particle->getPt(),particle->getEta());
+                                }
+                            }
+                        }
+                    }
+                    /*
+                    float pt = b_jet.pt(); 
+                    bool DoubleUncertainty = false;
+                    if (JetPt>MaxBJetPt)  
+                    {
+                        JetPt = MaxBJetPt; 
+                        DoubleUncertainty = true;
+                    }  
+
+                    // Note: this is for b jets, for c jets (light jets) use FLAV_C (FLAV_UDSG)
+                    double jet_scalefactor = reader.eval(BTagEntry::FLAV_B, b_jet.eta(), JetPt); 
+                    double jet_scalefactor_up =  reader_up.eval(BTagEntry::FLAV_B, b_jet.eta(), JetPt); 
+                    double jet_scalefactor_do =  reader_do.eval(BTagEntry::FLAV_B, b_jet.eta(), JetPt); 
+
+                    if (DoubleUncertainty)
+                    {
+                        jet_scalefactor_up = 2*(jet_scalefactor_up - jet_scalefactor) + jet_scalefactor; 
+                        jet_scalefactor_do = 2*(jet_scalefactor_do - jet_scalefactor) + jet_scalefactor; 
+                    }
+                    */
 
                     _outputSource->setTargets(event);
                     return _outputSource->processTargets();
