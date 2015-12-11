@@ -113,6 +113,32 @@ class BTagReweighting:
                         
             BWGHT::WorkingPoint tightWP(0.97);
             
+            tightWP.setEfficiencyFunction(new BWGHT::ConstEfficiencyFunction(1.0));
+            tightWP.setScaleFactorFunction(new BWGHT::LambdaScaleFactorFunction([&](const BWGHT::Jet& jet, BWGHT::SYS::TYPE sys) -> double
+            {
+            
+                    float pt = jet.pt; 
+                    float eta = jet.eta;
+                    bool doubleUncertainty = false;
+                    if (pt>MaxBJetPt)  
+                    {
+                        pt = MaxBJetPt; 
+                        doubleUncertainty = true;
+                    }  
+
+                    // Note: this is for b jets, for c jets (light jets) use FLAV_C (FLAV_UDSG)
+                    double jet_scalefactor = reader.eval(BTagEntry::FLAV_B, eta, pt); 
+                    double jet_scalefactor_up =  reader_up.eval(BTagEntry::FLAV_B, eta, pt); 
+                    double jet_scalefactor_do =  reader_do.eval(BTagEntry::FLAV_B, eta, pt); 
+
+                    if (doubleUncertainty)
+                    {
+                        jet_scalefactor_up = 2*(jet_scalefactor_up - jet_scalefactor) + jet_scalefactor; 
+                        jet_scalefactor_do = 2*(jet_scalefactor_do - jet_scalefactor) + jet_scalefactor; 
+                    }
+                    return jet_scalefactor;
+            
+            }));
             _btagWeightCalc.addWorkingPoint(tightWP);
         }
 
@@ -141,31 +167,12 @@ class BTagReweighting:
                             {
                                 if (std::find(_jetNames.cbegin(),_jetNames.cend(),particle->getName())!=_jetNames.cend())
                                 {
-                                    jets.emplace_back(particle->getUserRecord(_bTaggingAlgorithmName),particle->getPt(),particle->getEta());
+                                    jets.emplace_back(particle->getUserRecord(_bTaggingAlgorithmName),particle->getUserRecord("partonFlavor"),particle->getPt(),particle->getEta());
                                 }
                             }
                         }
                     }
-                    /*
-                    float pt = b_jet.pt(); 
-                    bool DoubleUncertainty = false;
-                    if (JetPt>MaxBJetPt)  
-                    {
-                        JetPt = MaxBJetPt; 
-                        DoubleUncertainty = true;
-                    }  
-
-                    // Note: this is for b jets, for c jets (light jets) use FLAV_C (FLAV_UDSG)
-                    double jet_scalefactor = reader.eval(BTagEntry::FLAV_B, b_jet.eta(), JetPt); 
-                    double jet_scalefactor_up =  reader_up.eval(BTagEntry::FLAV_B, b_jet.eta(), JetPt); 
-                    double jet_scalefactor_do =  reader_do.eval(BTagEntry::FLAV_B, b_jet.eta(), JetPt); 
-
-                    if (DoubleUncertainty)
-                    {
-                        jet_scalefactor_up = 2*(jet_scalefactor_up - jet_scalefactor) + jet_scalefactor; 
-                        jet_scalefactor_do = 2*(jet_scalefactor_do - jet_scalefactor) + jet_scalefactor; 
-                    }
-                    */
+                    
 
                     _outputSource->setTargets(event);
                     return _outputSource->processTargets();

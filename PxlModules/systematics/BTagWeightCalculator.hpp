@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <algorithm>
 #include <iostream>
+#include <functional>
 
 namespace BWGHT
 {
@@ -11,11 +12,14 @@ namespace BWGHT
 struct Jet
 {
     double discriminatorValue;
+    unsigned int flavor;
     double pt;
     double eta;
     
-    Jet(double discriminatorValue=0, double pt = 0.0, double eta = 0.0):
+    
+    Jet(double discriminatorValue=0, unsigned int flavor = 0, double pt = 0.0, double eta = 0.0):
         discriminatorValue(discriminatorValue),
+        flavor(flavor),
         pt(pt),
         eta(eta)
     {
@@ -27,8 +31,10 @@ struct SYS
     enum TYPE
     {
         NOMINAL=0,
-        UP=1,
-        DOWN=2  
+        BC_UP=1,
+        BC_DOWN=2,
+        L_UP=3,
+        L_DOWN=4
     };
 };
 
@@ -68,7 +74,6 @@ class ConstEfficiencyFunction:
         }
 };
 
-
 class ConstScaleFactorFunction:
     public ScaleFactorFunction
 {
@@ -88,6 +93,29 @@ class ConstScaleFactorFunction:
         virtual ScaleFactorFunction* clone() const
         {
             return new ConstScaleFactorFunction(_scaleFactor);
+        }
+};
+
+
+class LambdaScaleFactorFunction:
+    public ScaleFactorFunction
+{
+    private:
+        std::function<double(const Jet&, SYS::TYPE)> _fct;
+    public:
+        LambdaScaleFactorFunction(const std::function<double(const Jet&, SYS::TYPE)>& fct):
+            _fct(fct)
+        {
+        }
+        
+        virtual double getScaleFactor(const Jet& jet, SYS::TYPE sys=SYS::NOMINAL) const
+        {
+            return _fct(jet,sys);
+        }
+        
+        virtual ScaleFactorFunction* clone() const
+        {
+            return new LambdaScaleFactorFunction(_fct);
         }
 };
 
