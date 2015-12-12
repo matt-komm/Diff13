@@ -169,30 +169,37 @@ class BTagReweighting:
                 float pt = jet.pt; 
                 float eta = fabs(jet.eta);
                 
-                //return 0.5;
+                double efficiency =0.0;
                 
                 if (jet.flavor==5)
                 {
                     int etaBin = mcEff_b->GetXaxis()->FindBin(eta);
                     int ptBin = mcEff_b->GetYaxis()->FindBin(pt);
-                    return mcEff_b->GetBinContent(etaBin,ptBin);
+                    efficiency = mcEff_b->GetBinContent(etaBin,ptBin)+0.005;
                 }
                 else if (jet.flavor==4)
                 {
                     int etaBin = mcEff_c->GetXaxis()->FindBin(eta);
                     int ptBin = mcEff_c->GetYaxis()->FindBin(pt);
-                    return mcEff_c->GetBinContent(etaBin,ptBin);
+                    efficiency = mcEff_c->GetBinContent(etaBin,ptBin)+0.005;
                 }
                 else if (jet.flavor==1 or jet.flavor==2 or jet.flavor==3)
                 {
                     int etaBin = mcEff_q->GetXaxis()->FindBin(eta);
                     int ptBin = mcEff_q->GetYaxis()->FindBin(pt);
-                    return mcEff_q->GetBinContent(etaBin,ptBin);
+                    efficiency = mcEff_q->GetBinContent(etaBin,ptBin)+0.005;
                 }
-
-                int etaBin = mcEff_other->GetXaxis()->FindBin(eta);
-                int ptBin = mcEff_other->GetYaxis()->FindBin(pt);
-                return mcEff_other->GetBinContent(etaBin,ptBin);
+                else
+                {
+                    int etaBin = mcEff_other->GetXaxis()->FindBin(eta);
+                    int ptBin = mcEff_other->GetYaxis()->FindBin(pt);
+                    efficiency = mcEff_other->GetBinContent(etaBin,ptBin)+0.005;
+                }
+                if (efficiency<0.01)
+                {
+                    efficiency+=0.002;
+                }
+                return efficiency;
             
             }));
             tightWP.setScaleFactorFunction(new BWGHT::LambdaScaleFactorFunction([&](const BWGHT::Jet& jet, BWGHT::SYS::TYPE sys) -> double
