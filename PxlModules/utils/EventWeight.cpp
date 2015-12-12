@@ -222,15 +222,15 @@ const std::unordered_map<std::string,FileInfo> eventWeights = {
     //DR74 25ns
     {"ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1",
         {
-            //total=19788182 eff=12027285-7760897=4266388
-            4266388,
+            //total=19904330 eff=12098029-7806301=4291728
+            4291728,
             216.97 * 0.324
         }
     },
     {"ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1_ext",
         {
-            //total=29511826 eff=17936536-11575290=6361246
-            6361246,
+            //total=29954054 eff=18205053-11749001=6456052
+            6456052,
             216.97 * 0.324
         }
     },
@@ -243,16 +243,23 @@ const std::unordered_map<std::string,FileInfo> eventWeights = {
     },
     {"ST_t-channel_antitop_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1",
         {
-            //total=1472500 eff=1472500-0=1472500
-            1472500,
+            //total=1680200 eff=1680200-0=1680200
+            1680200,
+            80.95 * 0.324
+        }
+    },
+    {"ST_t-channel_5f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1",
+        {
+            //total=2966200 eff=2042819-923381=1119438
+            1119438,
             80.95 * 0.324
         }
     },
     
     {"ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1",
         {
-            //total=773800 eff=773800-0=773800
-            773800,
+            //total=995600 eff=995600-0=995600
+            995600,
             35.6
         }
     },
@@ -264,17 +271,24 @@ const std::unordered_map<std::string,FileInfo> eventWeights = {
         }
     },
     
+    {"TT_TuneCUETP8M1_13TeV-powheg-pythia8",
+        {
+            //total=19757190 eff=19757190-0=19757190
+            19757190,
+            831.76
+        }
+    },
     {"TT_TuneCUETP8M1_13TeV-powheg-pythia8_ext",
         {
-            //total=96134394 eff=96134394-0=96134394
-            96134394,
+            //total=96834559 eff=96834559-0=96834559
+            96834559,
             831.76
         }
     },
     {"TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8",
         {
-            //total=42496191 eff=28294599-14201592=14093007
-            14093007,
+            //total=42784971 eff=28486758-14298213=14188545
+            14188545,
             831.76
         }
     },
@@ -290,31 +304,31 @@ const std::unordered_map<std::string,FileInfo> eventWeights = {
     
     {"WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8",
         {
-            //total=23742033 eff=19990467-3751566=16238901
-            16238901,
+            //total=24184766 eff=20363007-3821759=16541248
+            16541248,
             20508.9*3
         }
     },
     {"WJetsToLNu_TuneCUETP8M1_13TeV-madgraphMLM-pythia8",
         {
-            //total=71533362 eff=71533362-0=71533362
-            71533362,
+            //total=72207128 eff=72207128-0=72207128
+            72207128,
             20508.9*3
         }
     },
     
     {"DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8",
         {
-            //total=28255991 eff=23592814-4663177=18929637
-            18929637,
+            //total=28747969 eff=24003538-4744431=19259107
+            19259107,
             2008.4*3
         }
     },
     
     {"QCD_Pt-20toInf_MuEnrichedPt15_TuneCUETP8M1_13TeV_pythia8",
         {
-            //total=13101802 eff=13101802-0=13101802
-            13101802,
+            //total=13247363 eff=13247363-0=13247363
+            13247363,
             866600000 * 0.00044
         }
     },

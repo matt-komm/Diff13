@@ -41,7 +41,7 @@ class JetMETVariations:
             _nominalJetName("JetRes"),
             _variationJetNamePrefix("Jet"),
             _nominalMETName("METRes"),
-            _variationMETNamePrefix("MET"),
+            _variationMETNamePrefix("METJet"),
             _renamedJet("Jet"),
             _renamedMET("MET"),
             _removeOtherVariations(true)
