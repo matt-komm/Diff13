@@ -74,6 +74,28 @@ class ConstEfficiencyFunction:
         }
 };
 
+class LambdaEfficiencyFunction:
+    public EfficiencyFunction
+{
+    private:
+        std::function<double(const Jet&, SYS::TYPE)> _fct;
+    public:
+        LambdaEfficiencyFunction(const std::function<double(const Jet&, SYS::TYPE)>& fct):
+            _fct(fct)
+        {
+        }
+        
+        virtual double getEfficiency(const Jet& jet, SYS::TYPE sys=SYS::NOMINAL) const
+        {
+            return _fct(jet,sys);
+        }
+        
+        virtual EfficiencyFunction* clone() const
+        {
+            return new LambdaEfficiencyFunction(_fct);
+        }
+};
+
 class ConstScaleFactorFunction:
     public ScaleFactorFunction
 {
