@@ -19,6 +19,16 @@ class BTagReweighting:
     private:
         pxl::Source* _outputSource;
         
+        
+        BTagCalibration _btagCalib;
+        BTagCalibrationReader _readerNominal_mujets;
+        BTagCalibrationReader _readerUp_mujets;
+        BTagCalibrationReader _readerDown_mujets;
+        
+        BTagCalibrationReader _readerNominal_comb;
+        BTagCalibrationReader _readerUp_comb;
+        BTagCalibrationReader _readerDown_comb;
+            
         BWGHT::BTagWeightCalculator _btagWeightCalc;
         
         constexpr static float MaxBJetPt = 670;
@@ -101,44 +111,100 @@ class BTagReweighting:
             getOption("jet names",_jetNames);
             
             
-            BTagCalibration calib("csvv1", _sfFile);
-            BTagCalibrationReader reader(
-                &calib,               // calibration instance
+            _btagCalib=BTagCalibration("csvv1", _sfFile);
+            _readerNominal_mujets = BTagCalibrationReader(
+                &_btagCalib,               // calibration instance
+                BTagEntry::OP_TIGHT,  // operating point
+                "mujets",               // measurement type
+                "central"             // systematics type
+            );           
+            _readerUp_mujets = BTagCalibrationReader(&_btagCalib, BTagEntry::OP_TIGHT, "mujets", "up");  // sys up
+            _readerDown_mujets = BTagCalibrationReader(&_btagCalib, BTagEntry::OP_TIGHT, "mujets", "down");  // sys down
+                        
+            _readerNominal_comb = BTagCalibrationReader(
+                &_btagCalib,               // calibration instance
                 BTagEntry::OP_TIGHT,  // operating point
                 "comb",               // measurement type
                 "central"             // systematics type
             );           
-            BTagCalibrationReader reader_up(&calib, BTagEntry::OP_TIGHT, "comb", "up");  // sys up
-            BTagCalibrationReader reader_do(&calib, BTagEntry::OP_TIGHT, "comb", "down");  // sys down
+            _readerUp_comb = BTagCalibrationReader(&_btagCalib, BTagEntry::OP_TIGHT, "comb", "up");  // sys up
+            _readerDown_comb = BTagCalibrationReader(&_btagCalib, BTagEntry::OP_TIGHT, "comb", "down");  // sys down
+   
+                        
                         
             BWGHT::WorkingPoint tightWP(0.97);
             
-            tightWP.setEfficiencyFunction(new BWGHT::ConstEfficiencyFunction(1.0));
+            tightWP.setEfficiencyFunction(new BWGHT::ConstEfficiencyFunction(0.5));
             tightWP.setScaleFactorFunction(new BWGHT::LambdaScaleFactorFunction([&](const BWGHT::Jet& jet, BWGHT::SYS::TYPE sys) -> double
             {
-            
+                
                 float pt = jet.pt; 
                 float eta = jet.eta;
                 bool doubleUncertainty = false;
-                if (pt>MaxBJetPt)  
+                
+                BTagEntry::JetFlavor flavor = BTagEntry::FLAV_B;
+                double jet_scalefactor =  1.0;
+                double jet_scalefactor_up =  1.0;
+                double jet_scalefactor_down = 1.0;
+                
+                if (jet.flavor==5)
                 {
-                    pt = MaxBJetPt; 
-                    doubleUncertainty = true;
-                }  
-                
-                unsigned int flavor jet.flavor;
-                
-
-                // Note: this is for b jets, for c jets (light jets) use FLAV_C (FLAV_UDSG)
-                
-                double jet_scalefactor = reader.eval(BTagEntry::FLAV_B, eta, pt); 
-                double jet_scalefactor_up =  reader_up.eval(BTagEntry::FLAV_B, eta, pt); 
-                double jet_scalefactor_do =  reader_do.eval(BTagEntry::FLAV_B, eta, pt); 
+                    flavor = BTagEntry::FLAV_B;
+                    if (pt>MaxBJetPt)  
+                    {
+                        pt = MaxBJetPt; 
+                        doubleUncertainty = true;
+                    }
+                    jet_scalefactor = _readerNominal_mujets.eval(flavor, eta, pt); 
+                    jet_scalefactor_up = _readerUp_mujets.eval(flavor, eta, pt); 
+                    jet_scalefactor_down = _readerDown_mujets.eval(flavor, eta, pt);   
+                } 
+                else if (jet.flavor==4)
+                {
+                    flavor = BTagEntry::FLAV_C;
+                    if (pt>MaxBJetPt)  
+                    {
+                        pt = MaxBJetPt; 
+                        doubleUncertainty = true;
+                    }
+                    jet_scalefactor = _readerNominal_mujets.eval(flavor, eta, pt); 
+                    jet_scalefactor_up = _readerUp_mujets.eval(flavor, eta, pt); 
+                    jet_scalefactor_down = _readerDown_mujets.eval(flavor, eta, pt); 
+                } 
+                else
+                {
+                    flavor = BTagEntry::FLAV_UDSG;
+                    if (pt>MaxLJetPt)  
+                    {
+                        pt = MaxLJetPt; 
+                        doubleUncertainty = true;
+                    }
+                    jet_scalefactor = _readerNominal_comb.eval(flavor, eta, pt); 
+                    jet_scalefactor_up = _readerUp_comb.eval(flavor, eta, pt); 
+                    jet_scalefactor_down = _readerDown_comb.eval(flavor, eta, pt);   
+                }
 
                 if (doubleUncertainty)
                 {
                     jet_scalefactor_up = 2*(jet_scalefactor_up - jet_scalefactor) + jet_scalefactor; 
-                    jet_scalefactor_do = 2*(jet_scalefactor_do - jet_scalefactor) + jet_scalefactor; 
+                    jet_scalefactor_down = 2*(jet_scalefactor_down - jet_scalefactor) + jet_scalefactor; 
+                }
+
+                else if (sys== BWGHT::SYS::BC_UP and (flavor==BTagEntry::FLAV_B or flavor==BTagEntry::FLAV_C))
+                {
+                    return jet_scalefactor_up;
+                }
+                else if (sys== BWGHT::SYS::BC_DOWN and (flavor==BTagEntry::FLAV_B or flavor==BTagEntry::FLAV_C))
+                {
+                    return jet_scalefactor_down;
+                }
+                else if (sys== BWGHT::SYS::L_UP and flavor==BTagEntry::FLAV_UDSG)
+                {
+                    return jet_scalefactor_up;
+                }
+                else if (sys== BWGHT::SYS::L_DOWN and flavor==BTagEntry::FLAV_UDSG)
+                {
+                    return jet_scalefactor_down;
                 }
                 return jet_scalefactor;
             
@@ -171,9 +237,14 @@ class BTagReweighting:
                             {
                                 if (std::find(_jetNames.cbegin(),_jetNames.cend(),particle->getName())!=_jetNames.cend())
                                 {
-                                    jets.emplace_back(particle->getUserRecord(_bTaggingAlgorithmName),particle->getUserRecord("partonFlavor"),particle->getPt(),particle->getEta());
+                                    jets.emplace_back(particle->getUserRecord(_bTaggingAlgorithmName).toFloat(),abs(particle->hasUserRecord("partonFlavour") ? particle->getUserRecord("partonFlavour").toInt32() : 0),particle->getPt(),particle->getEta());
                                 }
                             }
+                            eventView->setUserRecord("btagging_nominal",_btagWeightCalc.getEventWeight(jets,BWGHT::SYS::NOMINAL));
+                            eventView->setUserRecord("btagging_bc_up",_btagWeightCalc.getEventWeight(jets,BWGHT::SYS::BC_UP));
+                            eventView->setUserRecord("btagging_bc_down",_btagWeightCalc.getEventWeight(jets,BWGHT::SYS::BC_DOWN));
+                            eventView->setUserRecord("btagging_l_up",_btagWeightCalc.getEventWeight(jets,BWGHT::SYS::L_UP));
+                            eventView->setUserRecord("btagging_l_down",_btagWeightCalc.getEventWeight(jets,BWGHT::SYS::L_DOWN));
                         }
                     }
                     
