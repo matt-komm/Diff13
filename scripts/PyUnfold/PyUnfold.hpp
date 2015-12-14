@@ -19,6 +19,12 @@ class PyUnfold
 {
     private:
         TUnfoldSys _tunfold;
+        
+        std::vector<std::string> _backgroundNames;
+        
+        
+        const TH1* _dataHist;
+        const TH2* _responseHist;
     
         static TMatrixD convertHistToMatrix(const TH2D& from)
         {
@@ -33,31 +39,36 @@ class PyUnfold
     public:
 
         PyUnfold(TH2* responseHist):
-            _tunfold(responseHist,TUnfold::kHistMapOutputHoriz,TUnfold::kRegModeCurvature)
+            _tunfold(responseHist,TUnfold::kHistMapOutputHoriz,TUnfold::kRegModeCurvature),
+            _responseHist(responseHist)
         {
             _tunfold.SetBias(responseHist->ProjectionX());
         }
         
         void addBackground(const TH1* background, const char* name, double scale=1.0, double error=0.00001)
         {
+            _backgroundNames.push_back(name);
             _tunfold.SubtractBackground(background,name,scale,error);
         }
         
         void setData(const TH1* data)
         {
+            _dataHist=data;
             _tunfold.SetInput(data);
+            
         }
         
-        double scanTau(std::vector<double>& tau, std::vector<std::vector<double> >& rho, double logBegin=-7, double logEnd=-2, unsigned int steps=2000)
+        void unfold(double tau, TH1* output, TH2* correlations, bool includeStat=true, bool includeMCStat=true, bool includeFit=true)
         {
-            tau.resize(steps);
-            rho.resize(steps);
-            for (unsigned int itau = 0; itau < steps; ++itau)
-            {
-                tau[itau]=TMath::Power(10.0,1.0*(itau/(1.0*steps)*(logEnd-logBegin)+logBegin));
-            }
+            _tunfold.DoUnfold(tau);
+            _tunfold.GetOutput(output);
             
-            return 0;
+            
+        }
+        
+        std::vector<double> getUnfoldingCorretation(double tau)
+        {
+            return {};
         }
         
         virtual ~PyUnfold()
