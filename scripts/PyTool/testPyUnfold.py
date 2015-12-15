@@ -4,7 +4,7 @@ import ROOT
 import math
 import random
 
-ROOT.gSystem.Load("libpyUnfold.so")
+ROOT.gSystem.Load("libpyTool.so")
 
 data = ROOT.TH1F("data","",24,-1,1)
 response = ROOT.TH2F("res","",12,-1,1,24,-1,1)

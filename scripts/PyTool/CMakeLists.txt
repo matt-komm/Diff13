@@ -1,4 +1,4 @@
-project(PyUnfold)
+project(PyTool)
 cmake_minimum_required(VERSION 2.8)
 set(CMAKE_MODULE_PATH  "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_MODULE_PATH}")
 
@@ -34,6 +34,7 @@ include_directories(${ROOT_INCLUDE_DIR})
 set(CLASSHEADERS 
     PyUnfold.hpp
     PyUtils.hpp
+    PyFit.hpp
 )
 
 set_source_files_properties(${PROJECT_BINARY_DIR}/dict.C PROPERTIES GENERATED TRUE)
@@ -44,17 +45,21 @@ add_custom_target(generatedicts ALL ${ROOT_DICT_EXECUTABLE}
 )
 
 
-add_library(pyUnfold MODULE 
+add_library(pyTool MODULE 
     PyUnfold.cpp 
     PyUtils.cpp 
+    PyFit.cpp
     dict.C
 )
-target_link_libraries(pyUnfold $ENV{TUNFOLDDIR}/libunfold.so ${ROOT_LIBRARIES})
-add_dependencies(pyUnfold generatedicts)
+target_link_libraries(pyTool $ENV{TUNFOLDDIR}/libunfold.so ${ROOT_LIBRARIES})
+add_dependencies(pyTool generatedicts)
 
 add_executable(printversion
     printversion.cpp
 )
 target_link_libraries(printversion $ENV{TUNFOLDDIR}/libunfold.so ${ROOT_LIBRARIES} )
 
-copy_file_if_changed(${CMAKE_CURRENT_SOURCE_DIR}/test.py ${CMAKE_CURRENT_BINARY_DIR}/test.py pyUnfold)
+copy_file_if_changed(${CMAKE_CURRENT_SOURCE_DIR}/testPyUnfold.py ${CMAKE_CURRENT_BINARY_DIR}/testPyUnfold.py pyTool)
+copy_file_if_changed(${CMAKE_CURRENT_SOURCE_DIR}/testPyFit.py ${CMAKE_CURRENT_BINARY_DIR}/testPyFit.py pyTool)
+
+
