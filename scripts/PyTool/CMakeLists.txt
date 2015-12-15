@@ -18,8 +18,13 @@ include_directories(${PROJECT_SOURCE_DIR})
 include_directories(${PROJECT_BINARY_DIR})
 
 #Tunfold needs to be included BEFORE root to shadow the old classes
+if ($ENV{TUNFOLDDIR} STREQUAL "")
+    message(FATAL_ERROR "TUnfold not found. You need to specify environment variable $TUNFOLDDIR")
+else ($ENV{TUNFOLDDIR} STREQUAL "")
+    message(STATUS "including TUnfold from: $ENV{TUNFOLDDIR}")
+endif ($ENV{TUNFOLDDIR} STREQUAL "")
 include_directories($ENV{TUNFOLDDIR})
-message(STATUS "including TUnfold from: $ENV{TUNFOLDDIR}")
+
 
 find_package(ROOT)
 
@@ -28,6 +33,7 @@ include_directories(${ROOT_INCLUDE_DIR})
 
 set(CLASSHEADERS 
     PyUnfold.hpp
+    PyUtils.hpp
 )
 
 set_source_files_properties(${PROJECT_BINARY_DIR}/dict.C PROPERTIES GENERATED TRUE)
@@ -40,6 +46,7 @@ add_custom_target(generatedicts ALL ${ROOT_DICT_EXECUTABLE}
 
 add_library(pyUnfold MODULE 
     PyUnfold.cpp 
+    PyUtils.cpp 
     dict.C
 )
 target_link_libraries(pyUnfold $ENV{TUNFOLDDIR}/libunfold.so ${ROOT_LIBRARIES})
