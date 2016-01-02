@@ -51,13 +51,13 @@ add_library(pyTool MODULE
     PyFit.cpp
     dict.C
 )
-target_link_libraries(pyTool $ENV{TUNFOLDDIR}/libunfold.so ${ROOT_LIBRARIES})
+target_link_libraries(pyTool $ENV{TUNFOLDDIR}/libunfold.so ${ROOT_LIBRARIES} -lMinuit2)
 add_dependencies(pyTool generatedicts)
 
 add_executable(printversion
     printversion.cpp
 )
-target_link_libraries(printversion $ENV{TUNFOLDDIR}/libunfold.so ${ROOT_LIBRARIES} )
+target_link_libraries(printversion $ENV{TUNFOLDDIR}/libunfold.so ${ROOT_LIBRARIES})
 
 copy_file_if_changed(${CMAKE_CURRENT_SOURCE_DIR}/testPyUnfold.py ${CMAKE_CURRENT_BINARY_DIR}/testPyUnfold.py pyTool)
 copy_file_if_changed(${CMAKE_CURRENT_SOURCE_DIR}/testPyFit.py ${CMAKE_CURRENT_BINARY_DIR}/testPyFit.py pyTool)
