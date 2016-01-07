@@ -7,7 +7,7 @@ import numpy
 
 ROOT.gSystem.Load("libpyTool.so")
 
-fit = ROOT.PyFit()
+fit = ROOT.PyFit.Fit()
 obs = ROOT.PyFit.Observable()
 par = ROOT.PyFit.Parameter("test")
 
