@@ -235,14 +235,14 @@ class Observable
     ClassDef(PyFit::Observable, 1)
 };
         
-class Fit
+class MLFit
 {
     private:
         std::vector<std::pair<PyFit::Observable*,TH1D*>> _observableDataPairs; //!
         
     
     public:
-        Fit()
+        MLFit()
         {
         }
         
@@ -266,10 +266,18 @@ class Fit
         void minimize()
         {
             std::map<std::string, PyFit::Parameter*> parameters;
+            
             for (auto pair: _observableDataPairs)
             {
                 pair.first->queryParameters(parameters);
             }
+            std::vector<PyFit::Parameter*> sortedParameters;
+            for (auto par: parameters)
+            {
+                sortedParameters.push_back(par.second);
+            }
+            
+            
             // Choose method upon creation between:
             // kMigrad, kSimplex, kCombined, 
             // kScan, kFumili
@@ -280,31 +288,45 @@ class Fit
             min.SetTolerance(0.001);
 
             ROOT::Math::Functor f(
-                [](const double *x) -> double 
+                [&](const double *x) -> double 
                 {
-                    return std::pow(x[0]-2,2);
+                    for (unsigned int ipar = 0; ipar < sortedParameters.size(); ++ipar)
+                    {
+                        sortedParameters[ipar]->setScaleFactor(x[ipar]);
+                    }
+                    return 2*this->globalNll(); //chi2 = 2*NLL so that the uncertainty is correctly estimated
                 },
-                1
+                sortedParameters.size()
             ); 
 
             min.SetFunction(f);
 
             // Set the free variables to be minimized!
-            min.SetVariable(0,"x",0, 0.01); //num, 
+            for (unsigned int ipar = 0; ipar < sortedParameters.size(); ++ipar)
+            {
+                min.SetVariable(
+                    ipar,
+                    sortedParameters[ipar]->getName().c_str(),
+                    sortedParameters[ipar]->getScaleFactor(), 
+                    0.01
+                ); 
+            }
             //min.SetVariable(1,"y",variable[1], step[1]);
 
             min.Minimize(); 
 
-            const double *xs = min.X();
-            std::cout<<xs[0]<<std::endl;
+            for (unsigned int ipar = 0; ipar < sortedParameters.size(); ++ipar)
+            {
+                std::cout<<sortedParameters[ipar]->getName()<<": "<<min.X()[ipar]<<" +- "<<min.Errors()[ipar]<<std::endl;
+            }
 
         }
         
-        virtual ~Fit()
+        virtual ~MLFit()
         {
         }
         
-    ClassDef(Fit, 1)
+    ClassDef(MLFit, 1)
 };
 
 }
