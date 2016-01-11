@@ -7,7 +7,7 @@
 #pragma link C++ class PyFit::Parameter+;
 #pragma link C++ class PyFit::ConstShapeComponent+;
 #pragma link C++ class PyFit::Observable+;
-
+#pragma link C++ class PyFit::Prediction+;
 
 
 #endif

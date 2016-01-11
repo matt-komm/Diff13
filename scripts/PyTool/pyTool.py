@@ -3,4 +3,4 @@ import ROOT
 import os
 import os.path
 
-ROOT.gSystem.Load(os.path.join(os.getcwd(),"libpyTool.so"))
+ROOT.gSystem.Load(os.path.join(os.path.dirname(__file__),"libpyTool.so"))

@@ -79,25 +79,44 @@ class Parameter
     ClassDef(PyFit::Parameter, 1)
 };
 
-struct Prediction
+class Prediction
 {
-    std::vector<double> entries;
-    Prediction(unsigned int N):
-        entries(N)
-    {
-    }
-    Prediction& operator+=(const Prediction& p)
-    {
-        if (entries.size()!=p.entries.size())
+    public:
+        std::vector<double> entries;
+        Prediction(unsigned int N):
+            entries(N)
         {
-            throw std::runtime_error("attempting to add predictions with different sizes");
         }
-        for (unsigned int i = 0; i < entries.size(); ++i)
+        Prediction& operator+=(const Prediction& p)
         {
-            entries[i]+=p.entries[i];
+            if (entries.size()!=p.entries.size())
+            {
+                throw std::runtime_error("attempting to add predictions with different sizes");
+            }
+            for (unsigned int i = 0; i < entries.size(); ++i)
+            {
+                entries[i]+=p.entries[i];
+            }
+            return *this;
         }
-        return *this;
-    }
+        
+        void toRootHistogram(TH1* hist) const
+        {
+            if (entries.size()!=hist->GetNbinsX())
+            {
+                throw std::runtime_error("target histogram has not the same number of bins as prediction");
+            }
+            for (unsigned int i = 0; i < entries.size(); ++i)
+            {
+                hist->SetBinContent(i+1,entries[i]);
+            }
+        }
+        
+        virtual ~Prediction()
+        {
+        }
+        
+    ClassDef(PyFit::Prediction, 1)
 };
 
 
@@ -120,11 +139,11 @@ class ConstShapeComponent:
     public Component
 {
     private:   
-        TH1D* _hist; 
+        TH1* _hist; 
         std::vector<PyFit::Parameter*> _parameters; //!
     public: 
-        ConstShapeComponent(TH1D* hist):
-            _hist((TH1D*)hist->Clone())
+        ConstShapeComponent(TH1* hist):
+            _hist((TH1*)hist->Clone())
         {
             _hist->SetDirectory(0);
         }
@@ -200,7 +219,7 @@ class Observable
             }
         }
         
-        double nll(TH1D* data)
+        double nll(TH1* data)
         {   
             Prediction prediction(data->GetNbinsX());
             this->getPrediction(&prediction);
@@ -238,7 +257,7 @@ class Observable
 class MLFit
 {
     private:
-        std::vector<std::pair<PyFit::Observable*,TH1D*>> _observableDataPairs; //!
+        std::vector<std::pair<PyFit::Observable*,TH1*>> _observableDataPairs; //!
         std::vector<PyFit::Parameter*> _parameters;
         
     public:
@@ -246,7 +265,7 @@ class MLFit
         {
         }
         
-        void addObservable(PyFit::Observable* observable, TH1D* data)
+        void addObservable(PyFit::Observable* observable, TH1* data)
         {
             _observableDataPairs.push_back(std::make_pair(observable,data));
         }
