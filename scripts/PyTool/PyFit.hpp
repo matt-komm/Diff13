@@ -294,7 +294,7 @@ class MLFit
                     {
                         sortedParameters[ipar]->setScaleFactor(x[ipar]);
                     }
-                    return 2*this->globalNll(); //chi2 = 2*NLL so that the uncertainty is correctly estimated
+                    return 2.0*this->globalNll(); //chi2 = 2*NLL so that the uncertainty is correctly estimated
                 },
                 sortedParameters.size()
             ); 
@@ -319,7 +319,6 @@ class MLFit
             {
                 std::cout<<sortedParameters[ipar]->getName()<<": "<<min.X()[ipar]<<" +- "<<min.Errors()[ipar]<<std::endl;
             }
-
         }
         
         virtual ~MLFit()
