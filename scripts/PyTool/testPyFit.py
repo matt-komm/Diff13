@@ -20,6 +20,7 @@ comp = ROOT.PyFit.ConstShapeComponent(pred)
 comp.addSFParameter(par)
 obs.addComponent(comp)
 fit.addObservable(obs,data)
+fit.addParameter(par)
 
 xvalues = numpy.linspace(50,150,50)
 yvalues = numpy.zeros(len(xvalues))

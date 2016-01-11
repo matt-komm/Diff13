@@ -62,7 +62,7 @@ class Parameter
             return _scaleFactor = scaleFactor;
         }
         
-        double logLikelihood()
+        double nll()
         {
             return TMath::Log(_prior.Eval(_scaleFactor));
         }
@@ -239,8 +239,8 @@ class MLFit
 {
     private:
         std::vector<std::pair<PyFit::Observable*,TH1D*>> _observableDataPairs; //!
+        std::vector<PyFit::Parameter*> _parameters;
         
-    
     public:
         MLFit()
         {
@@ -249,6 +249,11 @@ class MLFit
         void addObservable(PyFit::Observable* observable, TH1D* data)
         {
             _observableDataPairs.push_back(std::make_pair(observable,data));
+        }
+        
+        void addParameter(PyFit::Parameter* parameter)
+        {
+            _parameters.push_back(parameter);
         }
         
         double globalNll() const
@@ -265,19 +270,6 @@ class MLFit
         
         void minimize()
         {
-            std::map<std::string, PyFit::Parameter*> parameters;
-            
-            for (auto pair: _observableDataPairs)
-            {
-                pair.first->queryParameters(parameters);
-            }
-            std::vector<PyFit::Parameter*> sortedParameters;
-            for (auto par: parameters)
-            {
-                sortedParameters.push_back(par.second);
-            }
-            
-            
             // Choose method upon creation between:
             // kMigrad, kSimplex, kCombined, 
             // kScan, kFumili
@@ -290,34 +282,35 @@ class MLFit
             ROOT::Math::Functor f(
                 [&](const double *x) -> double 
                 {
-                    for (unsigned int ipar = 0; ipar < sortedParameters.size(); ++ipar)
+                    
+                    for (unsigned int ipar = 0; ipar < _parameters.size(); ++ipar)
                     {
-                        sortedParameters[ipar]->setScaleFactor(x[ipar]);
+                        _parameters[ipar]->setScaleFactor(x[ipar]);
                     }
                     return 2*this->globalNll(); //chi2 = 2*NLL so that the uncertainty is correctly estimated
                 },
-                sortedParameters.size()
+                _parameters.size()
             ); 
 
             min.SetFunction(f);
 
             // Set the free variables to be minimized!
-            for (unsigned int ipar = 0; ipar < sortedParameters.size(); ++ipar)
+            for (unsigned int ipar = 0; ipar < _parameters.size(); ++ipar)
             {
                 min.SetVariable(
                     ipar,
-                    sortedParameters[ipar]->getName().c_str(),
-                    sortedParameters[ipar]->getScaleFactor(), 
+                    _parameters[ipar]->getName().c_str(),
+                    _parameters[ipar]->getScaleFactor(), 
                     0.01
-                ); 
+                );
             }
             //min.SetVariable(1,"y",variable[1], step[1]);
 
             min.Minimize(); 
 
-            for (unsigned int ipar = 0; ipar < sortedParameters.size(); ++ipar)
+            for (unsigned int ipar = 0; ipar < _parameters.size(); ++ipar)
             {
-                std::cout<<sortedParameters[ipar]->getName()<<": "<<min.X()[ipar]<<" +- "<<min.Errors()[ipar]<<std::endl;
+                std::cout<<_parameters[ipar]->getName()<<": "<<min.X()[ipar]<<" +- "<<min.Errors()[ipar]<<std::endl;
             }
 
         }
