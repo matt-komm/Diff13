@@ -53,6 +53,7 @@ add_library(pyTool MODULE
 )
 target_link_libraries(pyTool $ENV{TUNFOLDDIR}/libunfold.so ${ROOT_LIBRARIES} -lMinuit2)
 add_dependencies(pyTool generatedicts)
+install(TARGETS pyTool LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX})
 
 add_executable(printversion
     printversion.cpp
@@ -61,5 +62,6 @@ target_link_libraries(printversion $ENV{TUNFOLDDIR}/libunfold.so ${ROOT_LIBRARIE
 
 copy_file_if_changed(${CMAKE_CURRENT_SOURCE_DIR}/testPyUnfold.py ${CMAKE_CURRENT_BINARY_DIR}/testPyUnfold.py pyTool)
 copy_file_if_changed(${CMAKE_CURRENT_SOURCE_DIR}/testPyFit.py ${CMAKE_CURRENT_BINARY_DIR}/testPyFit.py pyTool)
-
+copy_file_if_changed(${CMAKE_CURRENT_SOURCE_DIR}/pyTool.py ${CMAKE_CURRENT_BINARY_DIR}/pyTool.py pyTool)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pyTool.py DESTINATION ${CMAKE_INSTALL_PREFIX})
 

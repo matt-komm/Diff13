@@ -11,10 +11,11 @@ BASEDIR=`pwd`
 addVar BASEDIR $BASEDIR
 addVar PATH $BASEDIR/scripts:"$"PATH
 addVar PYTHONPATH $BASEDIR/scripts:"$"PYTHONPATH
+addVar LD_LIBRARY_PATH $BASEDIR/scripts:"$"LD_LIBRARY_PATH
 
 echo $VARS > global-vars.txt
 
-source CMSSW/setupCMSSW.sh  
+#source CMSSW/setupCMSSW.sh  
 
 #source external/setupCMake.sh
 #source external/setupSWIG.sh
