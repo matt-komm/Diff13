@@ -46,8 +46,8 @@ if __name__=="__main__":
     config.JobType.pluginName = 'Analysis'
     config.JobType.psetName = 'EDM2PXLIO/analysis15runD.py'
     config.JobType.pyCfgParams = []
-    config.JobType.outputFiles = ["output.pxlio","info.root"]
-    #config.JobType.outputFiles = ["output.pxlio"]
+    #config.JobType.outputFiles = ["output.pxlio","info.root"]
+    config.JobType.outputFiles = ["output.pxlio"]
     config.JobType.inputFiles=[
         #"Summer15_50nsV4_DATA.db",
         #"Summer15_50nsV4_MC.db",
@@ -56,11 +56,11 @@ if __name__=="__main__":
     config.JobType.maxJobRuntimeMin=600
 
     config.Data.inputDBS = 'global'
-    config.Data.splitting = 'FileBased'
-    #config.Data.splitting = 'LumiBased'
-    #config.Data.lumiMask = 'https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions15/13TeV/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt'
+    #config.Data.splitting = 'FileBased'
+    config.Data.splitting = 'LumiBased'
+    config.Data.lumiMask = 'https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions15/13TeV/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt'
     #config.Data.runRange='254833-254833'
-    config.Data.unitsPerJob = 5
+    config.Data.unitsPerJob = 50
     #config.Data.ignoreLocality = True #use to circumvent crab/dbs bug with open data blocks (while its being writing)
 
     config.Data.publication = False
@@ -204,10 +204,10 @@ if __name__=="__main__":
     ]
     
     
-    dataset=datasets74DR25nsMINIAODv2[int(args[0])]
-    #dataset=datasetData[int(args[0])]
-    processName = dataset.split("/")[1]
-    #processName = dataset.split("/")[1]+"_"+dataset.split("/")[2]
+    #dataset=datasets74DR25nsMINIAODv2[int(args[0])]
+    dataset=datasetData[int(args[0])]
+    #processName = dataset.split("/")[1]
+    processName = dataset.split("/")[1]+"_"+dataset.split("/")[2]
     if dataset.split("/")[2].find("_ext")!=-1:
         processName+="_ext"
 
@@ -220,8 +220,8 @@ if __name__=="__main__":
     
         config.General.workArea = "crab/"+jobName
         config.Data.inputDataset=dataset
-        config.JobType.pyCfgParams=['processName='+processName]
-        #config.JobType.pyCfgParams=['processName='+processName,'isData=True','onlyFiltered=True']
+        #config.JobType.pyCfgParams=['processName='+processName]
+        config.JobType.pyCfgParams=['processName='+processName,'isData=True','onlyFiltered=True']
         config.Data.outLFNDirBase='/store/user/mkomm/'+config.General.requestName+"/"+jobName
         submit(config)
     else:
