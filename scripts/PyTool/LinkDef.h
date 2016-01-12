@@ -9,6 +9,8 @@
 #pragma link C++ class PyFit::Observable+;
 #pragma link C++ class PyFit::Prediction+;
 
+#pragma link C++ class Projector1D+;
+#pragma link C++ class Projector2D+;
 
 #endif
 

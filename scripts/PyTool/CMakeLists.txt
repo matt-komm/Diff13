@@ -35,6 +35,8 @@ set(CLASSHEADERS
     PyUnfold.hpp
     PyUtils.hpp
     PyFit.hpp
+    Projector1D.hpp
+    Projector2D.hpp
 )
 
 set_source_files_properties(${PROJECT_BINARY_DIR}/dict.C PROPERTIES GENERATED TRUE)
@@ -49,6 +51,8 @@ add_library(pyTool MODULE
     PyUnfold.cpp 
     PyUtils.cpp 
     PyFit.cpp
+    Projector1D.cpp
+    Projector2D.cpp
     dict.C
 )
 target_link_libraries(pyTool $ENV{TUNFOLDDIR}/libunfold.so ${ROOT_LIBRARIES} -lMinuit2)
