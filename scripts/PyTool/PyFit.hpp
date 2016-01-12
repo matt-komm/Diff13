@@ -64,7 +64,7 @@ class Parameter
         
         double nll()
         {
-            return TMath::Log(_prior.Eval(_scaleFactor));
+            return -TMath::Log(_prior.Eval(_scaleFactor));
         }
         
         double getScaleFactor() const
@@ -278,6 +278,10 @@ class MLFit
         double globalNll() const
         {
             double nll = 0.0;
+            for (auto par: _parameters)
+            {
+                nll+=par->nll();
+            }
             
             for (auto pair: _observableDataPairs)
             {
