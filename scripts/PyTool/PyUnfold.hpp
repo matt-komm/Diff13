@@ -47,7 +47,7 @@ class PyUnfold
             _tunfold(responseHist,TUnfold::kHistMapOutputHoriz,TUnfold::kRegModeCurvature),
             _responseHist(responseHist)
         {
-            _tunfold.SetBias(responseHist->ProjectionX());
+            //_tunfold.SetBias(responseHist->ProjectionX());
         }
         
         void addBackground(const TH1* background, const char* name, double scale=1.0, double error=0.00001)

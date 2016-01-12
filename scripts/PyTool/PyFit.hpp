@@ -333,6 +333,7 @@ class MLFit
 
             for (unsigned int ipar = 0; ipar < _parameters.size(); ++ipar)
             {
+                _parameters[ipar]->setScaleFactor(min.X()[ipar]);
                 std::cout<<_parameters[ipar]->getName()<<": "<<min.X()[ipar]<<" +- "<<min.Errors()[ipar]<<std::endl;
             }
 
