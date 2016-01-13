@@ -123,7 +123,7 @@ def findMatches(path,regex):
     pieces_regex=regex.split(os.path.sep)
     matches=[]
     if len(pieces_regex)==(dirlevel):
-        matches.append(path)
+        matches.append(path.replace("//","/"))
     elif not pieces_regex[dirlevel]=="[walk]":
         
         matcher=re.compile(pieces_regex[dirlevel])#.replace("*","[0-9A-Za-z_\-]*"))
@@ -147,6 +147,7 @@ def findMatches(path,regex):
                     #   print " + ",
                     #print f
                     matches.append(os.path.join(root,f))
+                   
         for i in range(dirlevel-1):
             print " + ", 
         print len(matches)
