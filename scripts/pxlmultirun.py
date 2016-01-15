@@ -161,6 +161,7 @@ if __name__=="__main__":
     parser.add_option("-f", action="store_true", default=False, dest="force")
     parser.add_option("--out", default="", dest="out")
     parser.add_option("--condor", action="store_true", default=False, dest="condor")
+    parser.add_option("--addoption", default=None, dest="addoption")
     (options, args) = parser.parse_args()
     N=int(options.N)
     if options.out!="":
@@ -233,6 +234,8 @@ if __name__=="__main__":
         analysisFiles.append(os.path.abspath(analysisFileName))
         #print "h3"
     if (options.condor):
+        
+            
         preconfig='''executable = run.sh
 universe = vanilla
 output = log/log$(Process).out
@@ -242,8 +245,17 @@ should_transfer_files = YES
 when_to_transfer_output = ON_EXIT
 requirements   = (CMSFARM =?= TRUE)
 '''
-        
+        if options.addoption!=None:
+            f = open(options.addoption)
+            for l in f:
+                preconfig+=l
+            f.close()
+            
         shellscript='''#!/bin/bash
+number=$RANDOM
+let "number %= 600"
+echo "sleeping for ... "$number
+sleep $number
 source /home/fynu/mkomm/.bashrc
 cd /home/fynu/mkomm/Diff13
 source setVars.sh
@@ -251,10 +263,13 @@ export HOME=/home/fynu/mkomm
 cd $_CONDOR_SCRATCH_DIR
 env
 pwd
-ls -l
+echo "ls: `ls -l`"
+echo "ls stageout: `ls -l /storage/data/cms/store/user/mkomm/DX_13`"
+echo "ls storage: `ls -l /nfs/user/mkomm/ST13/selection25ns`"
 which pxlrun
 echo "executing: "$@
-pxlrun $@
+pxlrun -v $@
+echo "done executing: "$@
 '''
         try:
             os.mkdir(os.path.join(outputFolder,"log"))

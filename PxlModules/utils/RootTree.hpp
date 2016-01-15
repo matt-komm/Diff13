@@ -30,7 +30,7 @@ class RootTree
         {
             std::unordered_map<std::string,Variable*>::iterator elem = _variables.find(name.c_str());
             if (elem==_variables.end()) {
-                _logger(pxl::LOG_LEVEL_INFO ,"store new variable '",name,"' in tree '",_tree->GetName(),"' with ",_count," empty entries");
+                _logger(pxl::LOG_LEVEL_DEBUG ,"store new variable '",name,"' in tree '",_tree->GetName(),"' with ",_count," empty entries");
                 VariableTmpl<TYPE>* var = bookVariable<TYPE>(name);
                 var->setValue(value);
             } else {
@@ -152,7 +152,7 @@ class RootTree
             VariableTmpl<TYPE>* var = new VariableTmpl<TYPE>();
             _variables[name]=var;
             TBranch* branch = _tree->Branch(name.c_str(),(TYPE*)var->getAddress());
-            _logger(pxl::LOG_LEVEL_INFO ,"fill new variable '",name,"' in tree '",_tree->GetName(),"' with ",_count," empty entries");
+            _logger(pxl::LOG_LEVEL_DEBUG ,"fill new variable '",name,"' in tree '",_tree->GetName(),"' with ",_count," empty entries");
             for (unsigned int cnt=0;cnt<_count; ++cnt)
             {
                 branch->Fill();
