@@ -230,7 +230,15 @@ sampleDict = {
         "color":ROOT.gROOT.GetColor(ROOT.kGreen-2),
         "title":"W+jets",
         "addtitle":"(MadGraph)",
-        "weight":"((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)*(1+0.8*(Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==1))"
+        "weight":"((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)"
+    },
+    
+    "QCD":
+    {
+        "processes":[
+            "QCD_Pt-20toInf_MuEnrichedPt15_TuneCUETP8M1_13TeV_pythia8_antiiso",
+        ],
+        "weight":"0.015"
     },
 
 }
@@ -238,7 +246,7 @@ sampleDict = {
 rootFilesTraining=[]
 rootFilesTesting=[]
 
-basedirMC = os.path.join(os.getcwd(),"evaluate25ns")
+basedirMC = "/nfs/user/mkomm/ST13/evaluate25ns"
 
 matchTraining = re.compile("mc_training[0-9]+.root")
 matchTesting = re.compile("mc[0-9]+.root")
@@ -381,9 +389,8 @@ def getAUC(sigEff,bgRej):
         
 
 
-globalDataWeight="((Reconstructed_1__HLT_IsoMu20_v2==1)+(Reconstructed_1__HLT_IsoMu20_v3==1))"
 
-globalMCWeight="(Reconstructed_1__HLT_IsoMu20_v1)"
+globalMCWeight="(Reconstructed_1__HLT_IsoMu20_v1)*mc_weight*((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)"
 
 binning=500
 
@@ -394,6 +401,37 @@ for precuts in [
 ]:
     
     for var in [
+        ["BDT_boost04_minnode001_maxvar3_ntree1000_invboost","Reconstructed_1__BDT_boost04_minnode001_maxvar3_ntree1000_invboost","BDT discriminant","","1",binning,-1,1],
+        ["ljet_abseta","fabs(SingleTop_1__LightJet_1__Eta)","j' |#eta|","","1",binning,0,5.0],
+        ["bjet_muon_dEta","abs(SingleTop_1__BJet_TightMuon_dEta)","#Delta #eta (b jet, #mu)","","1",binning,0,5.0],
+    
+        ["ljet_n60","SingleTop_1__LightJet_1__n60","j' n60","","1",41,-0.5,40.5],
+        ["ljet_n90","SingleTop_1__LightJet_1__n90","j' n90","","1",51,-0.5,50.5],
+        ["ljet_csv","SingleTop_1__LightJet_1__pfCombinedInclusiveSecondaryVertexV2BJetTags","j' CSV","","1",binning,0,1],
+        
+        ["dijet_dR","SingleTop_1__Dijet_1__DR","#Delta R(j', b jet)","","1",binning,0,8],
+        ["dijet_mass","SingleTop_1__Dijet_1__Mass","dijet mass","GeV","1",binning,0,800],
+        
+        ["aplanarity","Reconstructed_1__logaplanarity","log aplanarity","","1",binning,-15,0.0],
+        ["circularity","Reconstructed_1__circularity","circularity","","1",binning,0,1],
+        ["C","Reconstructed_1__C","C","","1",binning,0,1],
+        ["isotropy","Reconstructed_1__isotropy","isotropy","","1",binning,0,1],
+        ["sphericity","Reconstructed_1__sphericity","sphericity","","1",binning,0,1],
+        
+        ["top_mass","SingleTop_1__Top_1__Mass","m_{lb#nu}","GeV","1",binning,0,500],
+        ["mtw","SingleTop_1__mtw_beforePz","M_{T}(W)","GeV","1",binning,0,250],
+        
+        ["shat_mass","SingleTop_1__Shat_1__Mass","#hat{s}","GeV","1",binning,0,1500],
+        ["shat_pt","SingleTop_1__Shat_1__Pt","#hat{s} p_{T}","GeV","1",binning,0,300],
+    ]:
+        '''
+        ["aplanarity","log(Reconstructed_1__aplanarity)","log(aplanarity)","","1",binning,-15,0.0],
+        ["circularity","Reconstructed_1__circularity","circularity","","1",binning,0,1],
+        ["C","Reconstructed_1__C","C","","1",binning,0,1],
+        ["isotropy","Reconstructed_1__isotropy","isotropy","","1",binning,0,1],
+        ["sphericity","Reconstructed_1__sphericity","sphericity","","1",binning,0,1],
+
+    
         ["BDT_boost02_minnode005_maxvar2_ntree1000_invboost","Reconstructed_1__BDT_boost02_minnode005_maxvar2_ntree1000_invboost","BDT (#beta=0.2, min=5%)","","1",binning,-0.8,0.8],
         ["BDT_boost03_minnode005_maxvar2_ntree1000_invboost","Reconstructed_1__BDT_boost03_minnode005_maxvar2_ntree1000_invboost","BDT (#beta=0.3, min=5%)","","1",binning,-0.8,0.8],
         ["BDT_boost04_minnode005_maxvar2_ntree1000_invboost","Reconstructed_1__BDT_boost04_minnode005_maxvar2_ntree1000_invboost","BDT (#beta=0.4, min=5%)","","1",binning,-0.8,0.8],
@@ -415,7 +453,9 @@ for precuts in [
         ["ljet_mass","SingleTop_1__LightJet_1__Mass","light jet mass","GeV","1",binning,0.0,40.0],
         ["ljet_n90","SingleTop_1__LightJet_1__n90","light jet n90","","1",51,-0.5,50.5],
         ["ljet_n60","SingleTop_1__LightJet_1__n60","light jet n60","","1",41,-0.5,40.5],
+        ["ljet_csv","SingleTop_1__LightJet_1__pfCombinedInclusiveSecondaryVertexV2BJetTags","light jet CSV","","1",binning,0,1],
         
+                
         ["bjet_pt","SingleTop_1__BJet_1__Pt","b-jet p_{T}","GeV","1",binning,0,250],
         ["bjet_abseta","fabs(SingleTop_1__BJet_1__Eta)","b-jet |#eta|","","1",binning,0,2.5],
         ["bjet_mass","SingleTop_1__BJet_1__Mass","b-jet mass","GeV","1",binning,0.0,40.0],
@@ -447,7 +487,7 @@ for precuts in [
     
         ["jet_muon_charge","Reconstructed_1__TightMuon_1__Charge*SingleTop_1__BJet_1__jetCharge","Q_{b jet} #upoint Q_{#mu}","","1",binning,-1.5,1.5],
     ]:
-        
+        '''
         
         variableName=var[1]
         variableTitle=var[2]
@@ -476,7 +516,7 @@ for precuts in [
                     if (tree):
                         tempHist=ROOT.TH1F(sumHistBackgroundTraining)
                         tempHist.SetName("hist_"+sampleName+str(random.random))
-                        tree.Project(tempHist.GetName(),variableName,"mc_weight*"+sample["weight"]+"*"+weight+"*"+globalMCWeight)
+                        tree.Project(tempHist.GetName(),variableName,sample["weight"]+"*"+weight+"*"+globalMCWeight)
                         tempHist.SetDirectory(0)
                         #print "background: ",process,sumHistBackgroundTraining.GetEntries()
                         addUnderflowOverflow(tempHist)
@@ -491,7 +531,7 @@ for precuts in [
                     if (tree):
                         tempHist=ROOT.TH1F(sumHistBackgroundTesting)
                         tempHist.SetName("hist_"+sampleName+str(random.random))
-                        tree.Project(tempHist.GetName(),variableName,"mc_weight*"+sample["weight"]+"*"+weight+"*"+globalMCWeight)
+                        tree.Project(tempHist.GetName(),variableName,sample["weight"]+"*"+weight+"*"+globalMCWeight)
                         tempHist.SetDirectory(0)
                         #print "background: ",process,sumHistBackgroundTesting.GetEntries()
                         addUnderflowOverflow(tempHist)
@@ -521,7 +561,7 @@ for precuts in [
                     if (tree):
                         tempHist=ROOT.TH1F(sumHistSignalTraining)
                         tempHist.SetName("hist_"+sampleName+str(random.random))
-                        tree.Project(tempHist.GetName(),variableName,"mc_weight*"+sample["weight"]+"*"+weight+"*"+globalMCWeight)
+                        tree.Project(tempHist.GetName(),variableName,sample["weight"]+"*"+weight+"*"+globalMCWeight)
                         tempHist.SetDirectory(0)
                         #print "background: ",process,sumHistSignalTraining.GetEntries()
                         addUnderflowOverflow(tempHist)
@@ -536,7 +576,7 @@ for precuts in [
                     if (tree):
                         tempHist=ROOT.TH1F(sumHistSignalTesting)
                         tempHist.SetName("hist_"+sampleName+str(random.random))
-                        tree.Project(tempHist.GetName(),variableName,"mc_weight*"+sample["weight"]+"*"+weight+"*"+globalMCWeight)
+                        tree.Project(tempHist.GetName(),variableName,sample["weight"]+"*"+weight+"*"+globalMCWeight)
                         tempHist.SetDirectory(0)
                         #print "background: ",process,sumHistBackgroundTesting.GetEntries()
                         addUnderflowOverflow(tempHist)
@@ -553,11 +593,11 @@ for precuts in [
         auc = getAUC(signalEff,backgroundRej)
         
         if sumHistSignalTraining.GetNbinsX()>200:
-            sumHistSignalTraining.Rebin(10)
-            sumHistSignalTesting.Rebin(10)
+            sumHistSignalTraining.Rebin(20)
+            sumHistSignalTesting.Rebin(20)
             
-            sumHistBackgroundTraining.Rebin(10)
-            sumHistBackgroundTesting.Rebin(10)
+            sumHistBackgroundTraining.Rebin(20)
+            sumHistBackgroundTesting.Rebin(20)
 
         cv = ROOT.TCanvas("cv_dist"+str(random.random()),"",800,600)
         cv.SetPad(0.0, 0.0, 1.0, 1.0)
