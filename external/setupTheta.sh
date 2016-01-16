@@ -31,13 +31,13 @@ execute git clone https://github.com/matt-komm/slim-theta.git
 
 cd $BASEDIR/external/slim-theta
 
-THETABASEDIR=$BASEDIR/external/slim-theta/build
+THETABASEDIR=$BASEDIR/external/slim-theta/release
 
 
 addVar THETABASEDIR $THETABASEDIR
 addVar PATH $THETABASEDIR/bin:"$"PATH
 
-addVar PYTHONPATH $BASEDIR/external/slim-theta/python:"$"PYTHONPATH
+addVar PYTHONPATH $THETABASEDIR/python:"$"PYTHONPATH
 
 mkdir build
 cd build
@@ -46,9 +46,11 @@ execute $CMAKEBASEDIR/bin/cmake .. \
     -DBOOST_ROOT=$BOOSTBASEDIR \
     -DSQLITE_ROOT=$SQLITEBASEDIR \
     -DCMAKE_CXX_COMPILER=`which g++` \
-    -DCMAKE_C_COMPILER=`which gcc`
+    -DCMAKE_C_COMPILER=`which gcc` \
+    -DCMAKE_INSTALL_PREFIX=$THETABASEDIR
     
 execute make -j8
+execute make install
 
 cd $BASEDIR
 
