@@ -6,6 +6,7 @@
 #include "pxl/modules/ModuleFactory.hh"
 
 #include <algorithm>
+#include <cmath>
 
 static pxl::Logger logger("TopReconstruction");
 
@@ -230,6 +231,7 @@ class TopReconstruction:
             top->linkDaughter(p1);
             top->linkDaughter(p2);
             top->setP4FromDaughters();
+            top->setUserRecord("y",0.5*std::log((top->getE()+top->getPz())/(top->getE()-top->getPz())));
             return top;
         }
         
@@ -305,11 +307,11 @@ class TopReconstruction:
                 }
                 */
 
-                cm->setUserRecord("CosTheta",minCosTheta);
-                cm->setUserRecord("DY",minDY);
-                cm->setUserRecord("DEta",minDEta);
-                cm->setUserRecord("DR",minDR);
-                cm->setUserRecord("DPhi",minDPhi);
+                //cm->setUserRecord("cosTheta",minCosTheta);
+                //cm->setUserRecord("dY",minDY);
+                cm->setUserRecord("dEta",minDEta);
+                cm->setUserRecord("dR",minDR);
+                cm->setUserRecord("dPhi",minDPhi);
 
             }
         

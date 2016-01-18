@@ -401,7 +401,7 @@ for precuts in [
 ]:
     
     for var in [
-        ["BDT_boost04_minnode001_maxvar3_ntree1000_invboost","Reconstructed_1__BDT_boost04_minnode001_maxvar3_ntree1000_invboost","BDT discriminant","","1",binning,-1,1],
+        ["BDT_adaboost04_minnode001_maxvar2_ntree600_invboost","Reconstructed_1__BDT_adaboost04_minnode001_maxvar2_ntree600_invboost","BDT discriminant","","1",binning,-1,1],
         ["ljet_abseta","fabs(SingleTop_1__LightJet_1__Eta)","j' |#eta|","","1",binning,0,5.0],
         ["bjet_muon_dEta","abs(SingleTop_1__BJet_TightMuon_dEta)","#Delta #eta (b jet, #mu)","","1",binning,0,5.0],
     
@@ -423,6 +423,9 @@ for precuts in [
         
         ["shat_mass","SingleTop_1__Shat_1__Mass","#hat{s}","GeV","1",binning,0,1500],
         ["shat_pt","SingleTop_1__Shat_1__Pt","#hat{s} p_{T}","GeV","1",binning,0,300],
+        
+        ["muon_pt","Reconstructed_1__TightMuon_1__Pt","muon p_{T}","GeV","1",binning,0,250],
+        ["met","Reconstructed_1__MET_1__Pt","MET","GeV","1",binning,0,250],
     ]:
         '''
         ["aplanarity","log(Reconstructed_1__aplanarity)","log(aplanarity)","","1",binning,-15,0.0],
@@ -593,11 +596,11 @@ for precuts in [
         auc = getAUC(signalEff,backgroundRej)
         
         if sumHistSignalTraining.GetNbinsX()>200:
-            sumHistSignalTraining.Rebin(20)
-            sumHistSignalTesting.Rebin(20)
+            sumHistSignalTraining.Rebin(10)
+            sumHistSignalTesting.Rebin(10)
             
-            sumHistBackgroundTraining.Rebin(20)
-            sumHistBackgroundTesting.Rebin(20)
+            sumHistBackgroundTraining.Rebin(10)
+            sumHistBackgroundTesting.Rebin(10)
 
         cv = ROOT.TCanvas("cv_dist"+str(random.random()),"",800,600)
         cv.SetPad(0.0, 0.0, 1.0, 1.0)

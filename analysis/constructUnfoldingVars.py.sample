@@ -1,0 +1,162 @@
+### Skeleton for constructUnfoldingVars.py
+# created by VISPA
+# Sat Dec 12 18:07:45 2015
+# -*- coding: utf-8 -*-
+
+from pxl import core, modules
+
+import math
+
+
+class Example(modules.PythonModule):
+
+    def __init__(self):
+        ''' Initialize private variables '''
+        modules.PythonModule.__init__(self)
+        # self._exampleVariable = startValue
+
+    def initialize(self, module):
+        ''' Initialize module sinks, sources and options '''
+        self.__module = module
+        self._logger = core.Logger(self.__module.getName())
+
+        module.addSink("in", "Input port")
+        module.addSource("out", "Output port")
+        module.addOption("processes", "", [
+        "ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1",
+        "ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1_ext",
+        "ST_t-channel_top_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1",
+        "ST_t-channel_antitop_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1",
+        "ST_t-channel_5f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1"
+        ])
+
+    def beginJob(self, parameters=None):
+        ''' Executed before the first object comes in '''
+        self._logger.log(core.LOG_LEVEL_INFO, "Begin job")
+
+    def beginRun(self):
+        ''' Executed before each run '''
+        self.processes = self.__module.getOption("processes")
+
+    def process(self, object, sink):
+        ''' Executed on every object '''
+        event = core.toEvent(object)
+        if not event:
+            pass
+        process = event.getUserRecord("ProcessName")  
+        isSignal = False 
+        for p in self.processes:
+            if process.startswith(p):
+                isSignal=True
+                break
+        if not isSignal:
+            return "out"
+            
+        for eventView in event.getEventViews():
+            if eventView.getName()=="Generated":
+                top=None
+                bquark=None
+                wboson=None
+                lepton=None
+                neutrino=None
+                lquark=None
+                for particle in eventView.getParticles():
+                    #check what 22 really means!!!
+                    if math.fabs(particle.getPdgNumber())==6 and particle.getUserRecord("status")==22:
+                        if top!=None:
+                            raise Exception("multiple top quarks at gen level for process "+str(event.getUserRecord("ProcessName"))+" detected")
+                        top = particle
+                if top==None:
+                    raise Exception("no top quark at gen level found for process "+str(event.getUserRecord("ProcessName")))
+                    
+                top.setName("found top")
+                
+                if len(top.getDaughters())!=2:
+                    raise Exception("expected 2 daughter particles of gen level top quark but found: "+str(len(top.getDaughers()))) 
+                if math.fabs(top.getDaughters()[0].getPdgNumber())==5 and math.fabs(top.getDaughters()[1].getPdgNumber())==24:
+                    bquark=top.getDaughters()[0]
+                    wboson=top.getDaughters()[1]
+                elif math.fabs(top.getDaughters()[1].getPdgNumber())==5 and math.fabs(top.getDaughters()[0].getPdgNumber())==24:
+                    bquark=top.getDaughters()[1]
+                    wboson=top.getDaughters()[0]
+                else:
+                    raise Exception("cannot find bquark & wboson from gen level top quark")
+                
+                bquark.setName("found bquark")
+                wboson.setName("found wboson")
+                
+                if len(wboson.getDaughters())!=2:
+                    raise Exception("expected 2 daughter particles of gen level w boson but found: "+str(len(wboson.getDaughers())))  
+                
+                if (math.fabs(wboson.getDaughters()[0].getPdgNumber()) in [11,13,15]) and (math.fabs(wboson.getDaughters()[1].getPdgNumber()) in [12,14,16]):
+                    lepton=wboson.getDaughters()[0]
+                    neutrino=wboson.getDaughters()[1]
+                elif (math.fabs(wboson.getDaughters()[1].getPdgNumber()) in [11,13,15]) and (math.fabs(wboson.getDaughters()[0].getPdgNumber()) in [12,14,16]):
+                    lepton=wboson.getDaughters()[1]
+                    neutrino=wboson.getDaughters()[0]
+                else:
+                    raise Exception("cannot find lepton & neutrino from gen level wboson")
+                    
+                lepton.setName("found lepton")
+                neutrino.setName("found neutrino")
+                
+                #4 cases depending on charge:
+                #   l(-1/3)t(+2/3)
+                #   l(+1/3)t(-2/3)
+                #   l(-2/3)t(+2/3)
+                #   l(2/3)t(-2/3) 
+                for particle in top.getMother().getDaughters():
+                    particleCharge = 0
+                    #down have negative charge
+                    if (math.fabs(particle.getPdgNumber()) in [1,3]):
+                        particleCharge = -1*particle.getPdgNumber()
+                    #up have positive charge
+                    elif (math.fabs(particle.getPdgNumber()) in [2,4]):
+                        particleCharge = 1*particle.getPdgNumber()
+                    else:
+                        continue
+                    
+                    ####
+                    
+                    ### THIS NEEDS TO BE UNDERSTOOD !!!! ###
+                    # for now take the more energetic quark as the light quark since ISR should make less hard jets
+                    
+                    ###
+                    
+                    if particleCharge*top.getPdgNumber()<0:
+                        if lquark!=None:
+                            if particle.getE()>lquark.getE():
+                                lquark=particle
+                            #raise Exception("multiple candidates for lquark detected: "+str(event.getUserRecord("Event number")))
+                        lquark=particle
+                if lquark==None:
+                    raise Exception("lquark not found")
+                lquark.setName("found lq")
+                
+                
+                eventView.setUserRecord("top_pt",top.getPt())
+                eventView.setUserRecord("top_eta",top.getEta())
+                eventView.setUserRecord("top_y",0.5*math.log((top.getE()+top.getPz())/(top.getE()-top.getPz())))
+                eventView.setUserRecord("top_mass",top.getMass())
+                
+                eventView.setUserRecord("neutrino_pt",neutrino.getPt())
+                eventView.setUserRecord("neutrino_eta",neutrino.getEta())
+                
+                boostTop = top.getBoostVector()
+                lVec=core.LorentzVector(lepton.getVector())
+                lVec.boost(-boostTop)
+                qVec=core.LorentzVector(lquark.getVector())
+                qVec.boost(-boostTop)
+                cosTheta = (lVec.getPx()*qVec.getPx()+lVec.getPy()*qVec.getPy()+lVec.getPz()*qVec.getPz())/lVec.getMag()/qVec.getMag()
+                eventView.setUserRecord("cosTheta",cosTheta)
+
+        # return the name of the source
+        return "out"
+
+    def endRun(self):
+        ''' Executed after each run '''
+        pass
+
+    def endJob(self):
+        ''' Executed after the last object '''
+        self._logger.log(core.LOG_LEVEL_INFO, "End job")

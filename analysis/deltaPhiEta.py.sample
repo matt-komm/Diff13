@@ -1,0 +1,84 @@
+### Skeleton for deltaPhiEta.py
+# created by VISPA
+# Thu Jul 30 11:08:39 2015
+# -*- coding: utf-8 -*-
+
+from pxl import core, modules
+import math
+
+class Example(modules.PythonModule):
+
+    def __init__(self):
+        ''' Initialize private variables '''
+        modules.PythonModule.__init__(self)
+        # self._exampleVariable = startValue
+
+    def initialize(self, module):
+        ''' Initialize module options '''
+        self.__module = module
+        self._logger = core.Logger(self.__module.getName())
+        # module.addOption("example option", "example description", "default value")
+
+    def beginJob(self, parameters=None):
+        ''' Executed before the first object comes in '''
+        self._logger.log(core.LOG_LEVEL_INFO, "Begin job")
+
+    def beginRun(self):
+        ''' Executed before each run '''
+        pass
+
+    def analyse(self, object):
+        ''' Executed on every object '''
+        event = core.toEvent(object)
+        lightjet=None
+        bjet=None
+        lepton=None
+        met=None
+        neutrino=None
+        
+        stEventView=None
+        
+        for eventView in event.getEventViews():
+            if eventView.getName()=="SingleTop":
+                stEventView=eventView
+                for particle in eventView.getParticles():
+                    if particle.getName()=="LightJet":
+                        lightjet=particle
+                    elif particle.getName()=="BJet":
+                        bjet=particle
+                    elif particle.getName()=="TightMuon":
+                        lepton=particle
+                    elif particle.getName()=="Neutrino":
+                        neutrino=particle
+            if eventView.getName()=="Reconstructed":
+                for particle in eventView.getParticles():
+                    if particle.getName()=="MET":
+                        met=particle
+        if (lightjet and bjet and lepton and met and neutrino):
+            particles = [lightjet, bjet, lepton, met, neutrino]
+            for i,pi in enumerate(particles):
+                for j,pj in enumerate(particles):
+                    if i>j:
+                        continue
+                    dPhi = pi.getVector().deltaPhi(pj.getVector())
+                    dEta = pi.getVector().deltaEta(pj.getVector())
+                    dR = pi.getVector().deltaR(pj.getVector())
+                
+                    stEventView.setUserRecord(pi.getName()+"_"+pj.getName()+"_dPhi",math.fabs(dPhi))
+                    stEventView.setUserRecord(pi.getName()+"_"+pj.getName()+"_dEta",math.fabs(dEta))
+                    stEventView.setUserRecord(pi.getName()+"_"+pj.getName()+"_dR",dR)
+                    
+        if (lightjet):
+            stEventView.setUserRecord("absLEta",math.fabs(lightjet.getEta()))
+            
+        if (bjet and lepton):
+            stEventView.setUserRecord("sumPt_BJet_TightMuon",bjet.getPt()+lepton.getPt())
+            
+
+    def endRun(self):
+        ''' Executed after each run '''
+        pass
+
+    def endJob(self):
+        ''' Executed after the last object '''
+        self._logger.log(core.LOG_LEVEL_INFO, "End job")
