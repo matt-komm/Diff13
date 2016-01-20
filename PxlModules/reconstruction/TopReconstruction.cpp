@@ -309,9 +309,9 @@ class TopReconstruction:
 
                 //cm->setUserRecord("cosTheta",minCosTheta);
                 //cm->setUserRecord("dY",minDY);
-                cm->setUserRecord("dEta",minDEta);
-                cm->setUserRecord("dR",minDR);
-                cm->setUserRecord("dPhi",minDPhi);
+                cm->setUserRecord("DEta",minDEta);
+                cm->setUserRecord("DR",minDR);
+                cm->setUserRecord("DPhi",minDPhi);
 
             }
         
