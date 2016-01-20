@@ -43,7 +43,8 @@ logging.config.dictConfig({
 logger = logging.getLogger(__file__)
 
 defaultModules = {
-    "responseMatrix": defaultModules.ResponseMatrix
+    "Program":defaultModules.Program,
+    "ResponseMatrix": defaultModules.ResponseMatrix
 }
 
 pluginPath = os.path.join(os.getcwd(),"plugins")
