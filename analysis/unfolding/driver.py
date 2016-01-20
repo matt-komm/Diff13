@@ -44,6 +44,7 @@ logger = logging.getLogger(__file__)
 
 defaultModules = {
     "Program":defaultModules.Program,
+    "Utils":defaultModules.Utils,
     "ResponseMatrix": defaultModules.ResponseMatrix
 }
 
@@ -63,9 +64,10 @@ def loadModule(name):
     
 for moduleName in options.modules:
     try:
+        logger.info("loading plugin '"+str(moduleName)+"'")
         m = loadModule(moduleName)
         #allow to pass options as modulename:options1:option2:...
-        logger.info("loaded module '"+str(m.__name__)+"'")
+
     except Exception, e:
         logging.error(e)
     
@@ -75,6 +77,7 @@ for m in defaultModules.keys():
     if len(defaultModules[m].__subclasses__())>0:
         logger.info("replacing "+str(defaultModules[m].__name__)+" -> "+str(defaultModules[m].__subclasses__()[-1].__name__))
         defaultModules[m]=defaultModules[m].__subclasses__()[-1]
-    
-responseMatrix = defaultModules["responseMatrix"].get()
+
+program = defaultModules["Program"](defaultModules).execute()
+
     
