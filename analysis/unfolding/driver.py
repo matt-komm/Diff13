@@ -44,6 +44,7 @@ logger = logging.getLogger(__file__)
 
 defaultModules = {
     "Program":defaultModules.Program,
+    "Cache":defaultModules.Cache,
     "Utils":defaultModules.Utils,
     "ResponseMatrix": defaultModules.ResponseMatrix
 }

@@ -8,6 +8,3 @@ class ResponseMatrix_btagging_up(ResponseMatrix):
         ResponseMatrix.__init__(self,defaultModule,options)
         self._defaultModules = defaultModules
         
-    @staticmethod
-    def get():
-        print "derived class",__file__

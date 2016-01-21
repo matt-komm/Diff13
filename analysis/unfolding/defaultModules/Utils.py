@@ -1,3 +1,8 @@
+import re
+import os
+import ROOT
+import random
+
 import logging
 logger = logging.getLogger(__file__)
 
@@ -6,26 +11,58 @@ class Utils(object):
         self._defaultModules = defaultModules
         
     @staticmethod
+    def getBDTCutStr():
+        return "(Reconstructed_1__BDT_adaboost04_minnode001_maxvar2_ntree600_invboost>0.2)"
+        
+    @staticmethod
+    def getLumi():
+        return 2100.0
+        
+    @staticmethod
     def getMCFiles():
-        return []
+        rootFiles = []
+        basedir = "/nfs/user/mkomm/ST13/evaluate25ns"
+        match = re.compile("mc[0-9]+.root")
+        for f in os.listdir(basedir):
+            if match.match(f):
+                rootFiles.append(os.path.join(basedirMC,f))
+        return rootFiles
         
     @staticmethod
     def getDataFiles():
-        return []
+        rootFiles = []
+        basedir = "/nfs/user/mkomm/ST13/evaluate25nsData"
+        match = re.compile("data[0-9]+.root")
+        for f in os.listdir(basedir):
+            if match.match(f):
+                rootFiles.append(os.path.join(basedir,f))
+        return rootFiles
         
     @staticmethod
     def getResponseFiles():
-        return []
+        rootFiles = []
+        basedir = "/nfs/user/mkomm/ST13/response25ns"
+        match = re.compile("selected[0-9]+.root")
+        for f in os.listdir(basedir):
+            if match.match(f):
+                rootFiles.append(os.path.join(basedir,f))
+        return rootFiles
         
     @staticmethod
     def getEfficiencyFiles():
-        return []
+        rootFiles = []
+        basedir = "/nfs/user/mkomm/ST13/response25ns"
+        match = re.compile("efficiency[0-9]+.root")
+        for f in os.listdir(basedir):
+            if match.match(f):
+                rootFiles.append(os.path.join(basedir,f))
+        return rootFiles
         
             
     @staticmethod
     def getHist1D(hist,fileName,processName,variableName,weight):
         hist.SetDirectory(0)
-        rootFile = ROOT.TFile(f)
+        rootFile = ROOT.TFile(fileName)
         tree = rootFile.Get(processName)
         tempHist=hist.Clone()
         tempHist.Scale(0)
@@ -42,7 +79,7 @@ class Utils(object):
     @staticmethod
     def getHist2D(hist,fileName,processName,variableNameX,variableNameY,weight):
         hist.SetDirectory(0)
-        rootFile = ROOT.TFile(f)
+        rootFile = ROOT.TFile(fileName)
         tree = rootFile.Get(processName)
         tempHist=hist.Clone()
         tempHist.Scale(0)
@@ -66,3 +103,17 @@ class Utils(object):
         for ibin in range(hist.GetNbinsX()):
             hist.SetBinError(ibin+1,hist.GetBinError(ibin+1)/hist.GetBinWidth(ibin+1))
             hist.SetBinContent(ibin+1,hist.GetBinContent(ibin+1)/hist.GetBinWidth(ibin+1))
+            
+    @staticmethod
+    def normalizeByTransistionProbability(responseMatrix):
+        responseMatrixSelectedNormalized = responseMatrix.Clone(responseMatrix.GetName()+"Norm")
+
+        for genBin in range(responseMatrixSelectedNormalized.GetNbinsX()):
+            s = 0.0
+            for recoBin in range(responseMatrixSelectedNormalized.GetNbinsY()):
+                s+=responseMatrixSelectedNormalized.GetBinContent(genBin+1,recoBin+1)
+            for recoBin in range(responseMatrixSelectedNormalized.GetNbinsY()):
+                c = responseMatrixSelectedNormalized.GetBinContent(genBin+1,recoBin+1)
+                responseMatrixSelectedNormalized.SetBinContent(genBin+1,recoBin+1,c/s)
+        return responseMatrixSelectedNormalized
+            
