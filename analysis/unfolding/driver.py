@@ -35,17 +35,17 @@ logging.config.dictConfig({
     'loggers': { 
         '': { 
             'handlers': ['default'],
-            'level': 'INFO',
+            'level': 'DEBUG',
             'propagate': True
         },
     }
     
 })
 logger = logging.getLogger(__file__)
+logger.setLevel(logging.DEBUG)
 
 defaultModules = {
     "Program":defaultModules.Program,
-    "Cache":defaultModules.Cache,
     "Utils":defaultModules.Utils,
     "ResponseMatrix": defaultModules.ResponseMatrix,
     "Files":defaultModules.Files
