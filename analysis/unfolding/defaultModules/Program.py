@@ -1,4 +1,5 @@
 import ROOT
+import math
 
 from Module import Module
 
@@ -14,8 +15,31 @@ class Program(Module):
         
         responseMatrix = self.module("ResponseMatrix").getResponseMatrix()
         responseMatrixNorm = self.module("Utils").normalizeByTransistionProbability(responseMatrix)
-        cv = ROOT.TCanvas("cv","",800,600)
+        genHist = responseMatrix.ProjectionX()
+        
+        
+        pseudoData = responseMatrix.ProjectionY("pseudodata")
+        for ibin in range(pseudoData.GetNbinsX()):
+            #print ibin+1,pseudoData.GetBinContent(ibin+1)
+            pseudoData.SetBinError(ibin+1,math.sqrt(2*pseudoData.GetBinContent(ibin+1)))
+            pass
+        
+        unfoldedHist, covariance = self.module("Unfolding").unfold(responseMatrix,pseudoData)
+        
+        
+        cvResponse = ROOT.TCanvas("cvResponse","",800,600)
         responseMatrixNorm.Draw("colz text")
-        cv.Update()
-        cv.WaitPrimitive()
+        
+        
+        cvUnfold = ROOT.TCanvas("cvUnfold","",800,600)
+        
+        #self.module("Utils").normalizeByBinWidth(pseudoData)
+        #self.module("Utils").normalizeByBinWidth(unfoldedHist)
+        #self.module("Utils").normalizeByBinWidth(genHist)
+        unfoldedHist.Draw()
+        
+        genHist.Draw("HISTSame")
+        
+        ROOT.gPad.Update()
+        ROOT.gPad.WaitPrimitive()
         

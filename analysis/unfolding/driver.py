@@ -44,7 +44,6 @@ logging.config.dictConfig({
 logger = logging.getLogger(__file__)
 logger.setLevel(logging.DEBUG)
 
-
 pluginPath = os.path.join(os.getcwd(),"plugins")
 
 def loadModule(name):
@@ -68,7 +67,7 @@ for moduleName in options.modules:
     except Exception, e:
         logging.error(e)
 
-module = defaultModules.Module.Module()
+module = defaultModules.Module()
 program = module.module("Program").execute()
 
     

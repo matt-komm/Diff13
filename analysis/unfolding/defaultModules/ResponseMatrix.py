@@ -19,15 +19,17 @@ class ResponseMatrix(Module):
         return "Generated_1__top_pt"
         
     def getRecoBinning(self):
+        #return numpy.array([0,  15., 30., 37.5, 47.5, 55., 70., 80., 100., 125, 150., 250.,300.])
         #return numpy.array([0, 20., 30., 37.5, 45., 55., 65., 75., 85., 105., 130, 180.,300])
-        return numpy.array([0.,20.,40.,60.,80.,100.,120.,140.,160.,180.,200.,250.,300.])
+        return numpy.array([0.,22.5,45.,60.,75.,95.,110.,140.,160.,180.,200.,250.,300.])
         
     def getGenBinning(self):
+        #return numpy.array([0,   30., 47.5,  70., 100.,  150., 300.])
         #return numpy.array([0,      30.,       45.,      65.,      85.,       130,      300])
-        return numpy.array([0.,    40.,    80.,     120.,     160.,     200.,     300.])
+        return numpy.array([0.,    45.,    75.,     110.,     160.,     200.,     300.])
         
     def getSignalProcessNames(self):
-        return ["ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1_ext_iso"]
+        return ["ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1_ext"]
         
     def buildResponseMatrix(self,responseMatrix, efficiencyHist):
         res = responseMatrix.Clone(responseMatrix.GetName()+"Clone")
@@ -63,7 +65,7 @@ class ResponseMatrix(Module):
                 self.module("Utils").getHist2D(
                     responseMatrixSelected,
                     f,
-                    processName,
+                    processName+"_iso",
                     self.module("ResponseMatrix").getGenUnfoldingVariable(),
                     self.module("ResponseMatrix").getRecoUnfoldingVariable(),
                     recoweight+"*"+cut
@@ -85,6 +87,7 @@ class ResponseMatrix(Module):
                     self.module("ResponseMatrix").getGenUnfoldingVariable(),
                     genweight
                 )
+        print responseMatrixSelected.GetEntries(),efficiencyHist.GetEntries()
 
         return self.module("ResponseMatrix").buildResponseMatrix(responseMatrixSelected,efficiencyHist)
 
