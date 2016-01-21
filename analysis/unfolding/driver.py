@@ -51,6 +51,8 @@ defaultModules = {
     "Files":defaultModules.Files
 }
 
+print defaultModules.Module.__subclasses__()
+
 pluginPath = os.path.join(os.getcwd(),"plugins")
 
 def loadModule(name):
