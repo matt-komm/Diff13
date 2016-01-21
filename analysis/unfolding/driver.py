@@ -44,14 +44,6 @@ logging.config.dictConfig({
 logger = logging.getLogger(__file__)
 logger.setLevel(logging.DEBUG)
 
-defaultModules = {
-    "Program":defaultModules.Program,
-    "Utils":defaultModules.Utils,
-    "ResponseMatrix": defaultModules.ResponseMatrix,
-    "Files":defaultModules.Files
-}
-
-print defaultModules.Module.__subclasses__()
 
 pluginPath = os.path.join(os.getcwd(),"plugins")
 
@@ -75,14 +67,8 @@ for moduleName in options.modules:
 
     except Exception, e:
         logging.error(e)
-    
-for m in defaultModules.keys():
-    if len(defaultModules[m].__subclasses__())>1:
-        logger.warning("multiple subclasses loaded for "+m)
-    if len(defaultModules[m].__subclasses__())>0:
-        logger.info("replacing "+str(defaultModules[m].__name__)+" -> "+str(defaultModules[m].__subclasses__()[-1].__name__))
-        defaultModules[m]=defaultModules[m].__subclasses__()[-1]
 
-program = defaultModules["Program"](defaultModules).execute()
+module = defaultModules.Module.Module()
+program = module.module("Program").execute()
 
     

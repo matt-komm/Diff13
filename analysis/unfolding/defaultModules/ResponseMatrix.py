@@ -7,8 +7,8 @@ import logging
 
 
 class ResponseMatrix(Module):
-    def __init__(self,defaultModules,options=[]):
-        Module.__init__(self,defaultModules,options)
+    def __init__(self,options=[]):
+        Module.__init__(self,options)
         self._logger = logging.getLogger(__file__)
         self._logger.setLevel(logging.DEBUG)
        
