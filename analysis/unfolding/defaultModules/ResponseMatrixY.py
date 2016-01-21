@@ -6,27 +6,32 @@ from Module import Module
 import logging
 
 
-class ResponseMatrix(Module):
+class ResponseMatrixY(Module):
     def __init__(self,options=[]):
         Module.__init__(self,options)
         self._logger = logging.getLogger(__file__)
         self._logger.setLevel(logging.DEBUG)
        
     def getRecoUnfoldingVariable(self):
-        return "SingleTop_1__Top_1__Pt"
+        return "fabs(SingleTop_1__Top_1__y)"
         
     def getGenUnfoldingVariable(self):
-        return "Generated_1__top_pt"
+        return "fabs(Generated_1__top_y)"
         
     def getRecoBinning(self):
-        #return numpy.array([0,  15., 30., 37.5, 47.5, 55., 70., 80., 100., 125, 150., 250.,300.])
-        #return numpy.array([0, 20., 30., 37.5, 45., 55., 65., 75., 85., 105., 130, 180.,300])
-        return numpy.array([0.,22.5,45.,60.,75.,95.,110.,140.,160.,180.,200.,250.,300.])
+        genBinning = self.module("ResponseMatrixY").getGenBinning()
+        b = numpy.zeros(len(genBinning)*2-1)
+        for i in range(len(genBinning)-1):
+            b[2*i]=genBinning[i]
+            b[2*i+1]=0.5*(genBinning[i]+genBinning[i+1])
+        b[-1]=genBinning[-1]
+        return b
+        #return numpy.array([0.0,0.15,0.3,0.45,0.6,0.8,1.0,1.2,1.4,1.6,1.8,2.1,2.4])
         
     def getGenBinning(self):
-        #return numpy.array([0,   30., 47.5,  70., 100.,  150., 300.])
-        #return numpy.array([0,      30.,       45.,      65.,      85.,       130,      300])
-        return numpy.array([0.,    45.,    75.,     110.,     160.,     200.,     300.])
+        return numpy.array([0.0,0.4,0.8,1.2,1.6,2.0,2.4])
+        return numpy.linspace(0,2.4,7)
+        #return numpy.array([0.0,0.3,0.6,1.0,1.5,2.0,2.4])
         
     def getSignalProcessNames(self):
         return ["ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1_ext"]
@@ -53,41 +58,40 @@ class ResponseMatrix(Module):
         self._logger.debug("apply reco weight for response matrix: "+recoweight)
         self._logger.debug("apply cut for response matrix: "+cut)
         
-        recoBinning = self.module("ResponseMatrix").getRecoBinning()
-        genBinning = self.module("ResponseMatrix").getGenBinning()
+        recoBinning = self.module("ResponseMatrixY").getRecoBinning()
+        genBinning = self.module("ResponseMatrixY").getGenBinning()
         
         responseMatrixSelected = ROOT.TH2D("responseSelected",";gen;reco",len(genBinning)-1,genBinning,len(recoBinning)-1,recoBinning)
         efficiencyHist = ROOT.TH1D("efficiencyHist",";gen;",len(genBinning)-1,genBinning)
         
         for f in responseFiles:
-            for processName in self.module("ResponseMatrix").getSignalProcessNames():
+            for processName in self.module("ResponseMatrixY").getSignalProcessNames():
                 
                 self.module("Utils").getHist2D(
                     responseMatrixSelected,
                     f,
                     processName+"_iso",
-                    self.module("ResponseMatrix").getGenUnfoldingVariable(),
-                    self.module("ResponseMatrix").getRecoUnfoldingVariable(),
+                    self.module("ResponseMatrixY").getGenUnfoldingVariable(),
+                    self.module("ResponseMatrixY").getRecoUnfoldingVariable(),
                     recoweight+"*"+cut
                 )
                 self.module("Utils").getHist1D(
                     efficiencyHist,
                     f,
                     processName,
-                    self.module("ResponseMatrix").getGenUnfoldingVariable(),
+                    self.module("ResponseMatrixY").getGenUnfoldingVariable(),
                     recoweight+"*!("+cut+")"
                 )
         
         for f in efficiencyFiles:
-            for processName in self.module("ResponseMatrix").getSignalProcessNames():
+            for processName in self.module("ResponseMatrixY").getSignalProcessNames():
                 self.module("Utils").getHist1D(
                     efficiencyHist,
                     f,
                     processName,
-                    self.module("ResponseMatrix").getGenUnfoldingVariable(),
+                    self.module("ResponseMatrixY").getGenUnfoldingVariable(),
                     genweight
                 )
-        print responseMatrixSelected.GetEntries(),efficiencyHist.GetEntries()
 
-        return self.module("ResponseMatrix").buildResponseMatrix(responseMatrixSelected,efficiencyHist)
+        return self.module("ResponseMatrixY").buildResponseMatrix(responseMatrixSelected,efficiencyHist)
 

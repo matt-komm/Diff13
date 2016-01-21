@@ -13,10 +13,10 @@ class Program(Module):
         
     def execute(self):
         
-        responseMatrix = self.module("ResponseMatrix").getResponseMatrix()
+        responseMatrix = self.module("ResponseMatrixY").getResponseMatrix()
         responseMatrixNorm = self.module("Utils").normalizeByTransistionProbability(responseMatrix)
         genHist = responseMatrix.ProjectionX()
-        
+        genBinning = self.module("ResponseMatrixY").getGenBinning()
         
         pseudoData = responseMatrix.ProjectionY("pseudodata")
         for ibin in range(pseudoData.GetNbinsX()):
@@ -24,7 +24,7 @@ class Program(Module):
             pseudoData.SetBinError(ibin+1,math.sqrt(2*pseudoData.GetBinContent(ibin+1)))
             pass
         
-        unfoldedHist, covariance = self.module("Unfolding").unfold(responseMatrix,pseudoData)
+        unfoldedHist, covariance = self.module("Unfolding").unfold(responseMatrix,pseudoData,genBinning)
         
         
         cvResponse = ROOT.TCanvas("cvResponse","",800,600)
@@ -32,12 +32,11 @@ class Program(Module):
         
         
         cvUnfold = ROOT.TCanvas("cvUnfold","",800,600)
-        
-        #self.module("Utils").normalizeByBinWidth(pseudoData)
+        #pseudoData.Draw()
+
         #self.module("Utils").normalizeByBinWidth(unfoldedHist)
         #self.module("Utils").normalizeByBinWidth(genHist)
         unfoldedHist.Draw()
-        
         genHist.Draw("HISTSame")
         
         ROOT.gPad.Update()

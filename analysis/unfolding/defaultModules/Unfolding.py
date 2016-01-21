@@ -18,7 +18,7 @@ class Unfolding(Module):
         self._logger = logging.getLogger(__file__)
         self._logger.setLevel(logging.DEBUG)
         
-    def unfold(self,responseMatrix,data):
+    def unfold(self,responseMatrix,data,genBinning):
         genHist = responseMatrix.ProjectionX(responseMatrix.GetName()+"genX")
 
         responseMatrixReweighted = responseMatrix.Clone(responseMatrix.GetName()+"Reweighted")
@@ -51,7 +51,6 @@ class Unfolding(Module):
         bestTau = tunfold.scanTau()
         print bestTau
         
-        genBinning = self.module("ResponseMatrix").getGenBinning()
         
         covariance = ROOT.TH2D("correlation","",len(genBinning)-1,genBinning,len(genBinning)-1,genBinning)
         unfoldedHist = ROOT.TH1D("unfoldedHist","",len(genBinning)-1,genBinning)
