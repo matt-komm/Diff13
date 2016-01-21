@@ -24,9 +24,10 @@ logging.config.dictConfig({
             'format': '%(levelname)-10s %(message)s'# [%(name)s:%(lineno)i]'
         },
     },
-    'handlers': { 
+    'handlers': {
         'default': { 
-            'level': 'INFO',
+            #'level': 'INFO',
+            'level': 'DEBUG',
             'class': 'logging.StreamHandler',
             'formatter': 'standard'
         },
@@ -46,7 +47,8 @@ defaultModules = {
     "Program":defaultModules.Program,
     "Cache":defaultModules.Cache,
     "Utils":defaultModules.Utils,
-    "ResponseMatrix": defaultModules.ResponseMatrix
+    "ResponseMatrix": defaultModules.ResponseMatrix,
+    "Files":defaultModules.Files
 }
 
 pluginPath = os.path.join(os.getcwd(),"plugins")

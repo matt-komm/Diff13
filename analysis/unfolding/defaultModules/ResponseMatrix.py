@@ -7,18 +7,8 @@ logger = logging.getLogger(__file__)
 class ResponseMatrix(object):
     def __init__(self,defaultModules,options=[]):
         self._defaultModules = defaultModules
-        
-    def getRecoWeightStr(self):  
-        return self._defaultModules["ResponseMatrix"](self._defaultModules).getGenWeightStr()+"*(Reconstructed_1__PU69000_weight*Reconstructed_1__btagging_nominal)"
-    
-    def getGenWeightStr(self):  
-        return str(self._defaultModules["Utils"].getLumi())+"*mc_weight*((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)"
-    
-    def getCutStr(self):  
-        cut = "(Reconstructed_1__HLT_IsoMu20_v1==1)*(Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==1)"
-        cut +="*"+self._defaultModules["Utils"].getBDTCutStr()
-        return cut
-        
+   
+       
     @staticmethod
     def getRecoUnfoldingVariable():
         return "SingleTop_1__Top_1__Pt"
@@ -50,12 +40,19 @@ class ResponseMatrix(object):
 
         
     def getResponseMatrix(self):  
-        responseFiles = self._defaultModules["Utils"].getResponseFiles()
-        efficiencyFiles = self._defaultModules["Utils"].getEfficiencyFiles()
+        responseFiles = self._defaultModules["Files"].getResponseFiles()
+        efficiencyFiles = self._defaultModules["Files"].getEfficiencyFiles()
         
-        genweight = self._defaultModules["ResponseMatrix"](self._defaultModules).getGenWeightStr()
-        recoweight = self._defaultModules["ResponseMatrix"](self._defaultModules).getRecoWeightStr()
-        cut = self._defaultModules["ResponseMatrix"](self._defaultModules).getCutStr()
+        genweight = self._defaultModules["Utils"](self._defaultModules).getGenWeightStr()
+        recoweight = self._defaultModules["Utils"](self._defaultModules).getRecoWeightStr()
+        cut = self._defaultModules["Utils"].getMTWCutStr()
+        cut += "*"+self._defaultModules["Utils"].getTriggerCutMCStr()
+        cut += "*"+self._defaultModules["Utils"].getCategoryCutStr(2,1)
+        cut += "*"+self._defaultModules["Utils"].getBDTCutStr()
+        
+        logger.debug("apply gen weight for response matrix: "+genweight)
+        logger.debug("apply reco weight for response matrix: "+recoweight)
+        logger.debug("apply cut for response matrix: "+cut)
         
         recoBinning = self._defaultModules["ResponseMatrix"].getRecoBinning()
         genBinning = self._defaultModules["ResponseMatrix"].getGenBinning()

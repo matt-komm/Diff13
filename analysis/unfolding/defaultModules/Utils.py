@@ -7,7 +7,7 @@ import logging
 logger = logging.getLogger(__file__)
 
 class Utils(object):
-    def __init_(self,defaultModules,options=[]):
+    def __init__(self,defaultModules,options=[]):
         self._defaultModules = defaultModules
         
     @staticmethod
@@ -17,6 +17,28 @@ class Utils(object):
     @staticmethod
     def getLumi():
         return 2100.0
+        
+    def getRecoWeightStr(self):
+        return self._defaultModules["Utils"](self._defaultModules).getGenWeightStr()+"*(Reconstructed_1__PU69000_weight*Reconstructed_1__btagging_nominal)"
+    
+    def getGenWeightStr(self):
+        return str(self._defaultModules["Utils"].getLumi())+"*mc_weight*((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)"
+    
+    @staticmethod
+    def getTriggerCutMCStr():
+        return "(Reconstructed_1__HLT_IsoMu20_v1==1)"
+    
+    @staticmethod
+    def getTriggerCutDataStr():
+        return "((Reconstructed_1__HLT_IsoMu20_v2==1)+(Reconstructed_1__HLT_IsoMu20_v3==1))"
+        
+    @staticmethod
+    def getCategoryCutStr(njets,nbtags):
+        return "(Reconstructed_1__nSelectedJet=="+str(njets)+")*(Reconstructed_1__nSelectedBJet=="+str(nbtags)+")"
+        
+    @staticmethod
+    def getMTWCutStr():
+        return "(SingleTop_1__mtw_beforePz>50.0)"
         
     @staticmethod
     def getMCFiles():
