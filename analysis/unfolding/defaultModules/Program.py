@@ -12,9 +12,13 @@ class Program(Module):
         self._logger.setLevel(logging.DEBUG)
         
     def execute(self):
-        
+        self.module("HistogramsForFitting").buildFitModel()
+    
+    
+        '''
         responseMatrix = self.module("ResponseMatrixY").getResponseMatrix()
-        responseMatrixNorm = self.module("Utils").normalizeByTransistionProbability(responseMatrix)
+        self.module("Drawing").drawResponseMatrix(responseMatrix,"top quark |y|","responseY")
+
         genHist = responseMatrix.ProjectionX()
         genBinning = self.module("ResponseMatrixY").getGenBinning()
         
@@ -25,20 +29,11 @@ class Program(Module):
             pass
         
         unfoldedHist, covariance = self.module("Unfolding").unfold(responseMatrix,pseudoData,genBinning)
-        
-        
-        cvResponse = ROOT.TCanvas("cvResponse","",800,600)
-        responseMatrixNorm.Draw("colz text")
-        
-        
-        cvUnfold = ROOT.TCanvas("cvUnfold","",800,600)
-        #pseudoData.Draw()
+
+        self.module("Drawing").drawBiasTest(unfoldedHist,genHist,"top quark |y|","biasY")
+
 
         #self.module("Utils").normalizeByBinWidth(unfoldedHist)
         #self.module("Utils").normalizeByBinWidth(genHist)
-        unfoldedHist.Draw()
-        genHist.Draw("HISTSame")
-        
-        ROOT.gPad.Update()
-        ROOT.gPad.WaitPrimitive()
+        '''
         

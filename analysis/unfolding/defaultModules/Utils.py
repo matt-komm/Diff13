@@ -34,8 +34,14 @@ class Utils(Module):
     def getCategoryCutStr(self,njets,nbtags):
         return "(Reconstructed_1__nSelectedJet=="+str(njets)+")*(Reconstructed_1__nSelectedBJet=="+str(nbtags)+")"
         
+    def getMTWCutValue(self):
+        return 50.0
+        
     def getMTWCutStr(self):
-        return "(SingleTop_1__mtw_beforePz>50.0)"
+        return "(SingleTop_1__mtw_beforePz>"+str(self.module("Utils").getMTWCutValue())+")"
+        
+    def getRecoSamplePrefix(self):
+        return "_iso"
         
             
     def getHist1D(self,hist,fileName,processName,variableName,weight):
