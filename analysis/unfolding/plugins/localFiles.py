@@ -1,13 +1,12 @@
 import re
 import os
-from defaultModules import Files
+from defaultModules import Module
 
 import logging
 
-class LocalFiles(Files):
+class LocalFiles(Module.getClass("Files")):
     def __init_(self,defaultModules,options=[]):
-        Utils.__init__(self,defaultModules,options)
-        self._defaultModules = defaultModules
+        Module.getClass("Files").__init__(self,defaultModules,options)
         self._logger = logging.getLogger(__file__)
         self._logger.setLevel(logging.DEBUG)
         
@@ -50,4 +49,5 @@ class LocalFiles(Files):
                 rootFiles.append(os.path.join(basedir,f))
         self._logger.debug("efficiency files ("+str(len(rootFiles))+") found in "+basedir)
         return rootFiles
-    
+
+

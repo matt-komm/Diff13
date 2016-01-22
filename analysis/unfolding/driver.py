@@ -46,28 +46,18 @@ logger.setLevel(logging.DEBUG)
 
 pluginPath = os.path.join(os.getcwd(),"plugins")
 
-def loadModule(name):
-    filePath = None
-    for f in os.listdir(pluginPath):
-        if f==name+".py":
-            filePath = os.path.join(pluginPath,f)
-            break
-    
-    if filePath==None:
-        raise Exception("Module '"+name+"' cannot be located!")
-    module = imp.load_source(name, filePath)
-    return module
+module = defaultModules.Module()
     
 for moduleName in options.modules:
     try:
         logger.info("loading plugin '"+str(moduleName)+"'")
-        m = loadModule(moduleName)
+        module.loadModule(moduleName,pluginPath)
         #allow to pass options as modulename:options1:option2:...
 
     except Exception, e:
         logging.error(e)
 
-module = defaultModules.Module()
+
 program = module.module("Program").execute()
 
     
