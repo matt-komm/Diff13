@@ -134,6 +134,9 @@ class ThetaModel(Module):
         observables = self.module("ThetaModel").getObservablesDict()
         components = self.module("ThetaModel").getComponentsDict()
         
+        rootFilesMC = self.module("Files").getMCFiles()
+        rootFilesData = self.module("Files").getDataFiles()
+        
         for uncertaintyName in uncertainties.keys():
             uncertainties[uncertaintyName]["dist"]=Distribution(uncertaintyName, uncertainties[uncertaintyName]["type"], uncertainties[uncertaintyName]["config"])
             file.write(uncertainties[uncertaintyName]["dist"].toConfigString())
@@ -161,7 +164,7 @@ class ThetaModel(Module):
                     for processName in sampleDict["processes"]:
                         processWeight = sampleDict["weight"]
                         
-                        for i,f in enumerate(rootFiles):
+                        for i,f in enumerate(rootFilesMC):
                             rootFile = ROOT.TFile(f)
                             tree = rootFile.Get(processName)
                             if (tree):
@@ -209,7 +212,7 @@ class ThetaModel(Module):
                     for processName in sampleDict["processes"]:
                         processWeight = sampleDict["weight"]
                         
-                        for i,f in enumerate(rootFiles):
+                        for i,f in enumerate(rootFilesData):
                             rootFile = ROOT.TFile(f)
                             tree = rootFile.Get(processName)
                             if (tree):
