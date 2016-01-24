@@ -83,8 +83,11 @@ class Prediction
 {
     public:
         std::vector<double> entries;
+        std::vector<double> uncertainty2;
+        
         Prediction(unsigned int N):
-            entries(N)
+            entries(N,0),
+            uncertainty2(N,0)
         {
         }
         Prediction& operator+=(const Prediction& p)
@@ -93,9 +96,14 @@ class Prediction
             {
                 throw std::runtime_error("attempting to add predictions with different sizes");
             }
+            if (uncertainty2.size()!=p.uncertainty2.size())
+            {
+                throw std::runtime_error("attempting to add predictions with different sizes");
+            }
             for (unsigned int i = 0; i < entries.size(); ++i)
             {
                 entries[i]+=p.entries[i];
+                uncertainty2[i]+=p.uncertainty2[i];
             }
             return *this;
         }
@@ -109,6 +117,7 @@ class Prediction
             for (unsigned int i = 0; i < entries.size(); ++i)
             {
                 hist->SetBinContent(i+1,entries[i]);
+                hist->SetBinError(i+1,std::sqrt(uncertainty2[i]));
             }
         }
         
@@ -175,6 +184,7 @@ class ConstShapeComponent:
             for (unsigned int i = 0; i < p->entries.size(); ++i)
             {
                 p->entries[i]+=combinedSF*_hist->GetBinContent(i+1);
+                p->uncertainty2[i]+=combinedSF*combinedSF*_hist->GetBinError(i+1)*_hist->GetBinError(i+1);
             }
             
             
@@ -251,7 +261,55 @@ class Observable
         {
         }
         
-    ClassDef(PyFit::Observable, 1)
+    
+};
+
+
+class ObservableBB:
+    public Observable
+{
+    public:
+        ObservableBB():
+            Observable()
+        {
+        }
+        
+        double nll(TH1* data, std::vector<double> lambda)
+        {   
+            Prediction prediction(data->GetNbinsX());
+            this->getPrediction(&prediction);
+            
+            double nll = 0;
+            for ( int ibin = 0; ibin < data->GetNbinsX(); ++ibin)
+            {
+                const double d = data->GetBinContent(ibin+1);
+                const double bb = TMath::Gaus(lambda[ibin],0,std::sqrt(prediction.uncertainty2[ibin]));
+                const double p = prediction.entries[ibin]+bb;
+                
+                nll-=std::log(bb);
+                
+                //using log of poisson distribution: x*log(lambda)-lambda
+                //skip bins with no prediction
+                if (p > 0.0)
+                {
+                     if (d > 0.0)
+                     {
+                         nll -= d * std::log(p)-p;
+                     }
+                 }
+                 else if (d > 0.0)
+                 {
+                     return std::numeric_limits<double>::max();
+                 }
+            }
+            return nll;
+        }
+        
+        virtual ~ObservableBB()
+        {
+        }
+        
+        ClassDef(PyFit::ObservableBB, 1);
 };
         
 class MLFit
@@ -344,6 +402,106 @@ class MLFit
         }
         
     ClassDef(MLFit, 1)
+};
+
+
+class MLFitBB
+{
+    private:
+        std::vector<std::pair<PyFit::ObservableBB*,TH1*>> _observableDataPairs; //!
+        std::vector<PyFit::Parameter*> _parameters;
+        
+    public:
+        MLFitBB()
+        {
+        }
+        
+        void addObservable(PyFit::ObservableBB* observable, TH1* data)
+        {
+            _observableDataPairs.push_back(std::make_pair(observable,data));
+        }
+        
+        void addParameter(PyFit::Parameter* parameter)
+        {
+            _parameters.push_back(parameter);
+        }
+        
+        double globalNll() const
+        {
+            double nll = 0.0;
+            for (auto par: _parameters)
+            {
+                nll+=par->nll();
+            }
+            
+            for (auto pair: _observableDataPairs)
+            {
+                //nll+=pair.first->nll(pair.second);
+            }
+            
+            return nll;
+        }
+        
+        void minimize()
+        {
+            // Choose method upon creation between:
+            // kMigrad, kSimplex, kCombined, 
+            // kScan, kFumili
+            ROOT::Minuit2::Minuit2Minimizer min ( ROOT::Minuit2::kMigrad );
+
+            min.SetMaxFunctionCalls(1000000);
+            min.SetMaxIterations(100000);
+            min.SetTolerance(0.001);
+            
+            int bbParameters = 0;
+            for (auto pair: _observableDataPairs)
+            {
+                bbParameters+=pair.second->GetNbinsX();
+            }
+
+            ROOT::Math::Functor f(
+                [&](const double *x) -> double 
+                {
+                    for (unsigned int ipar = 0; ipar < _parameters.size(); ++ipar)
+                    {
+                        _parameters[ipar]->setScaleFactor(x[ipar]);
+                    }
+                    
+                    
+                    return 2*this->globalNll(); //chi2 = 2*NLL so that the uncertainty is correctly estimated
+                },
+                _parameters.size()+bbParameters
+            ); 
+
+            min.SetFunction(f);
+
+            // Set the free variables to be minimized!
+            for (unsigned int ipar = 0; ipar < _parameters.size(); ++ipar)
+            {
+                min.SetVariable(
+                    ipar,
+                    _parameters[ipar]->getName().c_str(),
+                    _parameters[ipar]->getScaleFactor(), 
+                    0.01
+                );
+            }
+            //min.SetVariable(1,"y",variable[1], step[1]);
+
+            min.Minimize(); 
+
+            for (unsigned int ipar = 0; ipar < _parameters.size(); ++ipar)
+            {
+                _parameters[ipar]->setScaleFactor(min.X()[ipar]);
+                std::cout<<_parameters[ipar]->getName()<<": "<<min.X()[ipar]<<" +- "<<min.Errors()[ipar]<<std::endl;
+            }
+
+        }
+        
+        virtual ~MLFitBB()
+        {
+        }
+        
+    ClassDef(MLFitBB, 1)
 };
 
 }
