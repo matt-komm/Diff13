@@ -128,9 +128,10 @@ class ThetaModel(Module):
     
     def makeModel(self,name="fit",pseudo=False):
         self._logger.info("Creating model: "+name)
+        
         histograms={}
     
-        file = open(name+".cfg","w")
+        file = open(os.path.join(self.module("Utils").getOutputFolder(),name+".cfg"),"w")
         
         model=Model(name, {"bb_uncertainties":"true"})
         
@@ -333,7 +334,7 @@ class ThetaModel(Module):
         file.write('    model="@'+model.getVarname()+'";\n')
         file.write('    output_database={\n')
         file.write('        type="rootfile_database";\n')
-        file.write('        filename="'+name+'.root";\n')
+        file.write('        filename="'+os.path.join(self.module("Utils").getOutputFolder(),name+'.root')+'";\n')
         file.write('    };\n')
         file.write('    producers=("@pd"\n')
         file.write('    );\n')

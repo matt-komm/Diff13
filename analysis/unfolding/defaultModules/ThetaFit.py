@@ -12,8 +12,9 @@ class ThetaFit(Module):
         self._logger.setLevel(logging.DEBUG)
         
     def run(self,cfgFile="fit.cfg"):
-        self._logger.info("run fit model: "+cfgFile)
-        p = subprocess.Popen(["theta", cfgFile],
+        fullPath = os.path.join(self.module("Utils").getOutputFolder(),cfgFile)
+        self._logger.info("run fit model: "+fullPath)
+        p = subprocess.Popen(["theta", fullPath],
             #shell=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -28,8 +29,9 @@ class ThetaFit(Module):
 
         
     def readFitResult(self,rootFile="fit.root",modelName="fit"):
-        self._logger.info("read fit result: "+rootFile)
-        f = ROOT.TFile(rootFile)
+        fullPath = os.path.join(self.module("Utils").getOutputFolder(),rootFile)
+        self._logger.info("read fit result: "+fullPath)
+        f = ROOT.TFile(fullPath)
         tree = f.Get("products")
         tree.GetEntry(0)
         

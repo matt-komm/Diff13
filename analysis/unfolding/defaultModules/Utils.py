@@ -13,6 +13,17 @@ class Utils(Module):
         self._logger = logging.getLogger(__file__)
         self._logger.setLevel(logging.DEBUG)
         
+    def getOutputFolder(self):
+        return "/home/fynu/mkomm/Diff13/analysis/unfolding/result/nominal"
+        
+    def createOutputFolder(self,force=False):
+        if os.exists(self.module("Utils").getOutputFolder() and not force):
+            self._logger.warning("Output folder already exists!")
+        elif os.exists(self.module("Utils").getOutputFolder() and force):
+            self._logger.info("Recreating output folder")
+            shutil.rmtree(self.module("Utils").getOutputFolder())
+        os.makedirs(self.module("Utils").getOutputFolder())
+        
     def getBDTCutStr(self):
         return "(Reconstructed_1__BDT_adaboost04_minnode001_maxvar2_ntree600_invboost>0.2)"
         

@@ -37,7 +37,10 @@ class Program(Module):
         #self.module("Utils").normalizeByBinWidth(genHist)
         '''
         
+        self.module("Utils").createOutputFolder()
+        
         self.module("ThetaModel").makeModel(pseudo=True)
+        #self.module("ThetaModel").makeModel()
         self.module("ThetaFit").run()
         result = self.module("ThetaFit").readFitResult()
         self.module("ThetaFit").plotCorrelations(result["cov"])
