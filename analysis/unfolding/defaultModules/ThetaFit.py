@@ -4,6 +4,8 @@ import logging
 import ROOT
 import subprocess
 import math
+import os
+import csv
 
 class ThetaFit(Module):
     def __init__(self,options=[]):
@@ -48,10 +50,27 @@ class ThetaFit(Module):
         result["cov"]= getattr(tree,modelName+"__covariance").Clone("covariance")
         result["cov"].SetDirectory(0)
         f.Close()
+        
+        csvFileName = os.path.join(self.module("Utils").getOutputFolder(),"fitresult.csv")
+        self._logger.info("write fit result csv: "+csvFileName)
+        outputFile = open(csvFileName, 'wb')
+        writer = csv.DictWriter(
+            outputFile, 
+            ["sys","mean","unc"], 
+            restval='NAN', 
+            extrasaction='raise', 
+            dialect='excel', 
+            quoting=csv.QUOTE_NONNUMERIC
+        )
+        writer.writeheader()
+        for unc in uncertainties.keys():
+            writer.writerow({"sys":unc,"mean":result[unc]["mean"],"unc":result[unc]["unc"]})
+        outputFile.close()
+        
         return result
         
         
-    def plotCorrelations(self,covariance):
+    def getCorrelations(self,covariance):
         uncertainties = self.module("ThetaModel").getUncertaintsDict()
         
         corr = ROOT.TH2D("correlations","",len(uncertainties.keys()),0,len(uncertainties.keys()),len(uncertainties.keys()),0,len(uncertainties.keys()))
@@ -71,12 +90,8 @@ class ThetaFit(Module):
             corr.GetXaxis().SetBinLabel(ibin+1,uncertainties.keys()[ibin])
             corr.GetYaxis().SetBinLabel(ibin+1,uncertainties.keys()[ibin])
         
-        corr.SetMarkerSize(1)
-        cv = ROOT.TCanvas("cvCorrelations","",800,700)
-        corr.Draw("colz text")
-        
-        cv.Update()
-        cv.WaitPrimitive()
+        return corr
+
         
         
         

@@ -14,7 +14,6 @@ class Program(Module):
     def execute(self):
         #self.module("HistogramsForFitting").buildFitModel()
     
-    
         '''
         responseMatrix = self.module("ResponseMatrixY").getResponseMatrix()
         self.module("Drawing").drawResponseMatrix(responseMatrix,"top quark |y|","responseY")
@@ -39,9 +38,11 @@ class Program(Module):
         
         self.module("Utils").createOutputFolder()
         
-        self.module("ThetaModel").makeModel(pseudo=True)
+        self.module("ThetaModel").makeModel(pseudo=False)
         #self.module("ThetaModel").makeModel()
         self.module("ThetaFit").run()
         result = self.module("ThetaFit").readFitResult()
-        self.module("ThetaFit").plotCorrelations(result["cov"])
+        correlations = self.module("ThetaFit").getCorrelations(result["cov"])
+        self.module("Drawing").drawFitCorrelation(correlations)
+        
         

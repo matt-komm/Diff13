@@ -1,5 +1,6 @@
 import logging
 import ROOT
+import os
 from Module import Module
 
 class Drawing(Module):
@@ -75,5 +76,39 @@ class Drawing(Module):
         
         cvUnfold.Print(outputName+".png")
         cvUnfold.Print(outputName+".pdf")
+        
+    def drawFitCorrelation(self,covariance):
+        cvCovariance = ROOT.TCanvas("cvCorrelations","",800,700)
+        cvCovariance.SetRightMargin(0.17)
+        cvCovariance.SetLeftMargin(0.165)
+        covariance.SetMarkerSize(1.2)
+        
+        covariance.GetXaxis().SetTitleOffset(1.3)
+        covariance.GetZaxis().SetTitle("correlation")
+        covariance.Draw("colz text")
+        
+        pCMS=ROOT.TPaveText(1-cvCovariance.GetRightMargin()-0.25,0.94,1-cvCovariance.GetRightMargin()-0.25,0.94,"NDC")
+        pCMS.SetFillColor(ROOT.kWhite)
+        pCMS.SetBorderSize(0)
+        pCMS.SetTextFont(63)
+        pCMS.SetTextSize(30)
+        pCMS.SetTextAlign(11)
+        pCMS.AddText("CMS")
+        pCMS.Draw("Same")
+        
+        pPreliminary=ROOT.TPaveText(1-cvCovariance.GetRightMargin()-0.165,0.94,1-cvCovariance.GetRightMargin()-0.165,0.94,"NDC")
+        pPreliminary.SetFillColor(ROOT.kWhite)
+        pPreliminary.SetBorderSize(0)
+        pPreliminary.SetTextFont(53)
+        pPreliminary.SetTextSize(30)
+        pPreliminary.SetTextAlign(11)
+        pPreliminary.AddText("Preliminary")
+        pPreliminary.Draw("Same")
+        
+        cvCovariance.Print(os.path.join(self.module("Utils").getOutputFolder(),"fitCorrelations.pdf"))
+        cvCovariance.Print(os.path.join(self.module("Utils").getOutputFolder(),"fitCorrelations.png"))
+        
+        cvCovariance.Update()
+        cvCovariance.WaitPrimitive()
         
 

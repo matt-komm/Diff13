@@ -2,7 +2,7 @@ import re
 import os
 import ROOT
 import random
-
+import shutil
 from Module import Module
 
 import logging
@@ -17,15 +17,17 @@ class Utils(Module):
         return "/home/fynu/mkomm/Diff13/analysis/unfolding/result/nominal"
         
     def createOutputFolder(self,force=False):
-        if os.exists(self.module("Utils").getOutputFolder() and not force):
+        if os.path.exists(self.module("Utils").getOutputFolder()) and not force:
             self._logger.warning("Output folder already exists!")
-        elif os.exists(self.module("Utils").getOutputFolder() and force):
-            self._logger.info("Recreating output folder")
+        elif os.path.exists(self.module("Utils").getOutputFolder()) and force:
+            self._logger.info("delete existing output folder")
             shutil.rmtree(self.module("Utils").getOutputFolder())
-        os.makedirs(self.module("Utils").getOutputFolder())
+        if not os.path.exists(self.module("Utils").getOutputFolder()):
+            self._logger.info("creating output folder")
+            os.makedirs(self.module("Utils").getOutputFolder())
         
     def getBDTCutStr(self):
-        return "(Reconstructed_1__BDT_adaboost04_minnode001_maxvar2_ntree600_invboost>0.2)"
+        return "(Reconstructed_1__BDT_adaboost04_minnode001_maxvar3_ntree1000_invboost_binned>0.2)"
         
     def getLumi(self):
         return 2100.0

@@ -13,7 +13,7 @@ import ROOT
 from optparse import OptionParser
 
 ROOT.gROOT.Reset()
-#ROOT.gROOT.SetBatch(True)
+ROOT.gROOT.SetBatch(True)
 ROOT.gStyle.SetOptStat(0)
 ROOT.gStyle.SetOptFit(0)
 ROOT.gROOT.Reset()
