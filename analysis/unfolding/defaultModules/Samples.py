@@ -67,8 +67,8 @@ class Samples(Module):
         
     def getSample(self,name):
         syst = self.module("Utils").getRecoSamplePrefix()
-        mcweight = self.module("Utils").getRecoWeightStr()
-        dataweight = self.module("Utils").getTriggerCutDataStr()
+        mcweight = self.module("Utils").getRecoWeightStr()+"*"+self.module("Utils").getTriggerCutMCStr()
+        dataweight = "1"
         sampleDict = {
             "tChannel":
             {
@@ -167,7 +167,7 @@ class Samples(Module):
                 ],
                 "color":ROOT.gROOT.GetColor(ROOT.kBlack),
                 "title":"Data",
-                "weight":dataweight+"*"+self.module("Samples").getQCDIsoCutStr()
+                "weight":"((Reconstructed_1__HLT_IsoMu20_v2==1)+(Reconstructed_1__HLT_IsoMu20_v3==1))*"+dataweight+"*"+self.module("Samples").getQCDIsoCutStr()
             },
             
             "data2_antiiso":
@@ -177,7 +177,7 @@ class Samples(Module):
                 ],
                 "color":ROOT.gROOT.GetColor(ROOT.kBlack),
                 "title":"Data",
-                "weight":dataweight+"*"+self.module("Samples").getQCDIsoCutStr()
+                "weight":"(Reconstructed_1__HLT_IsoMu20_v3==1)*"+dataweight+"*"+self.module("Samples").getQCDIsoCutStr()
             },
             
             "data1":
@@ -187,7 +187,7 @@ class Samples(Module):
                 ],
                 "color":ROOT.gROOT.GetColor(ROOT.kBlack),
                 "title":"Data",
-                "weight":dataweight
+                "weight":"((Reconstructed_1__HLT_IsoMu20_v2==1)+(Reconstructed_1__HLT_IsoMu20_v3==1))*"+dataweight
             },
             
             "data2":
@@ -197,7 +197,7 @@ class Samples(Module):
                 ],
                 "color":ROOT.gROOT.GetColor(ROOT.kBlack),
                 "title":"Data",
-                "weight":dataweight
+                "weight":"(Reconstructed_1__HLT_IsoMu20_v3==1)*"+dataweight
             }
         }
         return sampleDict[name]

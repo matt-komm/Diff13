@@ -23,13 +23,10 @@ class Utils(Module):
         return self.module("Utils").getGenWeightStr()+"*(Reconstructed_1__PU69000_weight*Reconstructed_1__btagging_nominal)"
     
     def getGenWeightStr(self):
-        return str(self.module("Utils").getLumi())+"*mc_weight*((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)"
+        return str(self.module("Utils").getLumi())+"*mc_weight/0.7*((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)"
     
     def getTriggerCutMCStr(self):
         return "(Reconstructed_1__HLT_IsoMu20_v1==1)"
-    
-    def getTriggerCutDataStr(self):
-        return "((Reconstructed_1__HLT_IsoMu20_v2==1)+(Reconstructed_1__HLT_IsoMu20_v3==1))"
 
     def getCategoryCutStr(self,njets,nbtags):
         return "(Reconstructed_1__nSelectedJet=="+str(njets)+")*(Reconstructed_1__nSelectedBJet=="+str(nbtags)+")"
@@ -41,7 +38,7 @@ class Utils(Module):
         return "(SingleTop_1__mtw_beforePz>"+str(self.module("Utils").getMTWCutValue())+")"
         
     def getRecoSamplePrefix(self):
-        return "_iso"
+        return ""
         
             
     def getHist1D(self,hist,fileName,processName,variableName,weight):

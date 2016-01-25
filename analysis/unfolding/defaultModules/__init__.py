@@ -9,4 +9,5 @@ from Drawing import Drawing
 from HistogramsForFitting import HistogramsForFitting
 from Samples import Samples
 from ThetaModel import ThetaModel
+from ThetaFit import ThetaFit
 

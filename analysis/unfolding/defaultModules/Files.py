@@ -19,7 +19,7 @@ class Files(Module):
         match = re.compile("mc[0-9]+.root")
         for f in os.listdir(basedir):
             if match.match(f):
-                rootFiles.append(os.path.join(basedirMC,f))
+                rootFiles.append(os.path.join(basedir,f))
         self._logger.debug("mc files ("+str(len(rootFiles))+") found in "+basedir)
         return rootFiles
         

@@ -12,7 +12,7 @@ class Program(Module):
         self._logger.setLevel(logging.DEBUG)
         
     def execute(self):
-        self.module("HistogramsForFitting").buildFitModel()
+        #self.module("HistogramsForFitting").buildFitModel()
     
     
         '''
@@ -36,4 +36,9 @@ class Program(Module):
         #self.module("Utils").normalizeByBinWidth(unfoldedHist)
         #self.module("Utils").normalizeByBinWidth(genHist)
         '''
+        
+        self.module("ThetaModel").makeModel(pseudo=True)
+        self.module("ThetaFit").run()
+        result = self.module("ThetaFit").readFitResult()
+        self.module("ThetaFit").plotCorrelations(result["cov"])
         

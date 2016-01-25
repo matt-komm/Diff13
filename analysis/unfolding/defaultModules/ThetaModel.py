@@ -5,10 +5,13 @@ import pyTool
 import random
 import logging
 import ROOT
+import os
 
 class ThetaModel(Module):
     def __init__(self,options=[]):
         Module.__init__(self,options)
+        self._logger = logging.getLogger(__file__)
+        self._logger.setLevel(logging.DEBUG)
 
         
     def getUncertaintsDict(self):
@@ -19,11 +22,10 @@ class ThetaModel(Module):
             #"LF":{"type":"gauss","config":{"mean": "1.0", "width":"0.3", "range":"(0.0,\"inf\")"}},
             "topbg":{"type":"gauss","config":{"mean": "1.0", "width":"0.3", "range":"(0.0,\"inf\")"}},
             "tChan":{"type":"gauss","config":{"mean": "1.0", "width":"1.0", "range":"(0.0,\"inf\")"}},
-            "qcd_2j1t":{"type":"gauss","config":{"mean": "1.0", "width":"1.0", "range":"(0.0,\"inf\")"}},
-            "qcd_3j1t":{"type":"gauss","config":{"mean": "1.0", "width":"1.0", "range":"(0.0,\"inf\")"}},
-            "qcd_3j2t":{"type":"gauss","config":{"mean": "1.0", "width":"1.0", "range":"(0.0,\"inf\")"}},
+            "qcd_2j1t":{"type":"gauss","config":{"mean": "0.15", "width":"1.0", "range":"(0.0,\"inf\")"}},
+            "qcd_3j1t":{"type":"gauss","config":{"mean": "0.15", "width":"1.0", "range":"(0.0,\"inf\")"}},
+            "qcd_3j2t":{"type":"gauss","config":{"mean": "0.15", "width":"1.0", "range":"(0.0,\"inf\")"}},
             
-            "forward":{"type":"gauss","config":{"mean": "1.0", "width":"0.00001", "range":"(0.0,\"inf\")"}},
             #"lumi":{"type":"gauss","config":{"mean": "1.0", "width":"0.1", "range":"(0.0,\"inf\")"}}
         }
         return uncertainties
@@ -55,7 +57,7 @@ class ThetaModel(Module):
         return 30
         
     def getRange(self):
-        return [0,200]
+        return [0.0,200.0]
         
     def getFitVariableStr(self):
         return "(SingleTop_1__mtw_beforePz<50.0)*SingleTop_1__mtw_beforePz+(SingleTop_1__mtw_beforePz>50.0)*(Reconstructed_1__BDT_adaboost04_minnode001_maxvar3_ntree1000_invboost_binned*75.0+75.0+50.0)"
@@ -124,18 +126,26 @@ class ThetaModel(Module):
         }
         return data
     
-    def makeModel(self,fileName="fit.cfg"):
-        file = open(fileName,"w")
+    def makeModel(self,name="fit",pseudo=False):
+        self._logger.info("Creating model: "+name)
+        histograms={}
+    
+        file = open(name+".cfg","w")
         
-        model=Model("fit", {"bb_uncertainties":"true"})
+        model=Model(name, {"bb_uncertainties":"true"})
         
         
         uncertainties = self.module("ThetaModel").getUncertaintsDict()
         observables = self.module("ThetaModel").getObservablesDict()
         components = self.module("ThetaModel").getComponentsDict()
         
-        rootFilesMC = self.module("Files").getMCFiles()
-        rootFilesData = self.module("Files").getDataFiles()
+        varName = self.module("ThetaModel").getFitVariableStr()
+        binning = self.module("ThetaModel").getBinning()
+        ranges = self.module("ThetaModel").getRange()
+        
+        
+        rootFiles = self.module("Files").getMCFiles()
+        rootFiles+=self.module("Files").getDataFiles()
         
         for uncertaintyName in uncertainties.keys():
             uncertainties[uncertaintyName]["dist"]=Distribution(uncertaintyName, uncertainties[uncertaintyName]["type"], uncertainties[uncertaintyName]["config"])
@@ -149,24 +159,29 @@ class ThetaModel(Module):
             
             histograms[observableName]={}
             
+            
             for componentName in components.keys():
                 componentWeight = components[componentName]["weight"]
                 componentUncertainties = components[componentName]["uncertainties"]
                 
                 componentHist = ROOT.TH1F("hist_"+observableName+"_"+componentName+"_"+str(random.random()),";"+varName+";Events",binning,ranges[0],ranges[1])
+                componentHist.SetDirectory(0)
                 componentHist.Sumw2()
                 componentHist.SetFillColor(components[componentName]["color"])
                 componentHist.SetLineColor(components[componentName]["color"])
                 histograms[observableName][componentName] = componentHist
+
+                self._logger.debug("Creating model: "+observableName+" "+componentName)
                 
                 for componentSetName in components[componentName]["sets"]:
                     sampleDict = self.module("Samples").getSample(componentSetName)
                     for processName in sampleDict["processes"]:
                         processWeight = sampleDict["weight"]
-                        
-                        for i,f in enumerate(rootFilesMC):
+
+                        for i,f in enumerate(rootFiles):
                             rootFile = ROOT.TFile(f)
                             tree = rootFile.Get(processName)
+                            
                             if (tree):
                                 component=ObservableComponent(observableName+"__"+componentName+"__"+componentSetName+"__"+processName+"__"+str(i))
                                 coeff=CoefficientMultiplyFunction()
@@ -185,53 +200,63 @@ class ThetaModel(Module):
                                 component.setNominalHistogram(hist)
                                 
                                 observable.addComponent(component)
-                                #getHist(f,processName,varName,observableWeight+"*"+componentWeight+"*"+processWeight,componentHist)
+                                
+                                #self.module("Utils").getHist1D(componentHist,f,processName,varName,observableWeight+"*"+componentWeight+"*"+processWeight)
+                        
                                 
                                 break
                             rootFile.Close()
 
-                    
 
             model.addObservable(observable)
 
 
+            if not pseudo:
+                histoadd = HistoAdd(observableName+"__data")
+                data = self.module("ThetaModel").getDataDict()
+                for componentName in data.keys():
+                    componentWeight=data[componentName]["weight"]
+                    
+                    componentHist = ROOT.TH1F("hist_"+observableName+"_"+componentName+"_"+str(random.random()),";"+varName+";Events",binning,ranges[0],ranges[1])
+                    componentHist.SetDirectory(0)
+                    componentHist.Sumw2()
+                    componentHist.SetMarkerStyle(20)
+                    componentHist.SetMarkerSize(0.8)
+                    histograms[observableName][componentName] = componentHist
+                    
+                    self._logger.debug("Creating model: "+observableName+" "+componentName)
+                    
+                    for componentSetName in data[componentName]["sets"]:
+                        sampleDict = self.module("Samples").getSample(componentSetName)
+                        for processName in sampleDict["processes"]:
+                            processWeight = sampleDict["weight"]
+                            
+                            #print observableName,componentName,componentSetName#,observableWeight+"*"+componentWeight+"*"+processWeight
+                            
+                            for i,f in enumerate(rootFiles):
+                                rootFile = ROOT.TFile(f)
+                                tree = rootFile.Get(processName)
+                                if (tree):
+                                    hist=RootProjectedHistogram(observableName+"__"+componentName+"__"+componentSetName+"__"+processName+"__"+str(i),{"use_errors":"true"})
+                                    hist.setFileName(f)
+                                    hist.setVariableString(varName)
+                                    hist.setWeightString(observableWeight+"*"+componentWeight+"*"+processWeight)
+                                    hist.setTreeName(processName)
+                                    hist.setBinning(binning)
+                                    hist.setRange(ranges)
+                                    file.write(hist.toConfigString())
+                                    histoadd.addHisto(hist.getVarname())
+                                    
+                                    #self.module("Utils").getHist1D(componentHist,f,processName,varName,observableWeight+"*"+componentWeight+"*"+processWeight)
+                                    
+                                    break
+                                    
+                                rootFile.Close()
 
-            histoadd = HistoAdd(observableName+"__data")
-            data = self.module("ThetaModel").getDataDict()
-            for componentName in data.keys():
-                componentWeight=data[componentName]["weight"]
-                
-                componentHist = ROOT.TH1F("hist_"+observableName+"_"+componentName+"_"+str(random.random()),";"+varName+";Events",binning,ranges[0],ranges[1])
-                componentHist.Sumw2()
-                componentHist.SetMarkerStyle(20)
-                componentHist.SetMarkerSize(0.8)
-                histograms[observableName][componentName] = componentHist
-                
-                for componentSetName in data[componentName]["sets"]:
-                    sampleDict = self.module("Samples").getSample(componentSetName)
-                    for processName in sampleDict["processes"]:
-                        processWeight = sampleDict["weight"]
-                        
-                        for i,f in enumerate(rootFilesData):
-                            rootFile = ROOT.TFile(f)
-                            tree = rootFile.Get(processName)
-                            if (tree):
-                                hist=RootProjectedHistogram(observableName+"__"+componentName+"__"+componentSetName+"__"+processName+"__"+str(i),{"use_errors":"true"})
-                                hist.setFileName(f)
-                                hist.setVariableString(varName)
-                                hist.setWeightString(observableWeight+"*"+componentWeight+"*"+processWeight)
-                                hist.setTreeName(processName)
-                                hist.setBinning(binning)
-                                hist.setRange(ranges)
-                                file.write(hist.toConfigString())
-                                histoadd.addHisto(hist.getVarname())
-                                
-                                #getHist(f,processName,varName,observableWeight+"*"+componentWeight+"*"+processWeight,componentHist)
-                                break
-                                
-                            rootFile.Close()
+                file.write(histoadd.toConfigString())
             
-            file.write(histoadd.toConfigString())
+            
+            
 
                             
         file.write(model.toConfigString())
@@ -272,51 +297,50 @@ class ThetaModel(Module):
         file.write('};\n')
 
         file.write('main={\n')
-
-        file.write('    data_source={\n')
-        file.write('        type="histo_source";\n')
-        file.write('        name="data";\n')
-
-        #file.write('        obs_1j="@histoadd_1j__data";\n')
-        #file.write('        obs_2j0t="@histoadd_2j0t__data";\n')
-        file.write('        obs_2j1t="@histoadd_2j1t__data";\n')
-        #file.write('        obs_3j0t="@histoadd_3j0t__data";\n')
-        file.write('        obs_3j1t="@histoadd_3j1t__data";\n')
-        file.write('        obs_3j2t="@histoadd_3j2t__data";\n')
-        file.write('    };\n')
-
-        '''
-        file.write('    data_source={\n')
-        file.write('    type="model_source";\n')
-        file.write('    model="@model_'+modelName+'";\n')
-        file.write('    name="source";\n')
-        if dicePoisson:
-            file.write('    dice_poisson=true;\n')
+        
+        if pseudo:
+            file.write('    data_source = {\n')
+            file.write('        type = "model_source";\n')
+            file.write('        name="data";\n')
+            file.write('        model = "@'+model.getVarname()+'";\n')
+            file.write('        dice_poisson = false; // optional; default is true\n')
+            file.write('        dice_template_uncertainties = false; // optional; default is true\n')
+            file.write('        dice_rvobs = false; // optional; default is true\n')
+            file.write('        parameters-for-nll = {\n') 
+            for uncName in uncertainties.keys():
+                mean = uncertainties[uncName]["config"]["mean"]
+                file.write('            '+uncName+' = '+str(mean)+';\n') 
+            file.write('        }; //optional; assuming p1, p2, p3 are parameters\n')
+            file.write('        rnd_gen = { seed = 123; }; // optional\n')
+            file.write('        };\n')
         else:
-            file.write('    dice_poisson=false;\n')
-        if mcUncertainty:    
-            file.write('    dice_template_uncertainties = true;\n')
-        else:
-            file.write('    dice_template_uncertainties = false;\n')
-        file.write('    rnd_gen={\n')
-        file.write('         seed=126;//default of-1 means: use current time.\n')
-        file.write('      };\n')
-        file.write('    };\n')
-        '''
+        
+            file.write('    data_source={\n')
+            file.write('        type="histo_source";\n')
+            file.write('        name="data";\n')
 
+            #file.write('        obs_1j="@histoadd_1j__data";\n')
+            #file.write('        obs_2j0t="@histoadd_2j0t__data";\n')
+            file.write('        obs_2j1t="@histoadd_2j1t__data";\n')
+            #file.write('        obs_3j0t="@histoadd_3j0t__data";\n')
+            file.write('        obs_3j1t="@histoadd_3j1t__data";\n')
+            file.write('        obs_3j2t="@histoadd_3j2t__data";\n')
+            file.write('    };\n')
+
+            
 
         file.write('    n-events=1;\n')
         file.write('    model="@'+model.getVarname()+'";\n')
         file.write('    output_database={\n')
         file.write('        type="rootfile_database";\n')
-        file.write('        filename="'+os.path.join(model.getName()+'.root')+'";\n')
+        file.write('        filename="'+name+'.root";\n')
         file.write('    };\n')
         file.write('    producers=("@pd"\n')
         file.write('    );\n')
         file.write('};\n')
 
         file.write('options = {\n')
-        file.write('    plugin_files = ("$THETA_DIR/lib/root.so", "$THETA_DIR/lib/core-plugins.so");\n')
+        file.write('    plugin_files = ("$THETA_DIR/lib/libplugins.so", "$THETA_DIR/lib/libroot-plugin.so", "$THETA_DIR/lib/liblibtheta.so");\n')
         file.write('};\n')
             
         file.close()
