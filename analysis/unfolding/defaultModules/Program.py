@@ -1,5 +1,6 @@
 import ROOT
 import math
+import numpy
 
 from Module import Module
 
@@ -38,11 +39,59 @@ class Program(Module):
         
         self.module("Utils").createOutputFolder()
         
-        self.module("ThetaModel").makeModel(pseudo=False)
-        #self.module("ThetaModel").makeModel()
-        self.module("ThetaFit").run()
-        result = self.module("ThetaFit").readFitResult()
-        correlations = self.module("ThetaFit").getCorrelations(result["cov"])
-        self.module("Drawing").drawFitCorrelation(correlations)
+        ### FITTING
+        fitResult = self.module("ThetaFit").checkFitResult()
+        if fitResult==None:
+            #self.module("ThetaModel").makeModel(pseudo=True,addCut="(Reconstructed_1__isBarrel==1)")
+            self.module("ThetaModel").makeModel(pseudo=True)
+            self.module("ThetaFit").run()
+            fitResult = self.module("ThetaFit").readFitResult()
+            self.module("Drawing").drawFitCorrelation(fitResult["correlations"])
+    
+        ### RECO HIST AND SCALING
+        histograms = self.module("HistogramCreator").loadHistograms("reco_top_pt")
+        if not histograms:
+            histograms = self.module("HistogramCreator").makeHistograms(
+                self.module("ResponseMatrixPt").getRecoUnfoldingVariable(),
+                self.module("Utils").getCategoryCutStr(2,1)+"*"+self.module("Utils").getMTWCutStr()+"*"+self.module("Utils").getBDTCutStr(),
+                self.module("ResponseMatrixPt").getRecoBinning(),
+                #numpy.linspace(0,250,20),
+                pseudo=True
+            )
+            self.module("HistogramCreator").scaleHistogramsToFitResult(histograms,fitResult)
+            self.module("HistogramCreator").saveHistograms(histograms,"reco_top_pt")
+
+        self.module("Drawing").plotHistograms(histograms,"top pT","reco_top_pt")
         
+       
+        ### RESPONSEMATRIX
+        responseMatrix = self.module("ResponseMatrixPt").loadResponseMatrix()
+        if responseMatrix==None:
+            responseMatrix = self.module("ResponseMatrixPt").getResponseMatrix()
+        self.module("Drawing").drawResponseMatrix(responseMatrix,"top quark pT","responsePt")
+
+        genHist = responseMatrix.ProjectionX()
+        genBinning = self.module("ResponseMatrixPt").getGenBinning()
+        
+        
+        dataHist = histograms["data"]["hists"]["data"]
+        for componentName in histograms.keys():
+            if componentName=="tChannel" or componentName=="data":
+                continue
+            for componentSetName in histograms[componentName]["hists"].keys():
+                for ibin in range(dataHist.GetNbinsX()):
+                    d = dataHist.GetBinContent(ibin+1)
+                    b = histograms[componentName]["hists"][componentSetName].GetBinContent(ibin+1)
+                    n = d-b
+                    if n<0:
+                        n=0
+                    dataHist.SetBinContent(ibin+1,n)
+        
+        unfoldedHist, covariance = self.module("Unfolding").unfold(responseMatrix,dataHist,genBinning)
+
+        self.module("Drawing").drawBiasTest(unfoldedHist,genHist,"top quark pT","biasPt")
+
+
+        #self.module("Utils").normalizeByBinWidth(unfoldedHist)
+        #self.module("Utils").normalizeByBinWidth(genHist)
         

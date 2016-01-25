@@ -6,12 +6,33 @@ import subprocess
 import math
 import os
 import csv
+import sys
 
 class ThetaFit(Module):
     def __init__(self,options=[]):
         Module.__init__(self,options)
         self._logger = logging.getLogger(__file__)
         self._logger.setLevel(logging.DEBUG)
+        self.fitResult = None
+        
+    def storeFitResult(self,fitResult):
+        self.fitResult=fitResult
+        uncertainties = self.module("ThetaModel").getUncertaintsDict()
+        csvFileName = os.path.join(self.module("Utils").getOutputFolder(),"fitresult.csv")
+        self._logger.info("write fit result csv: "+csvFileName)
+        outputFile = open(csvFileName, 'wb')
+        writer = csv.DictWriter(
+            outputFile, 
+            ["sys","mean","unc"], 
+            restval='NAN', 
+            extrasaction='raise', 
+            dialect='excel', 
+            quoting=csv.QUOTE_NONNUMERIC
+        )
+        writer.writeheader()
+        for unc in uncertainties.keys():
+            writer.writerow({"sys":unc,"mean":fitResult[unc]["mean"],"unc":fitResult[unc]["unc"]})
+        outputFile.close()
         
     def run(self,cfgFile="fit.cfg"):
         fullPath = os.path.join(self.module("Utils").getOutputFolder(),cfgFile)
@@ -21,14 +42,23 @@ class ThetaFit(Module):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
-        p.wait()
+        while True:
+            nextline = p.stdout.readline()
+            if nextline == '' and p.poll() != None:
+                break
+            self._logger.debug(nextline.replace("\n","").replace("\r",""))
 
-        for l in p.stdout:
-            if l.find("errors:")!=-1:
-                self._logger.info("run fit: "+l.replace("\n","").replace(" ",""))
-            if l.find("warnings:")!=-1:
-                self._logger.info("run fit: "+l.replace("\n","").replace(" ",""))
+            if nextline.find("errors:")!=-1:
+                self._logger.info("run fit: "+nextline.replace("\n","").replace("\r","").replace(" ",""))
+            if nextline.find("warnings:")!=-1:
+                self._logger.info("run fit: "+nextline.replace("\n","").replace("\r","").replace(" ",""))
 
+    def checkFitResult(self,rootFile="fit.root",modelName="fit"):
+        fullPath = os.path.join(self.module("Utils").getOutputFolder(),rootFile)
+        if os.path.exists(fullPath):
+            self._logger.info("fit result already exists: "+fullPath)
+            return self.module("ThetaFit").readFitResult(rootFile,modelName)
+        return None
         
     def readFitResult(self,rootFile="fit.root",modelName="fit"):
         fullPath = os.path.join(self.module("Utils").getOutputFolder(),rootFile)
@@ -47,53 +77,40 @@ class ThetaFit(Module):
             }
             
             self._logger.info("Fit: "+sysName+": "+str(round(result[sysName]["mean"],2))+"+-"+str(round(result[sysName]["unc"],2)))
-        result["cov"]= getattr(tree,modelName+"__covariance").Clone("covariance")
-        result["cov"].SetDirectory(0)
-        f.Close()
+        cov = getattr(tree,modelName+"__covariance")
         
-        csvFileName = os.path.join(self.module("Utils").getOutputFolder(),"fitresult.csv")
-        self._logger.info("write fit result csv: "+csvFileName)
-        outputFile = open(csvFileName, 'wb')
-        writer = csv.DictWriter(
-            outputFile, 
-            ["sys","mean","unc"], 
-            restval='NAN', 
-            extrasaction='raise', 
-            dialect='excel', 
-            quoting=csv.QUOTE_NONNUMERIC
-        )
-        writer.writeheader()
-        for unc in uncertainties.keys():
-            writer.writerow({"sys":unc,"mean":result[unc]["mean"],"unc":result[unc]["unc"]})
-        outputFile.close()
-        
-        return result
-        
-        
-    def getCorrelations(self,covariance):
-        uncertainties = self.module("ThetaModel").getUncertaintsDict()
-        
-        corr = ROOT.TH2D("correlations","",len(uncertainties.keys()),0,len(uncertainties.keys()),len(uncertainties.keys()),0,len(uncertainties.keys()))
-        corr.SetDirectory(0)
-        print covariance.GetNbinsX(),covariance.GetNbinsY()
+        covariances = ROOT.TH2D("covariance","",len(uncertainties.keys()),0,len(uncertainties.keys()),len(uncertainties.keys()),0,len(uncertainties.keys()))
+        covariances.SetDirectory(0)
+        correlations = ROOT.TH2D("correlations","",len(uncertainties.keys()),0,len(uncertainties.keys()),len(uncertainties.keys()),0,len(uncertainties.keys()))
+        correlations.SetDirectory(0)
         for ibin in range(len(uncertainties.keys())):
             for jbin in range(len(uncertainties.keys())):
                 ijthetaBin = ibin*len(uncertainties.keys())+jbin
                 iithetaBin = ibin*len(uncertainties.keys())+ibin
                 jjthetaBin = jbin*len(uncertainties.keys())+jbin
-                covij = covariance.GetBinContent(ijthetaBin+1,1)
-                covii = covariance.GetBinContent(iithetaBin+1,1)
-                covjj = covariance.GetBinContent(jjthetaBin+1,1)
-                corr.SetBinContent(ibin+1,jbin+1,covij/math.sqrt(covii*covjj))
-        
+                covij = cov.GetBinContent(ijthetaBin+1,1)
+                covii = cov.GetBinContent(iithetaBin+1,1)
+                covjj = cov.GetBinContent(jjthetaBin+1,1)
+                if covii>0 and covjj>0:
+                    correlations.SetBinContent(ibin+1,jbin+1,covij/math.sqrt(covii*covjj))
+                else:
+                    correlations.SetBinContent(ibin+1,jbin+1,0.0)
+                covariances.SetBinContent(ibin+1,jbin+1,covij)
         for ibin in range(len(uncertainties)):
-            corr.GetXaxis().SetBinLabel(ibin+1,uncertainties.keys()[ibin])
-            corr.GetYaxis().SetBinLabel(ibin+1,uncertainties.keys()[ibin])
-        
-        return corr
+            covariances.GetXaxis().SetBinLabel(ibin+1,uncertainties.keys()[ibin])
+            covariances.GetYaxis().SetBinLabel(ibin+1,uncertainties.keys()[ibin])
+            correlations.GetXaxis().SetBinLabel(ibin+1,uncertainties.keys()[ibin])
+            correlations.GetYaxis().SetBinLabel(ibin+1,uncertainties.keys()[ibin])
+        result["covariances"]=covariances
+        result["correlations"]=correlations
 
+        f.Close()
         
+        self.module("ThetaFit").storeFitResult(result)
         
+        return result
+        
+   
         
         
         

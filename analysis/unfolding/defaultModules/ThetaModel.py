@@ -23,9 +23,9 @@ class ThetaModel(Module):
             #"LF":{"type":"gauss","config":{"mean": "1.0", "width":"0.3", "range":"(0.0,\"inf\")"}},
             "TopBkg":{"type":"gauss","config":{"mean": "1.0", "width":"0.3", "range":"(0.0,\"inf\")"}},
             "tChannel":{"type":"gauss","config":{"mean": "1.0", "width":"1.0", "range":"(0.0,\"inf\")"}},
-            "QCD_2j1t":{"type":"gauss","config":{"mean": "0.15", "width":"1.0", "range":"(0.0,\"inf\")"}},
-            "QCD_3j1t":{"type":"gauss","config":{"mean": "0.15", "width":"1.0", "range":"(0.0,\"inf\")"}},
-            "QCD_3j2t":{"type":"gauss","config":{"mean": "0.15", "width":"1.0", "range":"(0.0,\"inf\")"}},
+            "QCD_2j1t":{"type":"gauss","config":{"mean": "1.0", "width":"1.0", "range":"(0.0,\"inf\")"}},
+            "QCD_3j1t":{"type":"gauss","config":{"mean": "1.0", "width":"1.0", "range":"(0.0,\"inf\")"}},
+            "QCD_3j2t":{"type":"gauss","config":{"mean": "1.0", "width":"1.0", "range":"(0.0,\"inf\")"}},
             
             #"lumi":{"type":"gauss","config":{"mean": "1.0", "width":"0.1", "range":"(0.0,\"inf\")"}}
         }
@@ -33,29 +33,20 @@ class ThetaModel(Module):
         
     def getObservablesDict(self):
         observables = {
-            #"1j": {
-            #    "weight":"(Reconstructed_1__nSelectedJet==1)"
-            #},
-            #"2j0t": {
-            #    "weight":"(Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==0)"
-            #},
             "2j1t": {
-                "weight":"(Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==1)"
+                "weight":self.module("Utils").getCategoryCutStr(2,1)
             },
-            #"3j0t": {
-            #    "weight":"(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==0)"
-            #},
             "3j1t": {
-                "weight":"(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==1)"
+                "weight":self.module("Utils").getCategoryCutStr(3,1)
             },
             "3j2t": {
-               "weight":"(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==2)"
+               "weight":self.module("Utils").getCategoryCutStr(3,2)
             },
         }
         return observables
         
     def getBinning(self):
-        return 30
+        return 50
         
     def getRange(self):
         return [0.0,200.0]
@@ -95,7 +86,7 @@ class ThetaModel(Module):
                 "sets":["data1_antiiso","data2_antiiso","MC_antiiso"],
                 "uncertainties":["QCD_2j1t"],
                 "weight":"(Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==1)",
-                "color":ROOT.kGray+1
+                "color":ROOT.kGray
             },
 
             "QCD_3j1t":
@@ -103,7 +94,7 @@ class ThetaModel(Module):
                 "sets":["data1_antiiso","data2_antiiso","MC_antiiso"],
                 "uncertainties":["QCD_3j1t"],
                 "weight":"(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==1)",
-                "color":ROOT.kGray+1
+                "color":ROOT.kGray
             },
  
             "QCD_3j2t":
@@ -111,7 +102,7 @@ class ThetaModel(Module):
                 "sets":["data1_antiiso","data2_antiiso","MC_antiiso"],
                 "uncertainties":["QCD_3j2t"],
                 "weight":"(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==2)",
-                "color":ROOT.kGray+1
+                "color":ROOT.kGray
             }
         }
     
@@ -127,7 +118,7 @@ class ThetaModel(Module):
         }
         return data
     
-    def makeModel(self,name="fit",pseudo=False):
+    def makeModel(self,name="fit",pseudo=False,addCut="1"):
         self._logger.info("Creating model: "+name)
         
         histograms={}
@@ -152,45 +143,20 @@ class ThetaModel(Module):
         for uncertaintyName in uncertainties.keys():
             uncertainties[uncertaintyName]["dist"]=Distribution(uncertaintyName, uncertainties[uncertaintyName]["type"], uncertainties[uncertaintyName]["config"])
             file.write(uncertainties[uncertaintyName]["dist"].toConfigString())
-    
 
-        
         for observableName in observables.keys():
             observable = Observable(observableName, binning, ranges)
-            observableWeight = observables[observableName]["weight"]
-            
-            histograms[observableName]={}
-            
-            histograms[observableName]["totalMC"]={}
-            histograms[observableName]["totalMC"]["total"]={}
-            mcObsHist = ROOT.TH1F("hist_"+observableName+"_totalMC"+str(random.random()),";"+varName+";Events",binning,ranges[0],ranges[1])
-            mcObsHist.SetDirectory(0)
-            histograms[observableName]["totalMC"]["total"]["all"] = mcObsHist
-            histograms[observableName]["totalMC"]["total"]["mtw"] = mcObsHist.Clone(mcObsHist.GetName()+"mtw")
-            histograms[observableName]["totalMC"]["total"]["bdt"] = mcObsHist.Clone(mcObsHist.GetName()+"bdt")
-            
-            
+            observableWeight = observables[observableName]["weight"]+"*"+addCut
+
             for componentName in components.keys():
                 componentWeight = components[componentName]["weight"]
                 componentUncertainties = components[componentName]["uncertainties"]
                 
-                componentHist = ROOT.TH1F("hist_"+observableName+"_"+componentName+"_"+str(random.random()),";"+varName+";Events",binning,ranges[0],ranges[1])
-                componentHist.SetDirectory(0)
-                componentHist.Sumw2()
-                componentHist.SetFillColor(components[componentName]["color"])
-                componentHist.SetLineColor(components[componentName]["color"])
-                histograms[observableName][componentName]={}
-
                 self._logger.debug("Creating model: "+observableName+" "+componentName)
                 
                 for componentSetName in components[componentName]["sets"]:
                     sampleDict = self.module("Samples").getSample(componentSetName)
                     
-                    histograms[observableName][componentName][componentSetName]={}
-                    histograms[observableName][componentName][componentSetName]["all"] = componentHist
-                    histograms[observableName][componentName][componentSetName]["mtw"] = componentHist.Clone(componentHist.GetName()+"mtw")
-                    histograms[observableName][componentName][componentSetName]["bdt"] = componentHist.Clone(componentHist.GetName()+"bdt")
-
                     for processName in sampleDict["processes"]:
                         processWeight = sampleDict["weight"]
 
@@ -216,19 +182,8 @@ class ThetaModel(Module):
                                 component.setNominalHistogram(hist)
                                 
                                 observable.addComponent(component)
-                                
-                                self.module("Utils").getHist1D(histograms[observableName][componentName][componentSetName]["all"],f,processName,varName,observableWeight+"*"+componentWeight+"*"+processWeight)
-                                self.module("Utils").getHist1D(histograms[observableName][componentName][componentSetName]["mtw"],f,processName,varName,observableWeight+"*"+componentWeight+"*"+processWeight+"*"+self.module("Utils").getMTWCutStr())
-                                self.module("Utils").getHist1D(histograms[observableName][componentName][componentSetName]["bdt"],f,processName,varName,observableWeight+"*"+componentWeight+"*"+processWeight+"*"+self.module("Utils").getMTWCutStr()+"*"+self.module("Utils").getBDTCutStr())
-                                
-                                break
                             rootFile.Close()
                             
-                    histograms[observableName]["totalMC"]["total"]["all"].Add(histograms[observableName][componentName][componentSetName]["all"])
-                    histograms[observableName]["totalMC"]["total"]["mtw"].Add(histograms[observableName][componentName][componentSetName]["mtw"])
-                    histograms[observableName]["totalMC"]["total"]["bdt"].Add(histograms[observableName][componentName][componentSetName]["bdt"])
-                    
-
                 
             model.addObservable(observable)
 
@@ -236,27 +191,15 @@ class ThetaModel(Module):
             if not pseudo:
                 histoadd = HistoAdd(observableName+"__data")
                 data = self.module("ThetaModel").getDataDict()
-                for componentName in data.keys():
+                for componentName in components.keys():
                     componentWeight=data[componentName]["weight"]
-                    
-                    componentHist = ROOT.TH1F("hist_"+observableName+"_"+componentName+"_"+str(random.random()),";"+varName+";Events",binning,ranges[0],ranges[1])
-                    componentHist.SetDirectory(0)
-                    componentHist.Sumw2()
-                    componentHist.SetMarkerStyle(20)
-                    componentHist.SetMarkerSize(0.8)
-                    histograms[observableName][componentName]={}
-                    histograms[observableName][componentName]["data"]={}
-                    histograms[observableName][componentName]["data"]["all"] = componentHist
-                    histograms[observableName][componentName]["data"]["mtw"] = componentHist.Clone(componentHist.GetName()+"mtw")
-                    histograms[observableName][componentName]["data"]["bdt"] = componentHist.Clone(componentHist.GetName()+"bdt")
-                    
+                      
                     self._logger.debug("Creating model: "+observableName+" "+componentName)
                     
-                    for componentSetName in data[componentName]["sets"]:
+                    for componentSetName in components[componentName]["sets"]:
                         sampleDict = self.module("Samples").getSample(componentSetName)
                         for processName in sampleDict["processes"]:
                             processWeight = sampleDict["weight"]
-                            
                             
                             for i,f in enumerate(rootFiles):
                                 rootFile = ROOT.TFile(f)
@@ -271,17 +214,51 @@ class ThetaModel(Module):
                                     hist.setRange(ranges)
                                     file.write(hist.toConfigString())
                                     histoadd.addHisto(hist.getVarname())
-                                    
-                                    self.module("Utils").getHist1D(histograms[observableName][componentName]["data"]["all"],f,processName,varName,observableWeight+"*"+componentWeight+"*"+processWeight)
-                                    self.module("Utils").getHist1D(histograms[observableName][componentName]["data"]["mtw"],f,processName,varName,observableWeight+"*"+componentWeight+"*"+processWeight+"*"+self.module("Utils").getMTWCutStr())
-                                    self.module("Utils").getHist1D(histograms[observableName][componentName]["data"]["bdt"],f,processName,varName,observableWeight+"*"+componentWeight+"*"+processWeight+"*"+self.module("Utils").getMTWCutStr()+"*"+self.module("Utils").getBDTCutStr())
-                                    
-                                    break
+
+                                    #break
+                                rootFile.Close()
+
+                file.write(histoadd.toConfigString())
+                
+                
+                
+            else:
+                histoadd = HistoAdd(observableName+"__data",{"dice_stat":"true"})
+                data = self.module("ThetaModel").getDataDict()
+                for componentName in components.keys():
+                    componentWeight = components[componentName]["weight"]
+                    componentUncertainties = components[componentName]["uncertainties"]
+   
+                    self._logger.debug("Creating pseudo data: "+observableName+" "+componentName)
+                    
+                    for componentSetName in components[componentName]["sets"]:
+                        sampleDict = self.module("Samples").getSamplePseudo(componentSetName)
+                        for processName in sampleDict["processes"]:
+                            processWeight = sampleDict["weight"]
+                            
+                            for i,f in enumerate(rootFiles):
+                                rootFile = ROOT.TFile(f)
+                                tree = rootFile.Get(processName)
+                                if (tree):
+                                    hist=RootProjectedHistogram("pseudodata__"+observableName+"__"+componentName+"__"+componentSetName+"__"+processName+"__"+str(i),
+                                        {
+                                            "use_errors":"true"
+                                        }
+                                    )
+                                    hist.setFileName(f)
+                                    hist.setVariableString(varName)
+                                    hist.setWeightString(observableWeight+"*"+componentWeight+"*"+processWeight)
+                                    hist.setTreeName(processName)
+                                    hist.setBinning(binning)
+                                    hist.setRange(ranges)
+                                    file.write(hist.toConfigString())
+                                    histoadd.addHisto(hist.getVarname())
+
                                 rootFile.Close()
 
                 file.write(histoadd.toConfigString())
             
-            
+        '''  
         csvFileName = os.path.join(self.module("Utils").getOutputFolder(),"prefitYields.csv")
         self._logger.info("write prefit yield csv: "+csvFileName)
         outputFile = open(csvFileName, 'wb')
@@ -319,7 +296,7 @@ class ThetaModel(Module):
                                 "unc":0.0,
                             })
         outputFile.close()
-
+        '''
                             
         file.write(model.toConfigString())
 
@@ -359,7 +336,7 @@ class ThetaModel(Module):
         file.write('};\n')
 
         file.write('main={\n')
-        
+        '''
         if pseudo:
             file.write('    data_source = {\n')
             file.write('        type = "model_source";\n')
@@ -376,18 +353,18 @@ class ThetaModel(Module):
             file.write('        rnd_gen = { seed = 123; }; // optional\n')
             file.write('        };\n')
         else:
-        
-            file.write('    data_source={\n')
-            file.write('        type="histo_source";\n')
-            file.write('        name="data";\n')
+        '''
+        file.write('    data_source={\n')
+        file.write('        type="histo_source";\n')
+        file.write('        name="data";\n')
 
-            #file.write('        obs_1j="@histoadd_1j__data";\n')
-            #file.write('        obs_2j0t="@histoadd_2j0t__data";\n')
-            file.write('        obs_2j1t="@histoadd_2j1t__data";\n')
-            #file.write('        obs_3j0t="@histoadd_3j0t__data";\n')
-            file.write('        obs_3j1t="@histoadd_3j1t__data";\n')
-            file.write('        obs_3j2t="@histoadd_3j2t__data";\n')
-            file.write('    };\n')
+        #file.write('        obs_1j="@histoadd_1j__data";\n')
+        #file.write('        obs_2j0t="@histoadd_2j0t__data";\n')
+        file.write('        obs_2j1t="@histoadd_2j1t__data";\n')
+        #file.write('        obs_3j0t="@histoadd_3j0t__data";\n')
+        file.write('        obs_3j1t="@histoadd_3j1t__data";\n')
+        file.write('        obs_3j2t="@histoadd_3j2t__data";\n')
+        file.write('    };\n')
 
             
 

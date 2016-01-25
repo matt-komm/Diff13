@@ -1,6 +1,7 @@
 import logging
 import ROOT
 import os
+import random
 from Module import Module
 
 class Drawing(Module):
@@ -110,5 +111,41 @@ class Drawing(Module):
         
         cvCovariance.Update()
         cvCovariance.WaitPrimitive()
+        
+        
+    def plotHistograms(self,histograms,title,output):
+        mcStack = ROOT.THStack()
+        mcSumHist = None
+        for component in self.module("ThetaModel").getComponentsDict():
+            compHist = None
+            for sampleName in histograms[component]["hists"].keys():
+                if compHist==None:
+                    compHist = histograms[component]["hists"][sampleName].Clone(component+str(random.random()))
+                else:
+                    compHist.Add(histograms[component]["hists"][sampleName])
+            mcStack.Add(compHist,"HIST")
+            
+            if mcSumHist==None:
+                mcSumHist=compHist.Clone("mcSumHist")
+            else:
+                mcSumHist.Add(compHist)
+            
+        dataHist = histograms["data"]["hists"]["data"]
+        
+        cvPlot = ROOT.TCanvas("cvPlot","",800,700)
+        
+        axis = ROOT.TH2F("axis",";title;Events",
+            50,dataHist.GetXaxis().GetXmin(),dataHist.GetXaxis().GetXmax(),
+            50,0.0,1.2*max(dataHist.GetMaximum(),mcSumHist.GetMaximum())
+        )
+        axis.Draw("AXIS")
+        mcStack.Draw("SameHIST")
+        dataHist.Draw("SamePE") 
+        
+        cvPlot.Update()
+        cvPlot.WaitPrimitive()
+        
+        cvPlot.Print(os.path.join(self.module("Utils").getOutputFolder(),output+".png"))
+        cvPlot.Print(os.path.join(self.module("Utils").getOutputFolder(),output+".pdf"))
         
 

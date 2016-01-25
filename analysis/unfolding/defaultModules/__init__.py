@@ -6,8 +6,9 @@ from Files import Files
 from Module import Module
 from Unfolding import Unfolding
 from Drawing import Drawing
-from HistogramsForFitting import HistogramsForFitting
+from HistogramCreator import HistogramCreator
 from Samples import Samples
 from ThetaModel import ThetaModel
 from ThetaFit import ThetaFit
+from UnfoldingSetup import UnfoldingSetup
 
