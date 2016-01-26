@@ -40,8 +40,9 @@ class Drawing(Module):
         pPreliminary.Draw("Same")
         
         cvResponse.Update()
-        cvResponse.Print(outputName+".png")
-        cvResponse.Print(outputName+".pdf")
+        
+        cvResponse.Print(os.path.join(self.module("Utils").getOutputFolder(),outputName+".png"))
+        cvResponse.Print(os.path.join(self.module("Utils").getOutputFolder(),outputName+".pdf"))
         
         
     def drawBiasTest(self,unfoldedHist,genHist,varTitle,outputName):
@@ -75,8 +76,8 @@ class Drawing(Module):
         pPreliminary.AddText("Simulation")
         pPreliminary.Draw("Same")
         
-        cvUnfold.Print(outputName+".png")
-        cvUnfold.Print(outputName+".pdf")
+        cvUnfold.Print(os.path.join(self.module("Utils").getOutputFolder(),outputName+".png"))
+        cvUnfold.Print(os.path.join(self.module("Utils").getOutputFolder(),outputName+".pdf"))
         
     def drawFitCorrelation(self,covariance):
         cvCovariance = ROOT.TCanvas("cvCorrelations","",800,700)
@@ -111,6 +112,33 @@ class Drawing(Module):
         
         cvCovariance.Update()
         cvCovariance.WaitPrimitive()
+        
+    def plotHistogram(self,histogram,title,output):
+        
+        cvHist = ROOT.TCanvas("cvHist","",800,700)
+        histogram.GetXaxis().SetTitle(title)
+        histogram.Draw()
+        
+        pCMS=ROOT.TPaveText(1-cvHist.GetRightMargin()-0.25,0.94,1-cvHist.GetRightMargin()-0.25,0.94,"NDC")
+        pCMS.SetFillColor(ROOT.kWhite)
+        pCMS.SetBorderSize(0)
+        pCMS.SetTextFont(63)
+        pCMS.SetTextSize(30)
+        pCMS.SetTextAlign(11)
+        pCMS.AddText("CMS")
+        pCMS.Draw("Same")
+        
+        pPreliminary=ROOT.TPaveText(1-cvHist.GetRightMargin()-0.165,0.94,1-cvHist.GetRightMargin()-0.165,0.94,"NDC")
+        pPreliminary.SetFillColor(ROOT.kWhite)
+        pPreliminary.SetBorderSize(0)
+        pPreliminary.SetTextFont(53)
+        pPreliminary.SetTextSize(30)
+        pPreliminary.SetTextAlign(11)
+        pPreliminary.AddText("Preliminary")
+        pPreliminary.Draw("Same")
+        
+        cvHist.Print(os.path.join(self.module("Utils").getOutputFolder(),output+".pdf"))
+        cvHist.Print(os.path.join(self.module("Utils").getOutputFolder(),output+".png"))
         
         
     def plotHistograms(self,histograms,title,output):

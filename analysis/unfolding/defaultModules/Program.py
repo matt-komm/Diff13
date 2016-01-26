@@ -68,6 +68,7 @@ class Program(Module):
         responseMatrix = self.module("ResponseMatrixPt").loadResponseMatrix()
         if responseMatrix==None:
             responseMatrix = self.module("ResponseMatrixPt").getResponseMatrix()
+            self.module("ResponseMatrixPt").saveResponseMatrix(responseMatrix)
         self.module("Drawing").drawResponseMatrix(responseMatrix,"top quark pT","responsePt")
 
         genHist = responseMatrix.ProjectionX()
@@ -75,6 +76,14 @@ class Program(Module):
         
         
         dataHist = histograms["data"]["hists"]["data"]
+        '''
+        for ibin in range(dataHist.GetNbinsX()):
+            dataHist.SetBinContent(ibin+1,
+                ROOT.gRandom.Poisson(dataHist.GetBinContent(ibin+1))
+            )
+        '''
+        #TODO: check uncertainties!!!
+        
         for componentName in histograms.keys():
             if componentName=="tChannel" or componentName=="data":
                 continue
@@ -86,12 +95,18 @@ class Program(Module):
                     if n<0:
                         n=0
                     dataHist.SetBinContent(ibin+1,n)
+                    
+        
+        self.module("Drawing").plotHistogram(dataHist,"top pT","dataSubtracted")
+        
         
         unfoldedHist, covariance = self.module("Unfolding").unfold(responseMatrix,dataHist,genBinning)
+
+        #self.module("Utils").normalizeByBinWidth(unfoldedHist)
+        #self.module("Utils").normalizeByBinWidth(genHist)
 
         self.module("Drawing").drawBiasTest(unfoldedHist,genHist,"top quark pT","biasPt")
 
 
-        #self.module("Utils").normalizeByBinWidth(unfoldedHist)
-        #self.module("Utils").normalizeByBinWidth(genHist)
+        
         

@@ -95,9 +95,11 @@ class HistogramCreator(Module):
                             #break
         
             for ibin in range(dataHist.GetNbinsX()):
+                '''
                 dataHist.SetBinContent(ibin+1,
                     ROOT.gRandom.Poisson(dataHist.GetBinContent(ibin+1))
                 )
+                '''
                 dataHist.SetBinError(ibin+1,
                     math.sqrt(dataHist.GetBinContent(ibin+1))
                 )

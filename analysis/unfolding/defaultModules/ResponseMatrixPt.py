@@ -1,6 +1,7 @@
 import numpy
 import ROOT
 import os
+import random
 
 from Module import Module
 
@@ -29,9 +30,8 @@ class ResponseMatrixPt(Module):
         return b
         
     def getGenBinning(self):
-        #return numpy.array([0,   30., 47.5,  70., 100.,  150., 300.])
-        #return numpy.array([0,      30.,       45.,      65.,      85.,       130,      300])
-        return numpy.array([0.,    45.,    75.,     110.,     160.,     200.,     300.])
+        #return numpy.array([0.,    45.,    75.,     110.,     160.,     200.,     300.])
+        return numpy.array([0.,    50.,     85.,     130.,     180.,              300.0])
         
     def getSignalProcessNames(self):
         return ["ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1_ext"]
@@ -110,5 +110,7 @@ class ResponseMatrixPt(Module):
                     genweight
                 )
 
+        responseMatrixSelected.Scale(0.7)
+        efficiencyHist.Scale(0.7)
         return self.module("ResponseMatrixPt").buildResponseMatrix(responseMatrixSelected,efficiencyHist)
 
