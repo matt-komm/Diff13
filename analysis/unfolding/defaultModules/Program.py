@@ -1,6 +1,7 @@
 import ROOT
 import math
 import numpy
+import random
 
 from Module import Module
 
@@ -14,31 +15,9 @@ class Program(Module):
         
     def execute(self):
         #self.module("HistogramsForFitting").buildFitModel()
-    
-        '''
-        responseMatrix = self.module("ResponseMatrixY").getResponseMatrix()
-        self.module("Drawing").drawResponseMatrix(responseMatrix,"top quark |y|","responseY")
-
-        genHist = responseMatrix.ProjectionX()
-        genBinning = self.module("ResponseMatrixY").getGenBinning()
-        
-        pseudoData = responseMatrix.ProjectionY("pseudodata")
-        for ibin in range(pseudoData.GetNbinsX()):
-            #print ibin+1,pseudoData.GetBinContent(ibin+1)
-            pseudoData.SetBinError(ibin+1,math.sqrt(2*pseudoData.GetBinContent(ibin+1)))
-            pass
-        
-        unfoldedHist, covariance = self.module("Unfolding").unfold(responseMatrix,pseudoData,genBinning)
-
-        self.module("Drawing").drawBiasTest(unfoldedHist,genHist,"top quark |y|","biasY")
-
-
-        #self.module("Utils").normalizeByBinWidth(unfoldedHist)
-        #self.module("Utils").normalizeByBinWidth(genHist)
-        '''
         
         self.module("Utils").createOutputFolder()
-        '''
+        
         ### FITTING
         fitResult = self.module("ThetaFit").checkFitResult()
         if fitResult==None:
@@ -62,53 +41,68 @@ class Program(Module):
             self.module("HistogramCreator").saveHistograms(histograms,"reco_top_pt")
 
         self.module("Drawing").plotHistograms(histograms,"top pT","reco_top_pt")
-        '''
+        
        
         ### RESPONSEMATRIX
-        #responseMatrix = self.module("ResponseMatrixPt").loadResponseMatrix()
-        #if responseMatrix==None:
-        responseMatrix = self.module("ResponseMatrixPt").getResponseMatrix()
-        self.module("ResponseMatrixPt").saveResponseMatrix(responseMatrix)
+        responseMatrix = self.module("ResponseMatrixPt").loadResponseMatrix()
+        if responseMatrix==None:
+            responseMatrix = self.module("ResponseMatrixPt").getResponseMatrix()
+            self.module("ResponseMatrixPt").saveResponseMatrix(responseMatrix)
         self.module("Drawing").drawResponseMatrix(responseMatrix,"top quark pT","responsePt")
+        responseMatrix.Scale(0.7)
+
 
         genHist = responseMatrix.ProjectionX()
         genBinning = self.module("ResponseMatrixPt").getGenBinning()
         
         
-        #dataHist = histograms["data"]["hists"]["data"]
-        
-        dataHist = responseMatrix.ProjectionY("dataHist")
+        dataHist = histograms["data"]["hists"]["data"]
+        #dataHist = responseMatrix.ProjectionY()
         '''
         for ibin in range(dataHist.GetNbinsX()):
+            
             dataHist.SetBinContent(ibin+1,
                 ROOT.gRandom.Poisson(dataHist.GetBinContent(ibin+1))
             )
+            
+            dataHist.SetBinError(ibin+1,
+                math.sqrt(dataHist.GetBinContent(ibin+1))
+            )
         '''
-        #TODO: check uncertainties!!!
         
         dataHistSubtracted = dataHist.Clone("datahist_subtracted")
         backgroundDict = {}
-        '''
+        
         for componentName in histograms.keys():
-            if componentName=="tChannel" or componentName=="data":
-                continue
+            
             componentHist = None
             for componentSetName in histograms[componentName]["hists"].keys():
                 if componentHist==None:
-                    componentHist = histograms[componentName]["hists"][componentSetName]
+                    componentHist = histograms[componentName]["hists"][componentSetName].Clone(componentName+"_sum"+str(random.random()))
                 else:
                     componentHist.Add(histograms[componentName]["hists"][componentSetName])
+            
+            histograms[componentName]["hists"]["sum"]=componentHist
+            if componentName=="tChannel" or componentName=="data":
+                continue
+            '''
             backgroundDict[componentName]={}
             backgroundDict[componentName]["hist"]=componentHist
             backgroundDict[componentName]["mean"]=1.0
             backgroundDict[componentName]["unc"]=fitResult[componentName]["unc"]
-            
+            '''
             dataHistSubtracted.Add(componentHist,-1.0)
-        '''
+            
 
         self.module("Drawing").plotHistogram(dataHistSubtracted,"top pT","dataSubtracted")
+        self.module("Drawing").plotHistogram(histograms["tChannel"]["hists"]["sum"],"top pT","MCsignal")
         
-        unfoldedHist, covariance = self.module("Unfolding").unfold(responseMatrix,dataHist,genBinning)
+        mcTruth = responseMatrix.ProjectionY()
+        mcTruth.SetMarkerStyle(20)
+        mcTruth.SetMarkerSize(1)
+        self.module("Drawing").plotHistogram(mcTruth,"top pT","MCtruth")
+        
+        unfoldedHist, covariance = self.module("Unfolding").unfold(responseMatrix,dataHistSubtracted,genBinning)
 
         #self.module("Utils").normalizeByBinWidth(unfoldedHist)
         #self.module("Utils").normalizeByBinWidth(genHist)

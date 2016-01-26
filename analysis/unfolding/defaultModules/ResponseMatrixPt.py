@@ -110,7 +110,7 @@ class ResponseMatrixPt(Module):
                     genweight
                 )
 
-        responseMatrixSelected.Scale(0.7)
-        efficiencyHist.Scale(0.7)
+        #responseMatrixSelected.Scale(0.7)
+        #efficiencyHist.Scale(0.7)
         return self.module("ResponseMatrixPt").buildResponseMatrix(responseMatrixSelected,efficiencyHist)
 
