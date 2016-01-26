@@ -18,37 +18,31 @@ class Unfolding(Module):
         self._logger = logging.getLogger(__file__)
         self._logger.setLevel(logging.DEBUG)
         
-    def unfold(self,responseMatrix,data,genBinning):
+    def unfold(self,responseMatrix,data,genBinning,backgroundDict={}):
         genHist = responseMatrix.ProjectionX(responseMatrix.GetName()+"genX")
 
         responseMatrixReweighted = responseMatrix.Clone(responseMatrix.GetName()+"Reweighted")
         
         for ibin in range(responseMatrix.GetNbinsX()):
-            '''
-            colSum = 0.0
-            for jbin in range(responseMatrix.GetNbinsY()):
-                colSum += responseMatrix.GetBinContent(ibin+1,jbin+1)
-            
-            for jbin in range(responseMatrix.GetNbinsY()):
-                responseMatrixReweighted.SetBinContent(
-                    ibin+1,
-                    jbin+1,
-                    responseMatrix.GetBinContent(ibin+1,jbin+1)/colSum*responseMatrix.Integral()/(responseMatrix.GetNbinsX()*responseMatrix.GetNbinsY())
-                )
-            '''
-            '''
+            w = 1.0/genHist.GetBinContent(ibin+1)*genHist.Integral()/genHist.GetNbinsX()
             responseMatrixReweighted.SetBinContent(
                     ibin+1,
                     0,
-                    responseMatrix.GetBinContent(ibin+1,0)/genHist.GetBinContent(ibin+1)*genHist.Integral()/genHist.GetNbinsX()
+                    responseMatrix.GetBinContent(ibin+1,0)*w
             )
-            '''
+            
         
         tunfold = ROOT.PyUnfold(responseMatrixReweighted)
-        
-            
         tunfold.setData(data)
-        bestTau = 0.1*tunfold.scanTau()
+        for backgroundName in backgroundDict.keys():
+            tunfold.addBackground(
+                backgroundDict[backgroundName]["hist"],
+                backgroundName,
+                backgroundDict[backgroundName]["mean"],
+                backgroundDict[backgroundName]["error"]
+            )
+        bestTau = tunfold.scanTau()
+
         print bestTau
         
         
@@ -58,9 +52,14 @@ class Unfolding(Module):
         tunfold.doUnfolding(bestTau,unfoldedHist,covariance)
         
         for ibin in range(unfoldedHist.GetNbinsX()):
+            w = 1.0/genHist.GetBinContent(ibin+1)*genHist.Integral()/genHist.GetNbinsX()
             unfoldedHist.SetBinContent(
                 ibin+1,
-                unfoldedHist.GetBinContent(ibin+1)*genHist.GetBinContent(ibin+1)/genHist.Integral()*genHist.GetNbinsX()
+                unfoldedHist.GetBinContent(ibin+1)/w
+            )
+            unfoldedHist.SetBinError(
+                ibin+1,
+                unfoldedHist.GetBinError(ibin+1)/w
             )
         
         return unfoldedHist,covariance

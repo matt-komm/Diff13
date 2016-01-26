@@ -31,7 +31,7 @@ class ResponseMatrixPt(Module):
         
     def getGenBinning(self):
         #return numpy.array([0.,    45.,    75.,     110.,     160.,     200.,     300.])
-        return numpy.array([0.,    50.,     85.,     130.,     180.,              300.0])
+        return numpy.array([0.,    50.,     85.,     125.,     180.,              300.0])
         
     def getSignalProcessNames(self):
         return ["ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1_ext"]

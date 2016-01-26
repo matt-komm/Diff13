@@ -17,6 +17,7 @@ class Utils(Module):
         return "/home/fynu/mkomm/Diff13/analysis/unfolding/result/nominal"
         
     def createOutputFolder(self,force=False):
+        print self.module("Utils").getOutputFolder()
         if os.path.exists(self.module("Utils").getOutputFolder()) and not force:
             self._logger.warning("Output folder already exists!")
         elif os.path.exists(self.module("Utils").getOutputFolder()) and force:

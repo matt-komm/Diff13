@@ -5,8 +5,8 @@ from defaultModules import Module
 import logging
 
 class LocalFiles(Module.getClass("Files")):
-    def __init_(self,defaultModules,options=[]):
-        Module.getClass("Files").__init__(self,defaultModules,options)
+    def __init__(self,options=[]):
+        LocalFiles.baseClass.__init__(self,options)
         self._logger = logging.getLogger(__file__)
         self._logger.setLevel(logging.DEBUG)
         
@@ -49,5 +49,12 @@ class LocalFiles(Module.getClass("Files")):
                 rootFiles.append(os.path.join(basedir,f))
         self._logger.debug("efficiency files ("+str(len(rootFiles))+") found in "+basedir)
         return rootFiles
+ 
+class localUtils(Module.getClass("Utils")):
+    def __init__(self,options=[]):
+        localUtils.baseClass.__init__(self,options)
+                
+    def getOutputFolder(self):
+        return "/home/mkomm/Analysis/ST13/Diff13/analysis/unfolding/result/nominal"
 
 

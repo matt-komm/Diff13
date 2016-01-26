@@ -35,6 +35,7 @@ class Module(object):
                     self._logger.warning("multiple subclasses for plugin '"+clName+"' found")
                 Module._classes[clName]=cl.__subclasses__()[-1]
                 self._logger.info(clName+": replace '"+cl.__name__+"' -> '"+cl.__subclasses__()[-1].__name__+"'")
+                cl.__subclasses__()[-1].baseClass=cl
                 
     def initObjects(self):
         if Module._modules == None:

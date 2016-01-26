@@ -47,7 +47,7 @@ class PyUnfold
             _tunfold(responseHist,TUnfold::kHistMapOutputHoriz,TUnfold::kRegModeCurvature),
             _responseHist(responseHist)
         {
-            //_tunfold.SetBias(responseHist->ProjectionX());
+            _tunfold.SetBias(responseHist->ProjectionX());
         }
         
         void addBackground(const TH1* background, const char* name, double scale=1.0, double error=0.00001)
@@ -101,7 +101,7 @@ class PyUnfold
                 throw std::runtime_error("Given output histogram to store the result is null");
             }
         
-            _tunfold.DoUnfold(tau);
+            _tunfold.DoUnfold(tau,_dataHist,1.0);
             _tunfold.GetOutput(output);
             
             if (covariance!=nullptr)
