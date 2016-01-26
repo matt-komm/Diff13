@@ -1,5 +1,7 @@
 import numpy
 import ROOT
+import os
+import random
 
 from Module import Module
 
@@ -41,7 +43,24 @@ class ResponseMatrixY(Module):
         for igen in range(responseMatrix.GetNbinsX()):
             res.SetBinContent(igen+1,0,efficiencyHist.GetBinContent(igen+1))
         return res
-
+        
+    def saveResponseMatrix(self,responseMatrix):
+        fullPath = os.path.join(self.module("Utils").getOutputFolder(),"responseY.root")
+        rootFile = ROOT.TFile(fullPath,"RECREATE")
+        responseMatrixSave = responseMatrix.Clone("responseMatrixY")
+        responseMatrixSave.SetDirectory(rootFile)
+        responseMatrixSave.Write()
+        rootFile.Close()
+        
+    def loadResponseMatrix(self):
+        fullPath = os.path.join(self.module("Utils").getOutputFolder(),"responseY.root")
+        if not os.path.exists(fullPath):
+            return None
+        rootFile = ROOT.TFile(fullPath)
+        responseMatrix = rootFile.Get("responseMatrixY").Clone("responseMatrix"+str(random.random()))
+        responseMatrix.SetDirectory(0)
+        rootFile.Close()
+        return responseMatrix
         
     def getResponseMatrix(self):  
         responseFiles = self.module("Files").getResponseFiles()
