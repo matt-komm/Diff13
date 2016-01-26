@@ -2,6 +2,7 @@ import ROOT
 import math
 import numpy
 import random
+import os
 
 from Module import Module
 
@@ -18,6 +19,8 @@ class Program(Module):
         
         self.module("Utils").createOutputFolder()
         
+        ROOT.gRandom.SetSeed(123)
+        
         ### FITTING
         fitResult = self.module("ThetaFit").checkFitResult()
         if fitResult==None:
@@ -26,89 +29,174 @@ class Program(Module):
             self.module("ThetaFit").run()
             fitResult = self.module("ThetaFit").readFitResult()
             self.module("Drawing").drawFitCorrelation(fitResult["correlations"])
-    
+        
         ### RECO HIST AND SCALING
-        histograms = self.module("HistogramCreator").loadHistograms("reco_top_pt")
-        if not histograms:
-            histograms = self.module("HistogramCreator").makeHistograms(
+        histogramsPt = self.module("HistogramCreator").loadHistograms("reco_top_pt")
+        if not histogramsPt:
+            histogramsPt = self.module("HistogramCreator").makeHistograms(
                 self.module("ResponseMatrixPt").getRecoUnfoldingVariable(),
                 self.module("Utils").getCategoryCutStr(2,1)+"*"+self.module("Utils").getMTWCutStr()+"*"+self.module("Utils").getBDTCutStr(),
                 self.module("ResponseMatrixPt").getRecoBinning(),
-                #numpy.linspace(0,250,20),
                 pseudo=True
             )
-            self.module("HistogramCreator").scaleHistogramsToFitResult(histograms,fitResult)
-            self.module("HistogramCreator").saveHistograms(histograms,"reco_top_pt")
-
-        self.module("Drawing").plotHistograms(histograms,"top pT","reco_top_pt")
+            self.module("HistogramCreator").scaleHistogramsToFitResult(histogramsPt,fitResult)
+            self.module("HistogramCreator").saveHistograms(histogramsPt,"reco_top_pt")
+        
+        for ibin in range(histogramsPt["data"]["hists"]["data"].GetNbinsX()):
+            histogramsPt["data"]["hists"]["data"].SetBinContent(ibin+1,
+                ROOT.gRandom.Poisson(histogramsPt["data"]["hists"]["data"].GetBinContent(ibin+1))
+            )
+        
+        self.module("Drawing").plotHistograms(histogramsPt,"top quark pT","reco_top_Pt")
+            
+        histogramsY = self.module("HistogramCreator").loadHistograms("reco_top_y")
+        if not histogramsY:
+            histogramsY = self.module("HistogramCreator").makeHistograms(
+                self.module("ResponseMatrixY").getRecoUnfoldingVariable(),
+                self.module("Utils").getCategoryCutStr(2,1)+"*"+self.module("Utils").getMTWCutStr()+"*"+self.module("Utils").getBDTCutStr(),
+                self.module("ResponseMatrixY").getRecoBinning(),
+                pseudo=True
+            )
+            self.module("HistogramCreator").scaleHistogramsToFitResult(histogramsY,fitResult)
+            self.module("HistogramCreator").saveHistograms(histogramsY,"reco_top_y")
+        
+        for ibin in range(histogramsY["data"]["hists"]["data"].GetNbinsX()):
+            histogramsY["data"]["hists"]["data"].SetBinContent(ibin+1,
+                ROOT.gRandom.Poisson(histogramsY["data"]["hists"]["data"].GetBinContent(ibin+1))
+            )
+        
+        self.module("Drawing").plotHistograms(histogramsY,"top quark |y|","reco_top_Y")
         
        
+       
+       
         ### RESPONSEMATRIX
-        responseMatrix = self.module("ResponseMatrixPt").loadResponseMatrix()
-        if responseMatrix==None:
-            responseMatrix = self.module("ResponseMatrixPt").getResponseMatrix()
-            self.module("ResponseMatrixPt").saveResponseMatrix(responseMatrix)
-        self.module("Drawing").drawResponseMatrix(responseMatrix,"top quark pT","responsePt")
-        responseMatrix.Scale(0.7)
+        responseMatrixPt = self.module("ResponseMatrixPt").loadResponseMatrix()
+        if responseMatrixPt==None:
+            responseMatrixPt = self.module("ResponseMatrixPt").getResponseMatrix()
+            self.module("ResponseMatrixPt").saveResponseMatrix(responseMatrixPt)
+        self.module("Drawing").drawResponseMatrix(responseMatrixPt,"top quark pT","responsePt")
+        responseMatrixPt.Scale(0.7)
+        
+        responseMatrixY = self.module("ResponseMatrixY").loadResponseMatrix()
+        if responseMatrixY==None:
+            responseMatrixY = self.module("ResponseMatrixY").getResponseMatrix()
+            self.module("ResponseMatrixY").saveResponseMatrix(responseMatrixY)
+        self.module("Drawing").drawResponseMatrix(responseMatrixY,"top quark |y|","responseY")
+        responseMatrixY.Scale(0.7)
 
 
-        genHist = responseMatrix.ProjectionX()
-        genBinning = self.module("ResponseMatrixPt").getGenBinning()
+
+
+        ### BACKGROUND SUBTRACTION
+        genHistPt = responseMatrixPt.ProjectionX()
+        genBinningPt = self.module("ResponseMatrixPt").getGenBinning()
+        dataHistPt = histogramsPt["data"]["hists"]["data"]
+        dataHistPtSubtracted = dataHistPt.Clone("datahistPt_subtracted")
+        backgroundDictPt = {}
         
-        
-        dataHist = histograms["data"]["hists"]["data"]
-        #dataHist = responseMatrix.ProjectionY()
-        '''
-        for ibin in range(dataHist.GetNbinsX()):
-            
-            dataHist.SetBinContent(ibin+1,
-                ROOT.gRandom.Poisson(dataHist.GetBinContent(ibin+1))
-            )
-            
-            dataHist.SetBinError(ibin+1,
-                math.sqrt(dataHist.GetBinContent(ibin+1))
-            )
-        '''
-        
-        dataHistSubtracted = dataHist.Clone("datahist_subtracted")
-        backgroundDict = {}
-        
-        for componentName in histograms.keys():
-            
+        for componentName in histogramsPt.keys():
             componentHist = None
-            for componentSetName in histograms[componentName]["hists"].keys():
+            for componentSetName in histogramsPt[componentName]["hists"].keys():
                 if componentHist==None:
-                    componentHist = histograms[componentName]["hists"][componentSetName].Clone(componentName+"_sum"+str(random.random()))
+                    componentHist = histogramsPt[componentName]["hists"][componentSetName].Clone(componentName+"_sum"+str(random.random()))
                 else:
-                    componentHist.Add(histograms[componentName]["hists"][componentSetName])
+                    componentHist.Add(histogramsPt[componentName]["hists"][componentSetName])
             
-            histograms[componentName]["hists"]["sum"]=componentHist
+            histogramsPt[componentName]["hists"]["sum"]=componentHist
             if componentName=="tChannel" or componentName=="data":
                 continue
+            dataHistPtSubtracted.Add(componentHist,-1.0)
             '''
-            backgroundDict[componentName]={}
-            backgroundDict[componentName]["hist"]=componentHist
-            backgroundDict[componentName]["mean"]=1.0
-            backgroundDict[componentName]["unc"]=fitResult[componentName]["unc"]
+            backgroundDictPt[componentName]={}
+            backgroundDictPt[componentName]["hist"]=componentHist
+            backgroundDictPt[componentName]["mean"]=1.0
+            backgroundDictPt[componentName]["unc"]=fitResult[componentName]["unc"]
             '''
-            dataHistSubtracted.Add(componentHist,-1.0)
+        
+        
+        
+        
+        genHistY = responseMatrixY.ProjectionX()
+        genBinningY = self.module("ResponseMatrixY").getGenBinning()
+        dataHistY = histogramsY["data"]["hists"]["data"]
+        dataHistYSubtracted = dataHistY.Clone("datahistY_subtracted")
+        backgroundDictY = {}
+
+        for componentName in histogramsY.keys():
+            componentHist = None
+            for componentSetName in histogramsY[componentName]["hists"].keys():
+                if componentHist==None:
+                    componentHist = histogramsY[componentName]["hists"][componentSetName].Clone(componentName+"_sum"+str(random.random()))
+                else:
+                    componentHist.Add(histogramsY[componentName]["hists"][componentSetName])
+            
+            histogramsY[componentName]["hists"]["sum"]=componentHist
+            if componentName=="tChannel" or componentName=="data":
+                continue
+            dataHistYSubtracted.Add(componentHist,-1.0)
+            '''
+            backgroundDictY[componentName]={}
+            backgroundDictY[componentName]["hist"]=componentHist
+            backgroundDictY[componentName]["mean"]=1.0
+            backgroundDictY[componentName]["unc"]=fitResult[componentName]["unc"]
+            '''
             
 
-        self.module("Drawing").plotHistogram(dataHistSubtracted,"top pT","dataSubtracted")
-        self.module("Drawing").plotHistogram(histograms["tChannel"]["hists"]["sum"],"top pT","MCsignal")
         
-        mcTruth = responseMatrix.ProjectionY()
-        mcTruth.SetMarkerStyle(20)
-        mcTruth.SetMarkerSize(1)
-        self.module("Drawing").plotHistogram(mcTruth,"top pT","MCtruth")
+
+          
+            
+        ### UNFOLDING        
+        dataHistPtMatrix=responseMatrixPt.ProjectionY()
+        self.module("Drawing").drawDataSubtracted(dataHistPtSubtracted,dataHistPtMatrix,"top quark pT","datasubtracted_Pt")
+        self.module("Drawing").drawDataSubtracted(dataHistPtSubtracted,histogramsPt["tChannel"]["hists"]["sum"],"top quark pT","datasubtracted2_Pt")
+        unfoldedHistPt, covariancePt = self.module("Unfolding").unfold(responseMatrixPt,dataHistPtSubtracted,genBinningPt)
         
-        unfoldedHist, covariance = self.module("Unfolding").unfold(responseMatrix,dataHistSubtracted,genBinning)
+        rootFile = ROOT.TFile(os.path.join(self.module("Utils").getOutputFolder(),"unfoldingPt.root"),"RECREATE")
+        unfoldedHistPtWrite = unfoldedHistPt.Clone("unfoldedHistPt")
+        unfoldedHistPtWrite.SetDirectory(rootFile)
+        unfoldedHistPtWrite.Write()
+        covariancePtWrite = covariancePt.Clone("covariancePt")
+        covariancePtWrite.SetDirectory(rootFile)
+        covariancePtWrite.Write()
+        responseMatrixPtWrite = responseMatrixPt.Clone("responsePt")
+        responseMatrixPtWrite.SetDirectory(rootFile)
+        responseMatrixPtWrite.Write()
+        dataHistPtSubtractedWrite = dataHistPtSubtracted.Clone("dataSubtractedPt")
+        dataHistPtSubtractedWrite.SetDirectory(rootFile)
+        dataHistPtSubtractedWrite.Write()
+        rootFile.Close()
 
-        #self.module("Utils").normalizeByBinWidth(unfoldedHist)
-        #self.module("Utils").normalizeByBinWidth(genHist)
-
-        self.module("Drawing").drawBiasTest(unfoldedHist,genHist,"top quark pT","biasPt")
-
-
+        self.module("Utils").normalizeByBinWidth(unfoldedHistPt)
+        self.module("Utils").normalizeByBinWidth(genHistPt)
+        self.module("Drawing").drawBiasTest(unfoldedHistPt,genHistPt,"top quark pT","bias_Pt")
         
+        
+        
+
+        dataHistYMatrix=responseMatrixY.ProjectionY()
+        self.module("Drawing").drawDataSubtracted(dataHistYSubtracted,dataHistYMatrix,"top quark |y|","datasubtracted_Y")
+        self.module("Drawing").drawDataSubtracted(dataHistYSubtracted,histogramsY["tChannel"]["hists"]["sum"],"top quark |y|","datasubtracted2_Y")
+        unfoldedHistY, covarianceY = self.module("Unfolding").unfold(responseMatrixY,dataHistYSubtracted,genBinningY)
+        
+        rootFile = ROOT.TFile(os.path.join(self.module("Utils").getOutputFolder(),"unfoldingY.root"),"RECREATE")
+        unfoldedHistYWrite = unfoldedHistY.Clone("unfoldedHistY")
+        unfoldedHistYWrite.SetDirectory(rootFile)
+        unfoldedHistYWrite.Write()
+        covarianceYWrite = covarianceY.Clone("covarianceY")
+        covarianceYWrite.SetDirectory(rootFile)
+        covarianceYWrite.Write()
+        responseMatrixYWrite = responseMatrixY.Clone("responseY")
+        responseMatrixYWrite.SetDirectory(rootFile)
+        responseMatrixYWrite.Write()
+        dataHistYSubtractedWrite = dataHistYSubtracted.Clone("dataSubtractedY")
+        dataHistYSubtractedWrite.SetDirectory(rootFile)
+        dataHistYSubtractedWrite.Write()
+        rootFile.Close()
+        
+        self.module("Utils").normalizeByBinWidth(unfoldedHistY)
+        self.module("Utils").normalizeByBinWidth(genHistY)
+        self.module("Drawing").drawBiasTest(unfoldedHistY,genHistY,"top quark |y|","bias_Y")
+
         

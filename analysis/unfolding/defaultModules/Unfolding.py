@@ -49,7 +49,7 @@ class Unfolding(Module):
         covariance = ROOT.TH2D("correlation","",len(genBinning)-1,genBinning,len(genBinning)-1,genBinning)
         unfoldedHist = ROOT.TH1D("unfoldedHist","",len(genBinning)-1,genBinning)
         unfoldedHist.Sumw2()
-        tunfold.doUnfolding(bestTau,unfoldedHist,covariance)
+        tunfold.doUnfolding(bestTau,unfoldedHist,covariance,True,False,False)
         
         for ibin in range(unfoldedHist.GetNbinsX()):
             w = 1.0/genHist.GetBinContent(ibin+1)*genHist.Integral()/genHist.GetNbinsX()

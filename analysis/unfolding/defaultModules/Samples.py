@@ -73,12 +73,12 @@ class Samples(Module):
             "tChannel":
             {
                 "processes":[
-                    "ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1_iso"+syst,
+                    #"ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1_iso"+syst,
                     "ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1_ext_iso"+syst,
                 ],
                 "color":ROOT.gROOT.GetColor(ROOT.kRed),
                 "title":"t-channel",
-                "weight":"0.5*"+mcweight
+                "weight":mcweight
             },
 
             "tWChannel":

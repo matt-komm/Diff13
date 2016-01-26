@@ -79,6 +79,41 @@ class Drawing(Module):
         cvUnfold.Print(os.path.join(self.module("Utils").getOutputFolder(),outputName+".png"))
         cvUnfold.Print(os.path.join(self.module("Utils").getOutputFolder(),outputName+".pdf"))
         
+        
+    def drawDataSubtracted(self,dataHist,recoHist,varTitle,outputName):
+        cvData = ROOT.TCanvas("cvData","",800,700)
+
+        axisUnfolding = ROOT.TH2F("axisUnfolding",";reconstructed"+varTitle+";a.u.",50,recoHist.GetXaxis().GetXmin(),recoHist.GetXaxis().GetXmax(),50,0,1.2*max(recoHist.GetMaximum(),dataHist.GetMaximum()))
+        axisUnfolding.Draw("AXIS")
+        recoHist.SetLineColor(ROOT.kAzure-4)
+        recoHist.SetLineWidth(2)
+        recoHist.Draw("HISTSame")
+        dataHist.SetMarkerSize(1.0)
+        dataHist.SetMarkerStyle(20)
+        dataHist.SetLineWidth(2)
+        dataHist.Draw("SamePE")
+        
+        pCMS=ROOT.TPaveText(1-cvData.GetRightMargin()-0.25,0.94,1-cvData.GetRightMargin()-0.25,0.94,"NDC")
+        pCMS.SetFillColor(ROOT.kWhite)
+        pCMS.SetBorderSize(0)
+        pCMS.SetTextFont(63)
+        pCMS.SetTextSize(30)
+        pCMS.SetTextAlign(11)
+        pCMS.AddText("CMS")
+        pCMS.Draw("Same")
+        
+        pPreliminary=ROOT.TPaveText(1-cvData.GetRightMargin()-0.165,0.94,1-cvData.GetRightMargin()-0.165,0.94,"NDC")
+        pPreliminary.SetFillColor(ROOT.kWhite)
+        pPreliminary.SetBorderSize(0)
+        pPreliminary.SetTextFont(53)
+        pPreliminary.SetTextSize(30)
+        pPreliminary.SetTextAlign(11)
+        pPreliminary.AddText("Simulation")
+        pPreliminary.Draw("Same")
+        
+        cvData.Print(os.path.join(self.module("Utils").getOutputFolder(),outputName+".png"))
+        cvData.Print(os.path.join(self.module("Utils").getOutputFolder(),outputName+".pdf"))
+        
     def drawFitCorrelation(self,covariance):
         cvCovariance = ROOT.TCanvas("cvCorrelations","",800,700)
         cvCovariance.SetRightMargin(0.17)

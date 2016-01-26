@@ -31,9 +31,10 @@ class ResponseMatrixY(Module):
         #return numpy.array([0.0,0.15,0.3,0.45,0.6,0.8,1.0,1.2,1.4,1.6,1.8,2.1,2.4])
         
     def getGenBinning(self):
-        return numpy.array([0.0,0.4,0.8,1.2,1.6,2.0,2.4])
-        return numpy.linspace(0,2.4,7)
+        #return numpy.array([0.0,0.4,0.8,1.2,1.6,2.0,2.4])
+        #return numpy.linspace(0,2.4,7)
         #return numpy.array([0.0,0.3,0.6,1.0,1.5,2.0,2.4])
+        return numpy.array([0.0, 0.35, 0.7, 1.1, 1.6, 2.4])
         
     def getSignalProcessNames(self):
         return ["ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1_ext"]
@@ -89,7 +90,7 @@ class ResponseMatrixY(Module):
                 self.module("Utils").getHist2D(
                     responseMatrixSelected,
                     f,
-                    processName+"_iso",
+                    processName+"_iso"+self.module("Utils").getRecoSamplePrefix(),
                     self.module("ResponseMatrixY").getGenUnfoldingVariable(),
                     self.module("ResponseMatrixY").getRecoUnfoldingVariable(),
                     recoweight+"*"+cut

@@ -46,7 +46,7 @@ class ThetaModel(Module):
         return observables
         
     def getBinning(self):
-        return 50
+        return 30
         
     def getRange(self):
         return [0.0,200.0]
@@ -144,7 +144,7 @@ class ThetaModel(Module):
             uncertainties[uncertaintyName]["dist"]=Distribution(uncertaintyName, uncertainties[uncertaintyName]["type"], uncertainties[uncertaintyName]["config"])
             file.write(uncertainties[uncertaintyName]["dist"].toConfigString())
 
-        for observableName in observables.keys():
+        for iobs,observableName in enumerate(observables.keys()):
             observable = Observable(observableName, binning, ranges)
             observableWeight = observables[observableName]["weight"]+"*"+addCut
 
@@ -223,7 +223,7 @@ class ThetaModel(Module):
                 
                 
             else:
-                histoadd = HistoAdd(observableName+"__data",{"dice_stat":"true"})
+                histoadd = HistoAdd(observableName+"__data",{"dice_stat":"true","rnd":7*(iobs*3+11)})
                 data = self.module("ThetaModel").getDataDict()
                 for componentName in components.keys():
                     componentWeight = components[componentName]["weight"]
