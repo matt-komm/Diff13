@@ -191,12 +191,12 @@ class ThetaModel(Module):
             if not pseudo:
                 histoadd = HistoAdd(observableName+"__data")
                 data = self.module("ThetaModel").getDataDict()
-                for componentName in components.keys():
+                for componentName in data.keys():
                     componentWeight=data[componentName]["weight"]
                       
                     self._logger.debug("Creating model: "+observableName+" "+componentName)
                     
-                    for componentSetName in components[componentName]["sets"]:
+                    for componentSetName in data[componentName]["sets"]:
                         sampleDict = self.module("Samples").getSample(componentSetName)
                         for processName in sampleDict["processes"]:
                             processWeight = sampleDict["weight"]
@@ -357,13 +357,13 @@ class ThetaModel(Module):
         file.write('    data_source={\n')
         file.write('        type="histo_source";\n')
         file.write('        name="data";\n')
-
-        #file.write('        obs_1j="@histoadd_1j__data";\n')
+        for obs in self.module("ThetaModel").getObservablesDict().keys():
+            file.write('        obs_'+obs+'="@histoadd_'+obs+'__data";\n')
         #file.write('        obs_2j0t="@histoadd_2j0t__data";\n')
-        file.write('        obs_2j1t="@histoadd_2j1t__data";\n')
+        #file.write('        obs_2j1t="@histoadd_2j1t__data";\n')
         #file.write('        obs_3j0t="@histoadd_3j0t__data";\n')
-        file.write('        obs_3j1t="@histoadd_3j1t__data";\n')
-        file.write('        obs_3j2t="@histoadd_3j2t__data";\n')
+        #file.write('        obs_3j1t="@histoadd_3j1t__data";\n')
+        #file.write('        obs_3j2t="@histoadd_3j2t__data";\n')
         file.write('    };\n')
 
             

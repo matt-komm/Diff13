@@ -4,13 +4,25 @@ import numpy
 import random
 import os
 
-from Module import Module
+from defaultModules import Module
 
 import logging
 
-class Program(Module):
+class UtilsNoPseudo(Module.getClass("Utils")):
     def __init__(self,options=[]):
-        Module.__init__(self,options)
+        UtilsNoPseudo.baseClass.__init__(self,options)
+        self._logger = logging.getLogger(__file__)
+        self._logger.setLevel(logging.DEBUG)
+        
+    def getRecoSamplePrefix(self):
+        return ""
+        
+    def getOutputFolder(self):
+        return "/home/fynu/mkomm/Diff13/analysis/unfolding/result/NoPseudo"
+        
+class NoPseudo(Module.getClass("Program")):
+    def __init__(self,options=[]):
+        NoPseudo.baseClass.__init__(self,options)
         self._logger = logging.getLogger(__file__)
         self._logger.setLevel(logging.DEBUG)
         
@@ -24,44 +36,11 @@ class Program(Module):
         ### FITTING
         fitResult = self.module("ThetaFit").checkFitResult()
         if fitResult==None:
-            #self.module("ThetaModel").makeModel(pseudo=True,addCut="(Reconstructed_1__isBarrel==1)")
-            self.module("ThetaModel").makeModel(pseudo=True)
+            self.module("ThetaModel").makeModel(pseudo=False,addCut="(Reconstructed_1__isBarrel==1)")
+            #self.module("ThetaModel").makeModel(pseudo=True)
             self.module("ThetaFit").run()
             fitResult = self.module("ThetaFit").readFitResult()
-        self.module("Drawing").drawFitCorrelation(fitResult["correlations"])
-            
-            
-        ###YIELDS
-        histogramsAllYield = self.module("HistogramCreator").loadHistograms("yields_all")
-        if not histogramsAllYield:
-            histogramsAllYield = self.module("HistogramCreator").makeHistograms(
-                "Reconstructed_1__nSelectedJet*3+Reconstructed_1__nSelectedBJet",
-                "(Reconstructed_1__nSelectedJet<4)",
-                numpy.linspace(-0.5,12.5,14),
-                pseudo=True
-            )
-            self.module("HistogramCreator").scaleHistogramsToFitResult(histogramsAllYield,fitResult)
-            self.module("HistogramCreator").saveHistograms(histogramsAllYield,"yields_all")
-        histogramsMTWYield = self.module("HistogramCreator").loadHistograms("yields_mtw")
-        if not histogramsMTWYield:
-            histogramsMTWYield = self.module("HistogramCreator").makeHistograms(
-                "Reconstructed_1__nSelectedJet*3+Reconstructed_1__nSelectedBJet",
-                "(Reconstructed_1__nSelectedJet<4)"+"*"+self.module("Utils").getMTWCutStr(),
-                numpy.linspace(-0.5,12.5,14),
-                pseudo=True
-            )
-            self.module("HistogramCreator").scaleHistogramsToFitResult(histogramsMTWYield,fitResult)
-            self.module("HistogramCreator").saveHistograms(histogramsMTWYield,"yields_mtw")
-        histogramsBDTYield = self.module("HistogramCreator").loadHistograms("yields_bdt")
-        if not histogramsBDTYield:
-            histogramsBDTYield = self.module("HistogramCreator").makeHistograms(
-                "Reconstructed_1__nSelectedJet*3+Reconstructed_1__nSelectedBJet",
-                "(Reconstructed_1__nSelectedJet<4)"+"*"+self.module("Utils").getMTWCutStr()+"*"+self.module("Utils").getBDTCutStr(),
-                numpy.linspace(-0.5,12.5,14),
-                pseudo=True
-            )
-            self.module("HistogramCreator").scaleHistogramsToFitResult(histogramsBDTYield,fitResult)
-            self.module("HistogramCreator").saveHistograms(histogramsBDTYield,"yields_bdt")
+            self.module("Drawing").drawFitCorrelation(fitResult["correlations"])
         
         ### RECO HIST AND SCALING
         histogramsPt = self.module("HistogramCreator").loadHistograms("reco_top_pt")
@@ -70,16 +49,16 @@ class Program(Module):
                 self.module("ResponseMatrixPt").getRecoUnfoldingVariable(),
                 self.module("Utils").getCategoryCutStr(2,1)+"*"+self.module("Utils").getMTWCutStr()+"*"+self.module("Utils").getBDTCutStr(),
                 self.module("ResponseMatrixPt").getRecoBinning(),
-                pseudo=True
+                pseudo=False
             )
             self.module("HistogramCreator").scaleHistogramsToFitResult(histogramsPt,fitResult)
             self.module("HistogramCreator").saveHistograms(histogramsPt,"reco_top_pt")
-        
+        '''
         for ibin in range(histogramsPt["data"]["hists"]["data"].GetNbinsX()):
             histogramsPt["data"]["hists"]["data"].SetBinContent(ibin+1,
                 ROOT.gRandom.Poisson(histogramsPt["data"]["hists"]["data"].GetBinContent(ibin+1))
             )
-        
+        '''
         self.module("Drawing").plotHistograms(histogramsPt,"top quark pT","reco_top_Pt")
             
         histogramsY = self.module("HistogramCreator").loadHistograms("reco_top_y")
@@ -88,16 +67,16 @@ class Program(Module):
                 self.module("ResponseMatrixY").getRecoUnfoldingVariable(),
                 self.module("Utils").getCategoryCutStr(2,1)+"*"+self.module("Utils").getMTWCutStr()+"*"+self.module("Utils").getBDTCutStr(),
                 self.module("ResponseMatrixY").getRecoBinning(),
-                pseudo=True
+                pseudo=False
             )
             self.module("HistogramCreator").scaleHistogramsToFitResult(histogramsY,fitResult)
             self.module("HistogramCreator").saveHistograms(histogramsY,"reco_top_y")
-        
+        '''
         for ibin in range(histogramsY["data"]["hists"]["data"].GetNbinsX()):
             histogramsY["data"]["hists"]["data"].SetBinContent(ibin+1,
                 ROOT.gRandom.Poisson(histogramsY["data"]["hists"]["data"].GetBinContent(ibin+1))
             )
-        
+        '''
         self.module("Drawing").plotHistograms(histogramsY,"top quark |y|","reco_top_Y")
         
        

@@ -19,3 +19,7 @@ class UtilsResDown(Module.getClass("Utils")):
         
     def getOutputFolder(self):
         return "/home/fynu/mkomm/Diff13/analysis/unfolding/result/ResDown"
+        
+    def getGenWeightStr(self):
+        return str(self.module("Utils").getLumi())+"*mc_weight*((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)"
+    
