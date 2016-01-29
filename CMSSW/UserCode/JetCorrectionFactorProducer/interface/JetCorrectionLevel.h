@@ -4,7 +4,10 @@
 #include <functional>
 #include <memory>
 
-#include "DataFormats/PatCandidates/interface/Jet.h"
+namespace pat
+{
+    class Jet;
+}
 
 class JetCorrectionLevel
 {

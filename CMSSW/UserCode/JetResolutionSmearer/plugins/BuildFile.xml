@@ -3,4 +3,5 @@
 <use name="FWCore/ParameterSet"/>
 <use name="DataFormats/PatCandidates"/>
 <use name="CommonTools/Utils"/>
+<use name="JetMETCorrections/Modules"/>
 <flags EDM_PLUGIN="1"/>
