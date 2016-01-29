@@ -84,25 +84,36 @@ class UnclusteredEnergyShifter:
                 jetSumPy+=jet.py();
             }
             //sum(jet)+unclusteredE+MET=0
-            double unclusteredPx = -(metPx+jetSumPx);
-            double unclusteredPy = -(metPy+jetSumPy);
+            const double unclusteredPx = -(metPx+jetSumPx);
+            const double unclusteredPy = -(metPy+jetSumPy);
             
             pat::MET* newMET = metCollection->at(0).clone();
             reco::Candidate::LorentzVector metP = newMET->p4();
+            
+            double newPx = 0.0;
+            double newPy = 0.0;
+            
+            if (_shift==0)
+            {
+                newPx=metP.px();
+                newPy=metP.py();
+            }
             if (_shift>0)
             {
-                metP+=reco::Candidate::LorentzVector(
-                    unclusteredPx*0.1,unclusteredPy*0.1,0,
-                    std::sqrt(unclusteredPx*unclusteredPx*0.01+unclusteredPy*unclusteredPy*0.01)
-                );
+                newPx = metP.px() + unclusteredPx*0.1;
+                newPy = metP.py() + unclusteredPy*0.1;
             }
             else if (_shift<0)
             {
-                metP-=reco::Candidate::LorentzVector(
-                    unclusteredPx*0.1,unclusteredPy*0.1,0,
-                    std::sqrt(unclusteredPx*unclusteredPx*0.01+unclusteredPy*unclusteredPy*0.01)
-                );
+                newPx = metP.px() - unclusteredPx*0.1;
+                newPy = metP.py() - unclusteredPy*0.1;
             }
+            metP.SetPxPyPzE(
+                newPx,
+                newPy,
+                metP.Pz(),
+                std::sqrt(newPx*newPx+newPy*newPy+metP.Pz()*metP.Pz())
+            );
             newMET->setP4(metP);
             output->emplace_back(std::move(*newMET));
             edmEvent.put(std::move(output));

@@ -46,8 +46,8 @@ if __name__=="__main__":
     config.JobType.pluginName = 'Analysis'
     config.JobType.psetName = 'EDM2PXLIO/analysis15runD.py'
     config.JobType.pyCfgParams = []
-    #config.JobType.outputFiles = ["output.pxlio","info.root"]
-    config.JobType.outputFiles = ["output.pxlio"]
+    config.JobType.outputFiles = ["output.pxlio","info.root"]
+    #config.JobType.outputFiles = ["output.pxlio"]
     config.JobType.inputFiles=[
         #"Summer15_50nsV4_DATA.db",
         #"Summer15_50nsV4_MC.db",
@@ -192,7 +192,7 @@ if __name__=="__main__":
         
     ]
     
-    datasets76DR25nsMINIAODv=[
+    datasets76DR25nsMINIAODv2=[
         '/ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1/RunIIFall15MiniAODv2-PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/MINIAODSIM',
         '/ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1/RunIIFall15MiniAODv2-PU25nsData2015v1_76X_mcRun2_asymptotic_v12_ext1-v1/MINIAODSIM',
         
@@ -240,14 +240,14 @@ if __name__=="__main__":
         '/SingleMuon/Run2015D-16Dec2015-v1/MINIAOD'
     ]
     
-    dataset=datasets76DR25nsMINIAODv1[int(args[0])]
+    dataset=datasets76DR25nsMINIAODv2[int(args[0])]
     #dataset=datasetData76DR[int(args[0])]
     processName = dataset.split("/")[1]
     #processName = dataset.split("/")[1]+"_"+dataset.split("/")[2]
     if dataset.split("/")[2].find("_ext")!=-1:
         processName+="_ext"
 
-    jobName = processName+'_v160111'
+    jobName = processName+'_v160129'
     
     print "submitting... ",jobName
     #status(os.path.join(os.getcwd(),"crab",jobName,"crab_"+config.General.requestName))

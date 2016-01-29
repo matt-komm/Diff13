@@ -16,7 +16,7 @@
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
-#include "TTree.h"
+#include "TH1F.h"
 
 
 class EventInfoCollector:
@@ -24,17 +24,16 @@ class EventInfoCollector:
 {
     private:    
         edm::Service<TFileService> fs;
-        TTree* _tree;
         
-        float _genweight;
+        TH1F* _genweight;
         
-        unsigned short _nInteractions0;
-        unsigned short _nInteractions1;
-        unsigned short _nInteractions2;
+        TH1F* _nInteractions0;
+        TH1F* _nInteractions1;
+        TH1F* _nInteractions2;
         
-        float _nTrueInteractions0;
-        float _nTrueInteractions1;
-        float _nTrueInteractions2;
+        TH1F* _nTrueInteractions0;
+        TH1F* _nTrueInteractions1;
+        TH1F* _nTrueInteractions2;
     
         edm::InputTag _genEventInfoProductInputTag;
         edm::EDGetTokenT<GenEventInfoProduct> _genEventInfoProductToken;
@@ -85,20 +84,18 @@ EventInfoCollector::~EventInfoCollector()
 void 
 EventInfoCollector::beginJob()
 {
-    _tree = fs->make<TTree>("info","info");
     if (_genEventInfoProductInputTag.label().size()>0)
     {
-        _tree->Branch("genweight",&_genweight);
+        _genweight = fs->make<TH1F>("genweight","genweight",2,-1.5,1.5);
     }
     if (_pileupSummaryInfoInputTag.label().size()>0)
     {
-        _tree->Branch("nInteractions0",&_nInteractions0);
-        _tree->Branch("nInteractions1",&_nInteractions1);
-        _tree->Branch("nInteractions2",&_nInteractions2);
-        
-        _tree->Branch("nTrueInteractions0",&_nTrueInteractions0);
-        _tree->Branch("nTrueInteractions1",&_nTrueInteractions1);
-        _tree->Branch("nTrueInteractions2",&_nTrueInteractions2);
+        _nInteractions0 = fs->make<TH1F>("nInteractions0","nInteractions0",101,-0.5,100.5);
+        _nInteractions1 = fs->make<TH1F>("nInteractions1","nInteractions1",101,-0.5,100.5);
+        _nInteractions2 = fs->make<TH1F>("nInteractions2","nInteractions2",101,-0.5,100.5);
+        _nTrueInteractions0 = fs->make<TH1F>("nTrueInteractions0","nTrueInteractions0",101,-0.5,100.5);
+        _nTrueInteractions1 = fs->make<TH1F>("nTrueInteractions1","nTrueInteractions1",101,-0.5,100.5);
+        _nTrueInteractions2 = fs->make<TH1F>("nTrueInteractions2","nTrueInteractions2",101,-0.5,100.5);
     }
 }
 
@@ -110,7 +107,7 @@ EventInfoCollector::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
     {
         edm::Handle<GenEventInfoProduct> genEventInfoProduct;
         iEvent.getByToken(_genEventInfoProductToken, genEventInfoProduct);
-        _genweight = genEventInfoProduct->weight();
+        _genweight->Fill(genEventInfoProduct->weight()>0.0 ? 1.0 : -1.0,genEventInfoProduct->weight());
     }
     if (_pileupSummaryInfoInputTag.label().size()>0)
     {
@@ -121,23 +118,21 @@ EventInfoCollector::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
         {
             if ((*pileupSummaryInfoCollection)[i].getBunchCrossing()==-1)
             {
-                _nInteractions0=(*pileupSummaryInfoCollection)[i].getPU_NumInteractions();
-                _nTrueInteractions0=(*pileupSummaryInfoCollection)[i].getTrueNumInteractions();
+                _nInteractions0->Fill((*pileupSummaryInfoCollection)[i].getPU_NumInteractions());
+                _nTrueInteractions0->Fill((*pileupSummaryInfoCollection)[i].getTrueNumInteractions());
             }
             else if ((*pileupSummaryInfoCollection)[i].getBunchCrossing()==0)
             {
-                _nInteractions1=(*pileupSummaryInfoCollection)[i].getPU_NumInteractions();
-                _nTrueInteractions1=(*pileupSummaryInfoCollection)[i].getTrueNumInteractions();
+                _nInteractions1->Fill((*pileupSummaryInfoCollection)[i].getPU_NumInteractions());
+                _nTrueInteractions1->Fill((*pileupSummaryInfoCollection)[i].getTrueNumInteractions());
             }
             else if ((*pileupSummaryInfoCollection)[i].getBunchCrossing()==1)
             {
-                _nInteractions2=(*pileupSummaryInfoCollection)[i].getPU_NumInteractions();
-                _nTrueInteractions2=(*pileupSummaryInfoCollection)[i].getTrueNumInteractions();
+                _nInteractions2->Fill((*pileupSummaryInfoCollection)[i].getPU_NumInteractions());
+                _nTrueInteractions2->Fill((*pileupSummaryInfoCollection)[i].getTrueNumInteractions());
             }
         }
     }
-    _tree->Fill();
-
 }
 
 
