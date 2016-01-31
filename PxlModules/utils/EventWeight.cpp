@@ -252,7 +252,7 @@ const std::unordered_map<std::string,FileInfo> eventWeights = {
         {
             //total=2966200 eff=2042819-923381=1119438
             1119438,
-            80.95 * 0.324
+            216.97 * 0.324
         }
     },
     

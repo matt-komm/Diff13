@@ -131,6 +131,8 @@ class JetMETVariations:
             std::vector<pxl::EventView*> eventViews;
             event->getObjectsOfType(eventViews);
             
+            bool metRenamed = false;
+            
             for (pxl::EventView* eventView: eventViews)
             {
                 if (eventView->getName()==_eventViewName)
@@ -146,6 +148,11 @@ class JetMETVariations:
                         else if (particle->getName()==metName)
                         {
                             particle->setName(_renamedMET);
+                            if (metRenamed)
+                            {
+                                throw std::runtime_error("Multiple MET objects found of name '"+metName+"'");
+                            }
+                            metRenamed=true;
                         }
                         else if (_removeOtherVariations and std::equal(_renamedJet.begin(),_renamedJet.end(),particle->getName().begin()))
                         {
@@ -157,6 +164,10 @@ class JetMETVariations:
                         }
                     }
                 }
+            }
+            if (!metRenamed)
+            {
+                throw std::runtime_error("No MET object found of name '"+metName+"'");
             }
         }
 
@@ -233,7 +244,8 @@ class JetMETVariations:
 
 const std::vector<std::string> JetMETVariations::variations = {
 "Res",
-"En"
+"En",
+"UnclEn"
 };
 
 PXL_MODULE_INIT(JetMETVariations)
