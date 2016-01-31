@@ -343,6 +343,8 @@ class EventWeight:
         std::string _processNameField;
 
         std::vector<std::string> _allowedPostfixes;
+        
+        std::vector<std::string> _processNameList;
 
     public:
     
@@ -389,6 +391,11 @@ class EventWeight:
         {
             getOption("name of process field",_processNameField);
             getOption("allowed postfixes",_allowedPostfixes);
+            
+            for (auto it = eventWeights.begin(); it!=eventWeights.end(); ++it)
+            {
+                _processNameList.push_back(it->first);
+            }
         }
 
         bool analyse(pxl::Sink *sink) throw (std::runtime_error)
@@ -400,19 +407,22 @@ class EventWeight:
                 {
                     std::string processName = event->getUserRecord(_processNameField);
                     bool found = false;
-                    for (unsigned int ipostfix = 0; ipostfix<_allowedPostfixes.size(); ++ipostfix)
+                    for (std::string& possibleName: _processNameList)
                     {
-                        const std::string& postfix = _allowedPostfixes[ipostfix];
-                        //check if postfix matches
-                        if (0 == processName.compare (processName.length() - postfix.length(), postfix.length(), postfix))
+                        if (std::equal(possibleName.begin(),possibleName.end(),processName.begin()))
                         {
-		                    auto it = eventWeights.find(processName.substr(0,processName.length() - postfix.length()));
-                            if (it!=eventWeights.end())
-                            {
-		                        event->setUserRecord("mc_weight",1.0*it->second.crossSection/it->second.nEvents);
-                                found = true;
-                                break;
-                            }
+                            processName = possibleName;
+                            found=true;
+                        }
+                    }
+
+                    if (found)
+                    {
+	                    auto it = eventWeights.find(processName);
+                        if (it!=eventWeights.end())
+                        {
+	                        event->setUserRecord("mc_weight",1.0*it->second.crossSection/it->second.nEvents);
+                            found = true;
                         }
                     }
                     if (!found)
