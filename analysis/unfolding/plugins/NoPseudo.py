@@ -41,6 +41,38 @@ class NoPseudo(Module.getClass("Program")):
             self.module("ThetaFit").run()
             fitResult = self.module("ThetaFit").readFitResult()
             self.module("Drawing").drawFitCorrelation(fitResult["correlations"])
+               
+        ###YIELDS
+        histogramsAllYield = self.module("HistogramCreator").loadHistograms("yields_all")
+        if not histogramsAllYield:
+            histogramsAllYield = self.module("HistogramCreator").makeHistograms(
+                "Reconstructed_1__nSelectedJet*3+Reconstructed_1__nSelectedBJet",
+                "(Reconstructed_1__nSelectedJet<4)*(Reconstructed_1__isBarrel==1)",
+                numpy.linspace(-0.5,12.5,14),
+                pseudo=False
+            )
+            self.module("HistogramCreator").scaleHistogramsToFitResult(histogramsAllYield,fitResult)
+            self.module("HistogramCreator").saveHistograms(histogramsAllYield,"yields_all")
+        histogramsMTWYield = self.module("HistogramCreator").loadHistograms("yields_mtw")
+        if not histogramsMTWYield:
+            histogramsMTWYield = self.module("HistogramCreator").makeHistograms(
+                "Reconstructed_1__nSelectedJet*3+Reconstructed_1__nSelectedBJet",
+                "(Reconstructed_1__nSelectedJet<4)*(Reconstructed_1__isBarrel==1)"+"*"+self.module("Utils").getMTWCutStr(),
+                numpy.linspace(-0.5,12.5,14),
+                pseudo=False
+            )
+            self.module("HistogramCreator").scaleHistogramsToFitResult(histogramsMTWYield,fitResult)
+            self.module("HistogramCreator").saveHistograms(histogramsMTWYield,"yields_mtw")
+        histogramsBDTYield = self.module("HistogramCreator").loadHistograms("yields_bdt")
+        if not histogramsBDTYield:
+            histogramsBDTYield = self.module("HistogramCreator").makeHistograms(
+                "Reconstructed_1__nSelectedJet*3+Reconstructed_1__nSelectedBJet",
+                "(Reconstructed_1__nSelectedJet<4)*(Reconstructed_1__isBarrel==1)"+"*"+self.module("Utils").getMTWCutStr()+"*"+self.module("Utils").getBDTCutStr(),
+                numpy.linspace(-0.5,12.5,14),
+                pseudo=False
+            )
+            self.module("HistogramCreator").scaleHistogramsToFitResult(histogramsBDTYield,fitResult)
+            self.module("HistogramCreator").saveHistograms(histogramsBDTYield,"yields_bdt")
         
         ### RECO HIST AND SCALING
         histogramsPt = self.module("HistogramCreator").loadHistograms("reco_top_pt")

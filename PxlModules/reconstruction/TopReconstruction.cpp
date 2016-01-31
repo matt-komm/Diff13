@@ -99,7 +99,7 @@ class TopReconstruction:
             
             _outputSources[OTHER] = addSource("other","other");
             
-            _outputSources[C1J] = addSource("0j","0j");
+            _outputSources[C0J] = addSource("0j","0j");
             _outputSources[C1J] = addSource("1j","1j");
             
             _outputSources[C2J0T] = addSource("2j0t","2j0t");
@@ -336,6 +336,15 @@ class TopReconstruction:
             
             Category category = OTHER;
             
+            if (!lepton)
+            {
+                throw std::runtime_error("no lepton found!");
+            }
+            if (!neutrino)
+            {
+                throw std::runtime_error("no neutrino found!");
+            }
+            
             if (njets==0)
             {
                 wboson = makeWboson(eventView,lepton,neutrino);
@@ -480,7 +489,6 @@ class TopReconstruction:
             try
             {
                 pxl::Event *event  = dynamic_cast<pxl::Event*>(sink->get());
-                
                 if (event)
                 {
                     std::vector<pxl::EventView*> eventViews;
@@ -514,7 +522,6 @@ class TopReconstruction:
                             
                         std::vector<pxl::Particle*> particles;
                         inputEventView->getObjectsOfType(particles);
-
                         for (unsigned int iparticle = 0; iparticle<particles.size(); ++iparticle)
                         {
                             pxl::Particle* particle = particles[iparticle];
@@ -555,7 +562,7 @@ class TopReconstruction:
                             }
                         }
                     }
-
+                    
                     Category category = reconstructEvent(outputEventView,lepton,neutrino,lightjets,bjets);
                     _outputSources[category]->setTargets(event);
                     return _outputSources[category]->processTargets();

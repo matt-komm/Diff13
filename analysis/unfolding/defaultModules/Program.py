@@ -184,7 +184,7 @@ class Program(Module):
         dataHistPtMatrix=responseMatrixPt.ProjectionY()
         self.module("Drawing").drawDataSubtracted(dataHistPtSubtracted,dataHistPtMatrix,"top quark pT","datasubtracted_Pt")
         self.module("Drawing").drawDataSubtracted(dataHistPtSubtracted,histogramsPt["tChannel"]["hists"]["sum"],"top quark pT","datasubtracted2_Pt")
-        unfoldedHistPt, covariancePt = self.module("Unfolding").unfold(responseMatrixPt,dataHistPtSubtracted,genBinningPt)
+        unfoldedHistPt, covariancePt = self.module("Unfolding").unfold(responseMatrixPt,dataHistPtSubtracted,genBinningPt,scan="scanPt")
         
         rootFile = ROOT.TFile(os.path.join(self.module("Utils").getOutputFolder(),"unfoldingPt.root"),"RECREATE")
         unfoldedHistPtWrite = unfoldedHistPt.Clone("unfoldedHistPt")
@@ -211,7 +211,7 @@ class Program(Module):
         dataHistYMatrix=responseMatrixY.ProjectionY()
         self.module("Drawing").drawDataSubtracted(dataHistYSubtracted,dataHistYMatrix,"top quark |y|","datasubtracted_Y")
         self.module("Drawing").drawDataSubtracted(dataHistYSubtracted,histogramsY["tChannel"]["hists"]["sum"],"top quark |y|","datasubtracted2_Y")
-        unfoldedHistY, covarianceY = self.module("Unfolding").unfold(responseMatrixY,dataHistYSubtracted,genBinningY)
+        unfoldedHistY, covarianceY = self.module("Unfolding").unfold(responseMatrixY,dataHistYSubtracted,genBinningY,scan="scanY")
         
         rootFile = ROOT.TFile(os.path.join(self.module("Utils").getOutputFolder(),"unfoldingY.root"),"RECREATE")
         unfoldedHistYWrite = unfoldedHistY.Clone("unfoldedHistY")

@@ -80,8 +80,10 @@ class ResponseMatrixPt(Module):
         responseMatrixSelected = ROOT.TH2D("responseSelected",";gen;reco",len(genBinning)-1,genBinning,len(recoBinning)-1,recoBinning)
         efficiencyHist = ROOT.TH1D("efficiencyHist",";gen;",len(genBinning)-1,genBinning)
         
+        print "response",recoweight+"*"+cut
         for f in responseFiles:
             for processName in self.module("ResponseMatrixPt").getSignalProcessNames():
+                
                 
                 self.module("Utils").getHist2D(
                     responseMatrixSelected,

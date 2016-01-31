@@ -117,6 +117,9 @@ class ThetaModel(Module):
             }
         }
         return data
+        
+    def getModel(self,name):
+        return Model(name, {"bb_uncertainties":"true"})
     
     def makeModel(self,name="fit",pseudo=False,addCut="1"):
         self._logger.info("Creating model: "+name)
@@ -125,7 +128,7 @@ class ThetaModel(Module):
     
         file = open(os.path.join(self.module("Utils").getOutputFolder(),name+".cfg"),"w")
         
-        model=Model(name, {"bb_uncertainties":"true"})
+        model=self.module("ThetaModel").getModel(name)
         
         
         uncertainties = self.module("ThetaModel").getUncertaintsDict()
@@ -219,8 +222,6 @@ class ThetaModel(Module):
                                 rootFile.Close()
 
                 file.write(histoadd.toConfigString())
-                
-                
                 
             else:
                 histoadd = HistoAdd(observableName+"__data",{"dice_stat":"true","rnd":7*(iobs*3+11)})
@@ -359,11 +360,6 @@ class ThetaModel(Module):
         file.write('        name="data";\n')
         for obs in self.module("ThetaModel").getObservablesDict().keys():
             file.write('        obs_'+obs+'="@histoadd_'+obs+'__data";\n')
-        #file.write('        obs_2j0t="@histoadd_2j0t__data";\n')
-        #file.write('        obs_2j1t="@histoadd_2j1t__data";\n')
-        #file.write('        obs_3j0t="@histoadd_3j0t__data";\n')
-        #file.write('        obs_3j1t="@histoadd_3j1t__data";\n')
-        #file.write('        obs_3j2t="@histoadd_3j2t__data";\n')
         file.write('    };\n')
 
             

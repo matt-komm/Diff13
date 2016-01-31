@@ -177,7 +177,7 @@ class Samples(Module):
                 ],
                 "color":ROOT.gROOT.GetColor(ROOT.kBlack),
                 "title":"Data",
-                "weight":"(Reconstructed_1__HLT_IsoMu20_v3==1)*"+dataweight+"*"+self.module("Samples").getQCDIsoCutStr()
+                "weight":"((Reconstructed_1__HLT_IsoMu20_v3==1))*"+dataweight+"*"+self.module("Samples").getQCDIsoCutStr()
             },
             
             "data1":
@@ -197,7 +197,7 @@ class Samples(Module):
                 ],
                 "color":ROOT.gROOT.GetColor(ROOT.kBlack),
                 "title":"Data",
-                "weight":"(Reconstructed_1__HLT_IsoMu20_v3==1)*"+dataweight
+                "weight":"((Reconstructed_1__HLT_IsoMu20_v3==1))*"+dataweight
             }
         }
         return sampleDict[name]
@@ -210,12 +210,12 @@ class Samples(Module):
             "tChannel":
             {
                 "processes":[
-                    "ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1_iso"+syst,
+                    #"ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1_iso"+syst,
                     "ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1_ext_iso"+syst,
                 ],
                 "color":ROOT.gROOT.GetColor(ROOT.kRed),
                 "title":"t-channel",
-                "weight":"0.5*"+mcweight
+                "weight":mcweight
             },
 
             "tWChannel":

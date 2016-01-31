@@ -243,64 +243,23 @@ globalDataWeight="1"
 
 globalMCWeight="Reconstructed_1__btagging_nominal*Reconstructed_1__PU69000_weight*(Reconstructed_1__HLT_IsoMu20_v1==1)*2119.4/0.7*mc_weight"
 
-#MG
-'''
-mcFitResult="((Reconstructed_1__nSelectedJet==1)*1.130+"
-mcFitResult+="(Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==0)*1.197+"
-mcFitResult+="(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==0)*1.213+"
-mcFitResult+="(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==1)*0.982+"
-mcFitResult+="(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==2)*0.838)"
-'''
-'''
-#MG barrel
-mcFitResult="((Reconstructed_1__nSelectedJet==1)*1.174+"
-mcFitResult+="(Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==0)*1.271+"
-mcFitResult+="(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==0)*1.286+"
-mcFitResult+="(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==1)*1.011+"
-mcFitResult+="(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==2)*0.853)"
-'''
-'''
-#MG foward
-mcFitResult="((Reconstructed_1__nSelectedJet==1)*0.634+"
-mcFitResult+="(Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==0)*0.783+"
-mcFitResult+="(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==0)*0.845+"
-mcFitResult+="(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==1)*0.698+"
-mcFitResult+="(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==2)*0.412)"
-'''
-'''
-#AMC
-mcFitResult="((Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==0)*0.997+"
-mcFitResult+="(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==0)*0.915+"
-mcFitResult+="(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==1)*0.965+"
-mcFitResult+="(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==2)*0.800)"
-'''
-#mcFitResult="1"
-'''
-tChanYield="1.0"
-topbgYield="1.0"
-otherYield="1.0"
-qcdMCYield="1.0"
-qcdDDYield="1.0"
 
-'''
-tChanYield="1.35"
-topbgYield="((Reconstructed_1__nSelectedBJet==0)*2.26+(Reconstructed_1__nSelectedBJet>0)*0.99)"
-otherYield="((Reconstructed_1__nSelectedBJet==0)*1.08+(Reconstructed_1__nSelectedBJet>0)*1.697)"
+tChanYield="((Reconstructed_1__nSelectedBJet==0)*1.27+(Reconstructed_1__nSelectedBJet>0)*1.197)"
+topbgYield="((Reconstructed_1__nSelectedBJet==0)*1.27+(Reconstructed_1__nSelectedBJet>0)*1.025)"
+otherYield="((Reconstructed_1__nSelectedBJet==0)*1.27+(Reconstructed_1__nSelectedBJet>0)*1.623)"
 qcdMCYield="1"
-qcdDDYield="((Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==0)*0.22+"
-qcdDDYield+="(Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==1)*0.13+"
-qcdDDYield+="(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==1)*0.17+"
-qcdDDYield+="(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==2)*0.21)"
+qcdDDYield="((Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==0)*0.201+"
+qcdDDYield+="(Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==1)*0.130+"
+qcdDDYield+="(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==1)*0.183+"
+qcdDDYield+="(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==2)*0.177)"
 
 '''
-#tChanYield="0.62"
-tChanYield=mcFitResult
-topbgYield=mcFitResult
-otherYield=mcFitResult
-qcdMCYield=mcFitResult
-qcdDDYield=qcdFitResult
+tChanYield="1"
+topbgYield="1"
+otherYield="1"
+qcdMCYield="1"
+qcdDDYield="1"
 '''
-
 region = "_iso"
 
 sampleDict = {
@@ -386,7 +345,7 @@ sampleDict = {
         "processes":[
             "SingleMuon_Run2015D-05Oct2015-v1_antiiso",
         ],
-        "weight":"((Reconstructed_1__HLT_IsoMu20_v2==1)+(Reconstructed_1__HLT_IsoMu20_v3==1))*"+globalDataWeight
+        "weight":"(((Reconstructed_1__HLT_IsoMu20_v2==1)||(Reconstructed_1__HLT_IsoTkMu20_v3==1))+((Reconstructed_1__HLT_IsoMu20_v3==1)||(Reconstructed_1__HLT_IsoTkMu20_v3==1)))*"+globalDataWeight
     },
     
     "data2_antiiso":
@@ -394,7 +353,7 @@ sampleDict = {
         "processes":[
             "SingleMuon_Run2015D-PromptReco-v4_antiiso",
         ],
-        "weight":"(Reconstructed_1__HLT_IsoMu20_v3==1)*"+globalDataWeight
+        "weight":"((Reconstructed_1__HLT_IsoMu20_v3==1) || (Reconstructed_1__HLT_IsoTkMu20_v4==1))*"+globalDataWeight
     },
     
     
@@ -404,7 +363,7 @@ sampleDict = {
         "processes":[
             "SingleMuon_Run2015D-05Oct2015-v1"+region,
         ],
-        "weight":"((Reconstructed_1__HLT_IsoMu20_v2==1)+(Reconstructed_1__HLT_IsoMu20_v3==1))*"+globalDataWeight
+        "weight":"(((Reconstructed_1__HLT_IsoMu20_v2==1)||(Reconstructed_1__HLT_IsoTkMu20_v3==1))+((Reconstructed_1__HLT_IsoMu20_v3==1)||(Reconstructed_1__HLT_IsoTkMu20_v3==1)))*"+globalDataWeight
     },
     
     "data2":
@@ -413,7 +372,7 @@ sampleDict = {
             "SingleMuon_Run2015D-PromptReco-v4"+region,
         ],
         
-        "weight":"(Reconstructed_1__HLT_IsoMu20_v3==1)*"+globalDataWeight
+        "weight":"((Reconstructed_1__HLT_IsoMu20_v3==1) || (Reconstructed_1__HLT_IsoTkMu20_v4==1))*"+globalDataWeight
     }
 }
 
@@ -549,14 +508,16 @@ for category in [
     ["3j1t","(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==1)"],
     ["3j2t","(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==2)"]
 ]:
+    
     if category[0]!=args[0]:
         continue
     
     for var in [
         ["nVertices","Reconstructed_1__PU_1__nVertices","#vertices","","1",26,-0.5,25.5],
         
-        ["fit","(SingleTop_1__mtw_beforePz<50.0)*SingleTop_1__mtw_beforePz+(SingleTop_1__mtw_beforePz>50.0)*(Reconstructed_1__BDT_adaboost04_minnode001_maxvar2_ntree600_invboost*50.0+100.0)","fit variable","","1",binning,0,150],
-        ["BDT_adaboost04_minnode001_maxvar2_ntree600_invboost","Reconstructed_1__BDT_adaboost04_minnode001_maxvar2_ntree600_invboost","BDT discriminant","","1",binning,-1,1],
+        ["fit","(SingleTop_1__mtw_beforePz<50.0)*SingleTop_1__mtw_beforePz+(SingleTop_1__mtw_beforePz>50.0)*(Reconstructed_1__BDT_adaboost04_minnode001_maxvar3_ntree1000_invboost_binned*75.0+75.0+50.0)","fit variable","","1",binning,0,200],
+        ["BDT_adaboost04_minnode001_maxvar3_ntree1000_invboost","Reconstructed_1__BDT_adaboost04_minnode001_maxvar3_ntree1000_invboost","BDT discriminant","","1",binning,-1,1],
+        ["BDT_adaboost04_minnode001_maxvar3_ntree1000_invboost_binned","Reconstructed_1__BDT_adaboost04_minnode001_maxvar3_ntree1000_invboost_binned","BDT discriminant #eta-binned","","1",binning,-1,1],
 
         ["muon_logpt","Reconstructed_1__TightMuon_1__Pt","muon p_{T}","GeV","1",binning,numpy.logspace(1.3,2.35,num=(binning+1)),0,"logx"],
         ["muon_pt","Reconstructed_1__TightMuon_1__Pt","muon p_{T}","GeV","1",binning,0,200],
@@ -610,7 +571,6 @@ for category in [
         ["top_mass","SingleTop_1__Top_1__Mass","top mass","GeV","1",binning,0,800],
 
         
-        
         ["cosTheta_tPL","SingleTop_1__cosTheta_tPL","cos#theta_{l,q}^{top}","","1",binning,-1,1],
     
         ["shat_logpt","SingleTop_1__Shat_1__Pt","#hat{s} p_{T}","GeV","1",binning,numpy.logspace(0,2.5,num=(binning+1)),0,"logx"],
@@ -629,7 +589,7 @@ for category in [
 
          
     ]:
-
+        
         for qcd in [
             ["qcdnone","1",""],
             ["qcdmtw","(SingleTop_1__mtw_beforePz>50.0)","MTW>50#kern[-0.5]{ }GeV"],
@@ -663,8 +623,12 @@ for category in [
             
             legendEntries=[]
             
+            totalMC = 0.0
+            totalMCError2 = 0.0
+            
             sumHistMC = None
             for setName in (["tChannel","tWChannel","TTJets","WJetsMGBF","WJetsMGCF","WJetsMGLF","DY","QCD_DD"]):
+                #for setName in (["tChannel","tWChannel","TTJets","WJetsMGBF","WJetsMGCF","WJetsMGLF","DY","QCD_MC"]):
                 setHist=ROOT.TH1F("setHist"+setName+str(random.random()),"",nbins,binarray)
                 setHist.Sumw2()
                 setHist.SetFillColor(sets[setName]["color"].GetNumber())
@@ -699,14 +663,19 @@ for category in [
                 else:
                     sumHistMC.Add(setHist)
                 #addUnderflowOverflow(sampleHist)
-                print "\t",setName,setHist.GetEntries(),setHist.Integral()
+                totalMC+=setHist.Integral()
+                error = 0.0
+                if setHist.GetEntries()>0:
+                    error = setHist.Integral()/setHist.GetEntries()*math.sqrt(setHist.GetEntries())
+                totalMCError2+=error**2
+                print "\t",setName,round(setHist.GetEntries(),1),round(setHist.Integral(),1),"+-",round(error,1)
                 stackMC.Add(setHist,"HIST F")
                 stackMCHists.append(setHist)
                 if sets[setName].has_key("addtitle"):
                     legendEntries.append(["",sets[setName]["addtitle"],""])
                 legendEntries.append([setHist,sets[setName]["title"],"F"])
                 
-                
+            print "\ttotal MC",round(sumHistMC.GetEntries(),1),round(totalMC,1),"+-",round(math.sqrt(totalMCError2),1)
              
             sumHistData = None
                 
@@ -741,7 +710,7 @@ for category in [
                 else:
                     sumHistData.Add(setHist)
                 #addUnderflowOverflow(sampleHist)
-                print "\t",setName,setHist.GetEntries(),setHist.Integral()
+                print "\t",setName,round(setHist.GetEntries(),1),round(setHist.Integral(),1),"+-",round(setHist.Integral()/setHist.GetEntries()*math.sqrt(setHist.GetEntries()),1)
                 
             legendEntries.append([sumHistData,"Data","P"])
                 

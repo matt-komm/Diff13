@@ -121,17 +121,17 @@ class NeutrinoPz:
                         {
                             std::vector<pxl::Particle*> particles;
                             eventView->getObjectsOfType(particles);
-                            pxl::Particle* met=0;
-                            pxl::Particle* lepton=0;
-                            pxl::Particle* neutrino=0;
+                            pxl::Particle* met=nullptr;
+                            pxl::Particle* lepton=nullptr;
+                            pxl::Particle* neutrino=nullptr;
                             for (unsigned iparticle=0; iparticle<particles.size();++iparticle)
                             {
                                 pxl::Particle* particle = particles[iparticle];
-                                if (met==0 &&(particle->getName()==_metName))
+                                if (!met &&(particle->getName()==_metName))
                                 {
                                     met=particle;
                                 }
-                                if (lepton==0 &&(particle->getName()==_leptonName))
+                                if (!lepton &&(particle->getName()==_leptonName))
                                 {
                                     lepton=particle;
                                 }
@@ -156,6 +156,18 @@ class NeutrinoPz:
                                 const double mtw_afterPz = sqrt((lepton->getPt()+neutrino->getPt())*(lepton->getPt()+neutrino->getPt())-(lepton->getPx()+neutrino->getPx())*(lepton->getPx()+neutrino->getPx())-(lepton->getPy()+neutrino->getPy())*(lepton->getPy()+neutrino->getPy()));
                                 outputEventView->setUserRecord("mtw_beforePz",mtw_beforePz);
                                 outputEventView->setUserRecord("mtw_afterPz",mtw_afterPz);
+                            }
+                            else if (!met)
+                            {
+                                throw std::runtime_error("no MET found!");
+                            }
+                            else if (!lepton)
+                            {
+                                throw std::runtime_error("no lepton found!");
+                            }
+                            else if (!neutrino)
+                            {
+                                throw std::runtime_error("no neutrino reconstructed!");
                             }
                         }
                     }

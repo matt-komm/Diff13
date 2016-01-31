@@ -41,7 +41,7 @@ class ProgramFit2j0t(Module.getClass("Program")):
         if not histogramsAllYield:
             histogramsAllYield = self.module("HistogramCreator").makeHistograms(
                 "Reconstructed_1__nSelectedJet*3+Reconstructed_1__nSelectedBJet",
-                "(Reconstructed_1__nSelectedJet<4)",
+                "(Reconstructed_1__nSelectedJet<4)*(Reconstructed_1__isBarrel==1)",
                 numpy.linspace(-0.5,12.5,14),
                 pseudo=False
             )
@@ -51,7 +51,7 @@ class ProgramFit2j0t(Module.getClass("Program")):
         if not histogramsMTWYield:
             histogramsMTWYield = self.module("HistogramCreator").makeHistograms(
                 "Reconstructed_1__nSelectedJet*3+Reconstructed_1__nSelectedBJet",
-                "(Reconstructed_1__nSelectedJet<4)"+"*"+self.module("Utils").getMTWCutStr(),
+                "(Reconstructed_1__nSelectedJet<4)*(Reconstructed_1__isBarrel==1)"+"*"+self.module("Utils").getMTWCutStr(),
                 numpy.linspace(-0.5,12.5,14),
                 pseudo=False
             )
@@ -61,7 +61,7 @@ class ProgramFit2j0t(Module.getClass("Program")):
         if not histogramsBDTYield:
             histogramsBDTYield = self.module("HistogramCreator").makeHistograms(
                 "Reconstructed_1__nSelectedJet*3+Reconstructed_1__nSelectedBJet",
-                "(Reconstructed_1__nSelectedJet<4)"+"*"+self.module("Utils").getMTWCutStr()+"*"+self.module("Utils").getBDTCutStr(),
+                "(Reconstructed_1__nSelectedJet<4)*(Reconstructed_1__isBarrel==1)"+"*"+self.module("Utils").getMTWCutStr()+"*"+self.module("Utils").getBDTCutStr(),
                 numpy.linspace(-0.5,12.5,14),
                 pseudo=False
             )
@@ -81,8 +81,8 @@ class Fit2j0t(Module.getClass("ThetaModel")):
             #"BF":{"type":"gauss","config":{"mean": "1.0", "width":"0.3", "range":"(0.0,\"inf\")"}},
             #"CF":{"type":"gauss","config":{"mean": "1.0", "width":"0.3", "range":"(0.0,\"inf\")"}},
             #"LF":{"type":"gauss","config":{"mean": "1.0", "width":"0.3", "range":"(0.0,\"inf\")"}},
-            "TopBkg":{"type":"gauss","config":{"mean": "1.0", "width":"0.3", "range":"(0.0,\"inf\")"}},
-            "tChannel":{"type":"gauss","config":{"mean": "1.0", "width":"1.0", "range":"(0.0,\"inf\")"}},
+            #"TopBkg":{"type":"gauss","config":{"mean": "1.0", "width":"0.3", "range":"(0.0,\"inf\")"}},
+            #"tChannel":{"type":"gauss","config":{"mean": "1.0", "width":"1.0", "range":"(0.0,\"inf\")"}},
             "QCD_2j0t":{"type":"gauss","config":{"mean": "1.0", "width":"1.0", "range":"(0.0,\"inf\")"}},
             #"QCD_2j1t":{"type":"gauss","config":{"mean": "1.0", "width":"1.0", "range":"(0.0,\"inf\")"}},
             #"QCD_3j1t":{"type":"gauss","config":{"mean": "1.0", "width":"1.0", "range":"(0.0,\"inf\")"}},
@@ -112,25 +112,9 @@ class Fit2j0t(Module.getClass("ThetaModel")):
         
     def getComponentsDict(self):
         components={
-            "tChannel":
-            {
-                "sets":["tChannel"],
-                "uncertainties":["tChannel"],
-                "weight":"1",
-                "color":ROOT.kMagenta+1
-            },
-            
-            "TopBkg":
-            {
-                "sets":["tWChannel","TTJets"],
-                "uncertainties":["TopBkg"],
-                "weight":"1",
-                "color":ROOT.kOrange+1
-            },
-            
             "WZjets":
             {
-                "sets":["WJetsMG","DY"],
+                "sets":["WJetsMG","DY","tWChannel","TTJets","tChannel"],
                 "uncertainties":["WZjets"],
                 "weight":"1",
                 "color":ROOT.kGreen+1
