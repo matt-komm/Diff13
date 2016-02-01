@@ -585,7 +585,6 @@ class EventWeight:
         void beginJob() throw (std::runtime_error)
         {
             getOption("name of process field",_processNameField);
-            getOption("allowed postfixes",_allowedPostfixes);
             
             bool usePHYS14 = false;
             bool useEA = false;
