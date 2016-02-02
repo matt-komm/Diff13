@@ -458,7 +458,7 @@ const std::unordered_map<std::string,FileInfo> eventWeights76X = {
             831.76
         }
     },
-    {"TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8",
+    {"TT_TuneCUETP8M1_13TeV-amcatnlo-pythia8",
         {
             //total=19090400 eff=14232207-4858193=9374014
             9374014,
@@ -627,6 +627,7 @@ class EventWeight:
             {
                 _processNameList.push_back(it->first);
             }
+            
         }
 
         bool analyse(pxl::Sink *sink) throw (std::runtime_error)
@@ -638,26 +639,26 @@ class EventWeight:
                 {
                     
                     std::string processName = event->getUserRecord(_processNameField);
-                    bool found = false;
+                    int found = -1;
                     for (std::string& possibleName: _processNameList)
                     {
-                        if (std::equal(possibleName.begin(),possibleName.end(),processName.begin()))
+                        //need to find the largest match here for the 'ext' samples
+                        if (std::equal(possibleName.begin(),possibleName.end(),processName.begin()) and (possibleName.size()>found))
                         {
                             processName = possibleName;
-                            found=true;
+                            found=possibleName.size();
                         }
                     }
 
-                    if (found)
+                    if (found>0)
                     {
 	                    auto it = _eventWeightsPerEra.at(_eraWeightType).find(processName);
                         if (it!=_eventWeightsPerEra.at(_eraWeightType).end())
                         {
 	                        event->setUserRecord("mc_weight",1.0*it->second.crossSection/it->second.nEvents);
-                            found = true;
                         }
                     }
-                    if (!found)
+                    if (found<0)
                     {
                         throw std::runtime_error("no event weight information available for process name '"+processName+"'");
                     }

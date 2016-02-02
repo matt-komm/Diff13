@@ -253,7 +253,7 @@ requirements   = (CMSFARM =?= TRUE)
             
         shellscript='''#!/bin/bash
 number=$RANDOM
-let "number %= 600"
+let "number %= 100"
 echo "sleeping for ... "$number
 sleep $number
 source /home/fynu/mkomm/.bashrc
