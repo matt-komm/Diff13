@@ -638,27 +638,26 @@ class EventWeight:
                 if (event)
                 {
                     
-                    std::string processName = event->getUserRecord(_processNameField);
-                    int found = -1;
+                    std::string processName = event->getUserRecord(_processNameField).toString();
+                    std::string strippedProcessName = "";
                     for (std::string& possibleName: _processNameList)
                     {
                         //need to find the largest match here for the 'ext' samples
-                        if (std::equal(possibleName.begin(),possibleName.end(),processName.begin()) and (possibleName.size()>found))
+                        if ((possibleName.size()>strippedProcessName.size()) and std::equal(possibleName.begin(),possibleName.end(),processName.begin()))
                         {
-                            processName = possibleName;
-                            found=possibleName.size();
+                            strippedProcessName = possibleName;
                         }
                     }
 
-                    if (found>0)
+                    if (strippedProcessName.size()>0)
                     {
-	                    auto it = _eventWeightsPerEra.at(_eraWeightType).find(processName);
+	                    auto it = _eventWeightsPerEra.at(_eraWeightType).find(strippedProcessName);
                         if (it!=_eventWeightsPerEra.at(_eraWeightType).end())
                         {
 	                        event->setUserRecord("mc_weight",1.0*it->second.crossSection/it->second.nEvents);
                         }
                     }
-                    if (found<0)
+                    if (strippedProcessName.size()==0)
                     {
                         throw std::runtime_error("no event weight information available for process name '"+processName+"'");
                     }
