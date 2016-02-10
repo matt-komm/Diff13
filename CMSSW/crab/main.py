@@ -58,7 +58,7 @@ if __name__=="__main__":
     config.Data.inputDBS = 'global'
     config.Data.splitting = 'FileBased'
     #config.Data.splitting = 'LumiBased'
-    #config.Data.lumiMask = 'https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions15/13TeV/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON_v2.txt'
+    #config.Data.lumiMask = 'https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions15/13TeV/Reprocessing/Cert_13TeV_16Dec2015ReReco_Collisions15_25ns_JSON.txt'
     #config.Data.runRange='254833-254833'
     config.Data.unitsPerJob = 3
     #config.Data.ignoreLocality = True #use to circumvent crab/dbs bug with open data blocks (while its being writing)
