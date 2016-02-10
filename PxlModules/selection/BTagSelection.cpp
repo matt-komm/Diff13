@@ -38,7 +38,7 @@ class BTagSelection:
             _bTaggedJetName("SelectedBJet"),
             _bTaggingAlgorithmName("pfCombinedInclusiveSecondaryVertexV2BJetTags"),
             _maxEtaBJet(2.4),
-            _bTaggingWorkingPoint(0.97)
+            _bTaggingWorkingPoint(0.935)
 
         {
             addSink("input", "input");
