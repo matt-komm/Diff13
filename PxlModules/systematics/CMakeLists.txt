@@ -24,3 +24,11 @@ install(
     TARGETS JetMETVariations
     LIBRARY DESTINATION ${PXL_PLUGIN_INSTALL_PATH}
 )
+
+
+add_library(MuonSF MODULE MuonSF.cpp)
+target_link_libraries(MuonSF ${PXL_LIBRARIES} ${ROOT_LIBRARIES})
+install(
+    TARGETS MuonSF
+    LIBRARY DESTINATION ${PXL_PLUGIN_INSTALL_PATH}
+)
