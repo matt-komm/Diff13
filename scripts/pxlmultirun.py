@@ -159,6 +159,7 @@ if __name__=="__main__":
     parser = OptionParser()
     parser.add_option("-n", dest="N", default="10")
     parser.add_option("-f", action="store_true", default=False, dest="force")
+    parser.add_option("-o", action="store_true", default=False, dest="override")
     parser.add_option("--out", default="", dest="out")
     parser.add_option("--condor", action="store_true", default=False, dest="condor")
     parser.add_option("--addoption", default=None, dest="addoption")
@@ -166,9 +167,12 @@ if __name__=="__main__":
     N=int(options.N)
     if options.out!="":
         if (os.path.exists(options.out)):
-            if options.force:
+            if options.force and not options.override:
                 shutil.rmtree(options.out)
-        os.mkdir(options.out)
+        if not options.override:
+            os.mkdir(options.out)
+        elif len(os.listdir(options.out))>0:
+            print "WARNING: output folder '",options.out,"' contains already ",len(os.listdir(options.out))," files/folders that wont be deleted because override (-o) was specified!"
     outputFolder=options.out
     pluginManager=pxl.core.PluginManager()
     pluginManager.loadPluginsFromDirectory(os.path.join(os.environ['HOME'],".pxl-3.5","plugins"))

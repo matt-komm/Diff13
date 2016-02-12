@@ -154,11 +154,11 @@ class BTagReweighting:
             _readerNominal_comb = BTagCalibrationReader(
                 &_btagCalib,               // calibration instance
                 BTagEntry::OP_TIGHT,  // operating point
-                "comb",               // measurement type
+                "incl",               // measurement type
                 "central"             // systematics type
             );           
-            _readerUp_comb = BTagCalibrationReader(&_btagCalib, BTagEntry::OP_TIGHT, "comb", "up");  // sys up
-            _readerDown_comb = BTagCalibrationReader(&_btagCalib, BTagEntry::OP_TIGHT, "comb", "down");  // sys down
+            _readerUp_comb = BTagCalibrationReader(&_btagCalib, BTagEntry::OP_TIGHT, "incl", "up");  // sys up
+            _readerDown_comb = BTagCalibrationReader(&_btagCalib, BTagEntry::OP_TIGHT, "incl", "down");  // sys down
    
                         
                         

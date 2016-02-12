@@ -405,8 +405,8 @@ const std::unordered_map<std::string,FileInfo> eventWeights76X = {
     },
     {"ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1",
         {
-            //total=482200 eff=482200-0=482200
-            482200,
+            //total=999400 eff=999400-0=999400
+            999400,
             35.6
         }
     },
@@ -442,15 +442,7 @@ const std::unordered_map<std::string,FileInfo> eventWeights76X = {
     },
     
     
-    /*
-    {"TT_TuneCUETP8M1_13TeV-powheg-pythia8",
-        {
-            //total=19757190 eff=19757190-0=19757190
-            
-            831.76
-        }
-    },
-    */
+
     {"TT_TuneCUETP8M1_13TeV-powheg-pythia8_ext",
         {
             //total=97994442 eff=97994442-0=97994442
@@ -458,22 +450,30 @@ const std::unordered_map<std::string,FileInfo> eventWeights76X = {
             831.76
         }
     },
+    {"TT_TuneCUETP8M1_mtop1755_13TeV-powheg-pythia8",
+        {
+            //total=9659200 eff=9659200-0=9659200
+            9659200,
+            831.76
+        }
+    },
+    
+    {"TT_TuneCUETP8M1_mtop1695_13TeV-powheg-pythia8",
+        {
+            //total=9900195 eff=9900195-0=9900195
+            9900195,
+            831.76
+        }
+    },
+    
     {"TT_TuneCUETP8M1_13TeV-amcatnlo-pythia8",
         {
-            //total=19090400 eff=14232207-4858193=9374014
-            9374014,
+            //total=19090400 eff=14230276-4860124=9370152
+            9370152,
             831.76
         }
     },
-    /*
-    {"TT_TuneZ2star_13TeV-powheg-pythia6-tauola",
-        {
-            //total=18666925 eff=18666925-0=18666925
-            
-            831.76
-        }
-    },
-    */
+
     
     {"WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8",
         {
@@ -482,15 +482,15 @@ const std::unordered_map<std::string,FileInfo> eventWeights76X = {
             20508.9*3
         }
     },
-    /*
+    
     {"WJetsToLNu_TuneCUETP8M1_13TeV-madgraphMLM-pythia8",
         {
-            //total=72207128 eff=72207128-0=72207128
-            
+            //total=46836515 eff=46836515-0=46836515
+            46836515,
             20508.9*3
         }
     },
-    */
+    
     {"DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_ext",
         {
             //total=1719818 eff=1433002-286816=1146186
