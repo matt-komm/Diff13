@@ -17,16 +17,15 @@ class ThetaModel(Module):
         
     def getUncertaintsDict(self):
         uncertainties = {
-            "Wjets":{"type":"gauss","config":{"mean": "1.0", "width":"0.5", "range":"(0.0,\"inf\")"}},
-            "Zjets":{"type":"gauss","config":{"mean": "1.0", "width":"0.3", "range":"(0.0,\"inf\")"}},
+            "WZjets":{"type":"log_normal","config":{"mu": "0.0", "sigma":str(math.sqrt(math.log(1.0+1)))}},
             #"BF":{"type":"gauss","config":{"mean": "1.0", "width":"0.3", "range":"(0.0,\"inf\")"}},
             #"CF":{"type":"gauss","config":{"mean": "1.0", "width":"0.3", "range":"(0.0,\"inf\")"}},
             #"LF":{"type":"gauss","config":{"mean": "1.0", "width":"0.3", "range":"(0.0,\"inf\")"}},
-            "TopBkg":{"type":"gauss","config":{"mean": "1.0", "width":"0.15", "range":"(0.0,\"inf\")"}},
-            "tChannel":{"type":"gauss","config":{"mean": "1.0", "width":"1.0", "range":"(0.0,\"inf\")"}},
-            "QCD_2j1t":{"type":"gauss","config":{"mean": "1.0", "width":"1.0", "range":"(0.0,\"inf\")"}},
-            "QCD_3j1t":{"type":"gauss","config":{"mean": "1.0", "width":"1.0", "range":"(0.0,\"inf\")"}},
-            "QCD_3j2t":{"type":"gauss","config":{"mean": "1.0", "width":"1.0", "range":"(0.0,\"inf\")"}},
+            "TopBkg":{"type":"log_normal","config":{"mu": "0.0", "sigma":str(math.sqrt(math.log(0.3+1)))}},
+            "tChannel":{"type":"log_normal","config":{"mu": "0.0", "sigma":str(math.sqrt(math.log(1.0+1)))}},
+            "QCD_2j1t":{"type":"log_normal","config":{"mu": "0.0", "sigma":str(math.sqrt(math.log(1.0+1)))}},
+            "QCD_3j1t":{"type":"log_normal","config":{"mu": "0.0", "sigma":str(math.sqrt(math.log(1.0+1)))}},
+            "QCD_3j2t":{"type":"log_normal","config":{"mu": "0.0", "sigma":str(math.sqrt(math.log(1.0+1)))}},
             
             #"lumi":{"type":"gauss","config":{"mean": "1.0", "width":"0.1", "range":"(0.0,\"inf\")"}}
         }
@@ -74,18 +73,10 @@ class ThetaModel(Module):
                 "color":ROOT.kOrange+1
             },
             
-            "Wjets":
+            "WZjets":
             {
-                "sets":["WJetsMG"],
-                "uncertainties":["Wjets"],
-                "weight":"1",
-                "color":ROOT.kGreen+1
-            },
-            
-            "Zjets":
-            {
-                "sets":["DY"],
-                "uncertainties":["Zjets"],
+                "sets":["WJetsMG"],#,"DY"],
+                "uncertainties":["WZjets"],
                 "weight":"1",
                 "color":ROOT.kGreen+1
             },

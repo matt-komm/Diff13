@@ -81,8 +81,9 @@ class ResponseMatrixY(Module):
         recoBinning = self.module("ResponseMatrixY").getRecoBinning()
         genBinning = self.module("ResponseMatrixY").getGenBinning()
         
-        responseMatrixSelected = ROOT.TH2D("responseSelected",";gen;reco",len(genBinning)-1,genBinning,len(recoBinning)-1,recoBinning)
-        efficiencyHist = ROOT.TH1D("efficiencyHist",";gen;",len(genBinning)-1,genBinning)
+        responseMatrixSelected = ROOT.TH2D("responseSelected"+str(random.random()),";gen;reco",len(genBinning)-1,genBinning,len(recoBinning)-1,recoBinning)
+        responseMatrixUnselected = ROOT.TH1D("responseUnselected"+str(random.random()),";gen;",len(genBinning)-1,genBinning)
+        efficiencyHist = ROOT.TH1D("efficiencyHist"+str(random.random()),";gen;",len(genBinning)-1,genBinning)
         
         for f in responseFiles:
             for processName in self.module("ResponseMatrixY").getSignalProcessNames():
@@ -96,22 +97,28 @@ class ResponseMatrixY(Module):
                     recoweight+"*"+cut
                 )
                 self.module("Utils").getHist1D(
-                    efficiencyHist,
+                    responseMatrixUnselected,
                     f,
-                    processName,
+                    processName+"_iso"+self.module("Utils").getRecoSamplePrefix(),
                     self.module("ResponseMatrixY").getGenUnfoldingVariable(),
                     recoweight+"*!("+cut+")"
                 )
         
         for f in efficiencyFiles:
             for processName in self.module("ResponseMatrixY").getSignalProcessNames():
-                self.module("Utils").getHist1D(
-                    efficiencyHist,
-                    f,
-                    processName,
-                    self.module("ResponseMatrixY").getGenUnfoldingVariable(),
-                    genweight
-                )
+                for prefix in ["","_iso","_midiso","_antiiso"]:
+                    self.module("Utils").getHist1D(
+                        efficiencyHist,
+                        f,
+                        processName+prefix,
+                        self.module("ResponseMatrixY").getGenUnfoldingVariable(),
+                        genweight
+                    )
+        self._logger.debug("response matrix selected: "+str(responseMatrixSelected.Integral())+" events")
+        self._logger.debug("response matrix unselected: "+str(responseMatrixUnselected.Integral())+" events")
+        self._logger.debug("efficiency: "+str(efficiencyHist.Integral())+" events")
+        
+        efficiencyHist.Add(responseMatrixUnselected)
 
         return self.module("ResponseMatrixY").buildResponseMatrix(responseMatrixSelected,efficiencyHist)
 

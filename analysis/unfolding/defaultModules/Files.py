@@ -44,21 +44,28 @@ class Files(Module):
         
     def getResponseFiles(self):
         rootFiles = []
-        basedir = "/nfs/user/mkomm/ST13/response25ns"
-        match = re.compile("selected[0-9]+.root")
-        for f in os.listdir(basedir):
-            if match.match(f):
-                rootFiles.append(os.path.join(basedir,f))
-        self._logger.debug("response files ("+str(len(rootFiles))+") found in "+basedir)
+        basedirSignalMC = "/nfs/user/mkomm/ST13/evaluate25ns/MC76X_30/signal"
+        matchSignalMC = re.compile("mcSignal[0-9]+.root")
+
+        
+        for f in os.listdir(basedirSignalMC):
+            if matchSignalMC.match(f):
+                rootFiles.append(os.path.join(basedirSignalMC,f))
+
+        
+        self._logger.debug("mc files ("+str(len(rootFiles))+") found")
         return rootFiles
         
     def getEfficiencyFiles(self):
         rootFiles = []
-        basedir = "/nfs/user/mkomm/ST13/response25ns"
-        match = re.compile("efficiency[0-9]+.root")
-        for f in os.listdir(basedir):
-            if match.match(f):
-                rootFiles.append(os.path.join(basedir,f))
-        self._logger.debug("efficiency files ("+str(len(rootFiles))+") found in "+basedir)
-        return rootFiles
+        basedirSignalMC = "/nfs/user/mkomm/ST13/evaluate25ns/MC76X_30/signal"
+        matchSignalMC = re.compile("efficiencySignal[0-9]+.root")
+
         
+        for f in os.listdir(basedirSignalMC):
+            if matchSignalMC.match(f):
+                rootFiles.append(os.path.join(basedirSignalMC,f))
+
+        
+        self._logger.debug("mc files ("+str(len(rootFiles))+") found")
+        return rootFiles

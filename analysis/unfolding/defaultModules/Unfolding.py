@@ -61,11 +61,13 @@ class Unfolding(Module):
         cv.Print(os.path.join(self.module("Utils").getOutputFolder(),output+".pdf"))
         cv.Print(os.path.join(self.module("Utils").getOutputFolder(),output+".png"))
         
-    def unfold(self,responseMatrix,data,genBinning,backgroundDict={},scan=None, fixedTau = None):
+        
+        
+    def unfold(self,responseMatrix,data,genBinning,backgroundDict=None,scan=None,fixedTau=None):
         genHist = responseMatrix.ProjectionX(responseMatrix.GetName()+"genX")
 
         responseMatrixReweighted = responseMatrix.Clone(responseMatrix.GetName()+"Reweighted")
-        '''
+        
         for ibin in range(responseMatrix.GetNbinsX()):
             w = 1.0/genHist.GetBinContent(ibin+1)*genHist.Integral()/genHist.GetNbinsX()
             responseMatrixReweighted.SetBinContent(
@@ -73,17 +75,18 @@ class Unfolding(Module):
                     0,
                     responseMatrix.GetBinContent(ibin+1,0)*w
             )
-        '''
+        
         
         tunfold = ROOT.PyUnfold(responseMatrixReweighted)
         tunfold.setData(data)
-        for backgroundName in backgroundDict.keys():
-            tunfold.addBackground(
-                backgroundDict[backgroundName]["hist"],
-                backgroundName,
-                backgroundDict[backgroundName]["mean"],
-                backgroundDict[backgroundName]["error"]
-            )
+        if backgroundDict:
+            for backgroundName in backgroundDict.keys():
+                tunfold.addBackground(
+                    backgroundDict[backgroundName]["hist"],
+                    backgroundName,
+                    backgroundDict[backgroundName]["mean"],
+                    backgroundDict[backgroundName]["error"]
+                )
         if scan:
             self.module("Unfolding").doScan(tunfold,genBinning,scan)
         if fixedTau==None:
@@ -98,7 +101,7 @@ class Unfolding(Module):
         unfoldedHist = ROOT.TH1D("unfoldedHist","",len(genBinning)-1,genBinning)
         unfoldedHist.Sumw2()
         tunfold.doUnfolding(bestTau,unfoldedHist,covariance,True,False,False)
-        '''
+        
         for ibin in range(unfoldedHist.GetNbinsX()):
             w = 1.0/genHist.GetBinContent(ibin+1)*genHist.Integral()/genHist.GetNbinsX()
             unfoldedHist.SetBinContent(
@@ -109,6 +112,6 @@ class Unfolding(Module):
                 ibin+1,
                 unfoldedHist.GetBinError(ibin+1)/w
             )
-        '''
+        
         return unfoldedHist,covariance,bestTau
         

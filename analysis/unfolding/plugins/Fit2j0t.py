@@ -114,7 +114,7 @@ class Fit2j0t(Module.getClass("ThetaModel")):
         components={
             "WZjets":
             {
-                "sets":["WJetsMG","DY","tWChannel","TTJets","tChannel"],
+                "sets":["WJetsMG","tWChannel","TTJets","tChannel"],#,"DY"],
                 "uncertainties":["WZjets"],
                 "weight":"1",
                 "color":ROOT.kGreen+1

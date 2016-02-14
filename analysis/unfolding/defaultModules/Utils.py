@@ -34,16 +34,16 @@ class Utils(Module):
         return 2165.0
         
     def getRecoWeightStr(self):
-        return self.module("Utils").getGenWeightStr()+"*(Reconstructed_1__PU69000_weight*Reconstructed_1__btagging_nominal)"
+        return self.module("Utils").getGenWeightStr()+"*(testing==1)/splitweight*(Reconstructed_1__PU69000_weight*Reconstructed_1__btagging_nominal)"
     
     def getGenWeightStr(self):
-        return str(self.module("Utils").getLumi())+"*(testing==1)*mc_weight/splitweight*((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)"
+        return str(self.module("Utils").getLumi())+"*mc_weight*((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)"
     
     def getRecoWeightStrPseudo(self):
-        return self.module("Utils").getGenWeightStrPseudo()+"*(Reconstructed_1__PU69000_weight*Reconstructed_1__btagging_nominal)"
+        return self.module("Utils").getGenWeightStrPseudo()+"*(testing==1)/splitweight*(Reconstructed_1__PU69000_weight*Reconstructed_1__btagging_nominal)"
     
     def getGenWeightStrPseudo(self):
-        return str(self.module("Utils").getLumi())+"*(testing==1)*mc_weight/splitweight*((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)"
+        return str(self.module("Utils").getLumi())+"*mc_weight*((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)"
     
     def getTriggerCutMCStr(self):
         return "(Reconstructed_1__HLT_IsoMu20_v3==1)"
