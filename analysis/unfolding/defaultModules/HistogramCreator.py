@@ -45,9 +45,6 @@ class HistogramCreator(Module):
                 for processName in sampleDict["processes"]:
                     processWeight = sampleDict["weight"]
                     
-                    if componentSetName=="tChannel":
-                        print componentSetName,weight+"*"+componentWeight+"*"+processWeight
-
                     for i,f in enumerate(rootFiles):
                         self.module("Utils").getHist1D(histograms[componentName]["hists"][componentSetName],f,processName,varName,weight+"*"+componentWeight+"*"+processWeight)
                         #break

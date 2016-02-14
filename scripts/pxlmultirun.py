@@ -260,6 +260,21 @@ number=$RANDOM
 let "number %= 100"
 echo "sleeping for ... "$number
 sleep $number
+echo "HOSTNAME: "$HOSTNAME
+tries=0
+until [ "$tries" -gt "20" ] || (ls > /dev/null && ls /storage/data/cms/store/user/mkomm > /dev/null && ls /nfs/user/mkomm > /dev/null && ls /home/fynu/mkomm > /dev/null)
+do
+  echo "Try again "$tries"/20"
+  sleep 1s
+  let "tries++"
+done
+if [ "$tries" -gt "20" ]
+then
+    echo "Mounting problem NOT solved!!! Killing job ..."
+    exit 1
+else
+    echo "Everything seems to be properly mounted."
+fi
 source /home/fynu/mkomm/.bashrc
 cd /home/fynu/mkomm/Diff13
 source setVars.sh

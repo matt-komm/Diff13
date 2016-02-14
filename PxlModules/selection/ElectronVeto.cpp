@@ -18,6 +18,8 @@ class ElectronVeto:
         std::string _inputElectronName;
         std::string _looseElectronName;
         
+        std::string _idString;
+        
         bool _cleanEvent;
         
         /*Loose Electron Related Criteria*/
@@ -31,6 +33,8 @@ class ElectronVeto:
             _inputEventViewName("Reconstructed"),
             _inputElectronName("Electron"),
             _looseElectronName("LooseElectron"),
+            
+            _idString("spring15eleIDVeto25ns"),
             
             _cleanEvent(true),
 
@@ -49,6 +53,8 @@ class ElectronVeto:
 
             addOption("LooseElectron Minimum pT","",_pTMinLooseElectron);
             addOption("LooseElectron Maximum eta","",_etaMaxLooseElectron);
+            
+            addOption("ID","",_idString);
         }
 
         ~ElectronVeto()
@@ -84,6 +90,8 @@ class ElectronVeto:
             getOption("Input electron name",_inputElectronName);
             getOption("Name of selected loose electrons",_looseElectronName);
             
+            getOption("ID",_idString);
+            
             getOption("Clean event",_cleanEvent);
             
             getOption("LooseElectron Minimum pT",_pTMinLooseElectron);
@@ -101,7 +109,7 @@ class ElectronVeto:
             {
                 return false;
             }
-            if (not particle->getUserRecord("spring15eleIDVeto25ns"))
+            if (_idString.size()>0 and (not particle->getUserRecord("spring15eleIDVeto25ns")))
             {
                 return false;
             }

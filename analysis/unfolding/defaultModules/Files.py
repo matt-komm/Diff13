@@ -15,22 +15,31 @@ class Files(Module):
 
     def getMCFiles(self):
         rootFiles = []
-        basedir = "/nfs/user/mkomm/ST13/evaluate25ns"
-        match = re.compile("mc[0-9]+.root")
-        for f in os.listdir(basedir):
-            if match.match(f):
-                rootFiles.append(os.path.join(basedir,f))
-        self._logger.debug("mc files ("+str(len(rootFiles))+") found in "+basedir)
+        basedirSignalMC = "/nfs/user/mkomm/ST13/evaluate25ns/MC76X_30/signal"
+        matchSignalMC = re.compile("mcSignal[0-9]+.root")
+
+        basedirBackgroundMC = "/nfs/user/mkomm/ST13/evaluate25ns/MC76X_30/background"
+        matchBackgroundMC = re.compile("mcBackground[0-9]+.root")
+        
+        for f in os.listdir(basedirSignalMC):
+            if matchSignalMC.match(f):
+                rootFiles.append(os.path.join(basedirSignalMC,f))
+
+        for f in os.listdir(basedirBackgroundMC):
+            if matchBackgroundMC.match(f):
+                rootFiles.append(os.path.join(basedirBackgroundMC,f))
+        
+        self._logger.debug("mc files ("+str(len(rootFiles))+") found")
         return rootFiles
         
     def getDataFiles(self):
         rootFiles = []
-        basedir = "/nfs/user/mkomm/ST13/evaluate25nsData"
-        match = re.compile("data[0-9]+.root")
-        for f in os.listdir(basedir):
-            if match.match(f):
-                rootFiles.append(os.path.join(basedir,f))
-        self._logger.debug("data files ("+str(len(rootFiles))+") found in "+basedir)
+        basedirData = "/nfs/user/mkomm/ST13/evaluate25ns/data76X"
+        matchData = re.compile("data[0-9]+.root")
+        for f in os.listdir(basedirData):
+            if matchData.match(f):
+                rootFiles.append(os.path.join(basedirData,f))
+        self._logger.debug("data files ("+str(len(rootFiles))+") found in "+basedirData)
         return rootFiles
         
     def getResponseFiles(self):

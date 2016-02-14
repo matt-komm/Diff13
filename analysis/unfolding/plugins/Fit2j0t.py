@@ -30,7 +30,7 @@ class ProgramFit2j0t(Module.getClass("Program")):
         ### FITTING
         fitResult = self.module("ThetaFit").checkFitResult()
         if fitResult==None:
-            self.module("ThetaModel").makeModel(pseudo=False,addCut="(Reconstructed_1__isBarrel==1)")
+            self.module("ThetaModel").makeModel(pseudo=False,addCut="1")
             #self.module("ThetaModel").makeModel(pseudo=True)
             self.module("ThetaFit").run()
             fitResult = self.module("ThetaFit").readFitResult()
@@ -41,7 +41,7 @@ class ProgramFit2j0t(Module.getClass("Program")):
         if not histogramsAllYield:
             histogramsAllYield = self.module("HistogramCreator").makeHistograms(
                 "Reconstructed_1__nSelectedJet*3+Reconstructed_1__nSelectedBJet",
-                "(Reconstructed_1__nSelectedJet<4)*(Reconstructed_1__isBarrel==1)",
+                "(Reconstructed_1__nSelectedJet<4)",
                 numpy.linspace(-0.5,12.5,14),
                 pseudo=False
             )
@@ -51,7 +51,7 @@ class ProgramFit2j0t(Module.getClass("Program")):
         if not histogramsMTWYield:
             histogramsMTWYield = self.module("HistogramCreator").makeHistograms(
                 "Reconstructed_1__nSelectedJet*3+Reconstructed_1__nSelectedBJet",
-                "(Reconstructed_1__nSelectedJet<4)*(Reconstructed_1__isBarrel==1)"+"*"+self.module("Utils").getMTWCutStr(),
+                "(Reconstructed_1__nSelectedJet<4)"+"*"+self.module("Utils").getMTWCutStr(),
                 numpy.linspace(-0.5,12.5,14),
                 pseudo=False
             )
@@ -61,7 +61,7 @@ class ProgramFit2j0t(Module.getClass("Program")):
         if not histogramsBDTYield:
             histogramsBDTYield = self.module("HistogramCreator").makeHistograms(
                 "Reconstructed_1__nSelectedJet*3+Reconstructed_1__nSelectedBJet",
-                "(Reconstructed_1__nSelectedJet<4)*(Reconstructed_1__isBarrel==1)"+"*"+self.module("Utils").getMTWCutStr()+"*"+self.module("Utils").getBDTCutStr(),
+                "(Reconstructed_1__nSelectedJet<4)"+"*"+self.module("Utils").getMTWCutStr()+"*"+self.module("Utils").getBDTCutStr(),
                 numpy.linspace(-0.5,12.5,14),
                 pseudo=False
             )
@@ -122,7 +122,7 @@ class Fit2j0t(Module.getClass("ThetaModel")):
             
             "QCD_2j0t":
             {
-                "sets":["data1_antiiso","data2_antiiso","MC_antiiso"],
+                "sets":["data76_antiiso","MC_antiiso"],
                 "uncertainties":["QCD_2j0t"],
                 "weight":"(Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==0)",
                 "color":ROOT.kGray

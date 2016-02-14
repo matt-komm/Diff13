@@ -17,11 +17,12 @@ class ThetaModel(Module):
         
     def getUncertaintsDict(self):
         uncertainties = {
-            "WZjets":{"type":"gauss","config":{"mean": "1.0", "width":"1.0", "range":"(0.0,\"inf\")"}},
+            "Wjets":{"type":"gauss","config":{"mean": "1.0", "width":"0.5", "range":"(0.0,\"inf\")"}},
+            "Zjets":{"type":"gauss","config":{"mean": "1.0", "width":"0.3", "range":"(0.0,\"inf\")"}},
             #"BF":{"type":"gauss","config":{"mean": "1.0", "width":"0.3", "range":"(0.0,\"inf\")"}},
             #"CF":{"type":"gauss","config":{"mean": "1.0", "width":"0.3", "range":"(0.0,\"inf\")"}},
             #"LF":{"type":"gauss","config":{"mean": "1.0", "width":"0.3", "range":"(0.0,\"inf\")"}},
-            "TopBkg":{"type":"gauss","config":{"mean": "1.0", "width":"0.3", "range":"(0.0,\"inf\")"}},
+            "TopBkg":{"type":"gauss","config":{"mean": "1.0", "width":"0.15", "range":"(0.0,\"inf\")"}},
             "tChannel":{"type":"gauss","config":{"mean": "1.0", "width":"1.0", "range":"(0.0,\"inf\")"}},
             "QCD_2j1t":{"type":"gauss","config":{"mean": "1.0", "width":"1.0", "range":"(0.0,\"inf\")"}},
             "QCD_3j1t":{"type":"gauss","config":{"mean": "1.0", "width":"1.0", "range":"(0.0,\"inf\")"}},
@@ -73,17 +74,25 @@ class ThetaModel(Module):
                 "color":ROOT.kOrange+1
             },
             
-            "WZjets":
+            "Wjets":
             {
-                "sets":["WJetsMG","DY"],
-                "uncertainties":["WZjets"],
+                "sets":["WJetsMG"],
+                "uncertainties":["Wjets"],
+                "weight":"1",
+                "color":ROOT.kGreen+1
+            },
+            
+            "Zjets":
+            {
+                "sets":["DY"],
+                "uncertainties":["Zjets"],
                 "weight":"1",
                 "color":ROOT.kGreen+1
             },
             
             "QCD_2j1t":
             {
-                "sets":["data1_antiiso","data2_antiiso","MC_antiiso"],
+                "sets":["data76_antiiso","MC_antiiso"],
                 "uncertainties":["QCD_2j1t"],
                 "weight":"(Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==1)",
                 "color":ROOT.kGray
@@ -91,7 +100,7 @@ class ThetaModel(Module):
 
             "QCD_3j1t":
             {
-                "sets":["data1_antiiso","data2_antiiso","MC_antiiso"],
+                "sets":["data76_antiiso","MC_antiiso"],
                 "uncertainties":["QCD_3j1t"],
                 "weight":"(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==1)",
                 "color":ROOT.kGray
@@ -99,7 +108,7 @@ class ThetaModel(Module):
  
             "QCD_3j2t":
             {
-                "sets":["data1_antiiso","data2_antiiso","MC_antiiso"],
+                "sets":["data76_antiiso","MC_antiiso"],
                 "uncertainties":["QCD_3j2t"],
                 "weight":"(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==2)",
                 "color":ROOT.kGray
@@ -112,7 +121,7 @@ class ThetaModel(Module):
         data = {
             "data":
             {
-                "sets":["data1","data2"],
+                "sets":["data76"],
                 "weight":"1"
             }
         }
