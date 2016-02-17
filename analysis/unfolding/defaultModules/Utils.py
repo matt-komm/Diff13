@@ -28,7 +28,7 @@ class Utils(Module):
             os.makedirs(self.module("Utils").getOutputFolder())
         
     def getBDTCutStr(self):
-        return "(Reconstructed_1__BDT_adaboost04_minnode001_maxvar3_ntree1000_invboost_binned>0.3)"
+        return "(Reconstructed_1__BDT_adaboost04_minnode001_maxvar3_ntree1000_invboost_binned>0.25)"
         
     def getLumi(self):
         return 2165.0

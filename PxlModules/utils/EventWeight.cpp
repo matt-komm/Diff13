@@ -491,6 +491,15 @@ const std::unordered_map<std::string,FileInfo> eventWeights76X = {
         }
     },
     
+    {"DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8",
+        {
+            //total=28751199 eff=24005604-4745595=19260009
+            19260009,
+            2008.4*3
+        }
+    },
+    
+    //DO NOT USE THIS SAMPLE -> BUGGY
     {"DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_ext",
         {
             //total=1719818 eff=1433002-286816=1146186
