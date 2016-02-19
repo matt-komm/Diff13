@@ -130,10 +130,6 @@ class BTagReweighting:
             hist_c->SetDirectory(0);
             mcEff_c.reset(hist_c);
             
-            TH2F* hist_q = dynamic_cast<TH2F*>(mcEffFile.Get("q"));
-            hist_q->SetDirectory(0);
-            mcEff_q.reset(hist_q);
-            
             TH2F* hist_other = dynamic_cast<TH2F*>(mcEffFile.Get("other"));
             hist_other->SetDirectory(0);
             mcEff_other.reset(hist_other);
@@ -162,7 +158,7 @@ class BTagReweighting:
    
                         
                         
-            BWGHT::WorkingPoint tightWP(0.97);
+            BWGHT::WorkingPoint tightWP(0.935);
             
             tightWP.setEfficiencyFunction(new BWGHT::LambdaEfficiencyFunction([&](const BWGHT::Jet& jet, BWGHT::SYS::TYPE sys) -> double
             {
@@ -175,25 +171,19 @@ class BTagReweighting:
                 {
                     int etaBin = mcEff_b->GetXaxis()->FindBin(eta);
                     int ptBin = mcEff_b->GetYaxis()->FindBin(pt);
-                    efficiency = mcEff_b->GetBinContent(etaBin,ptBin)+0.005;
+                    efficiency = mcEff_b->GetBinContent(etaBin,ptBin);
                 }
                 else if (jet.flavor==4)
                 {
                     int etaBin = mcEff_c->GetXaxis()->FindBin(eta);
                     int ptBin = mcEff_c->GetYaxis()->FindBin(pt);
-                    efficiency = mcEff_c->GetBinContent(etaBin,ptBin)+0.005;
-                }
-                else if (jet.flavor==1 or jet.flavor==2 or jet.flavor==3)
-                {
-                    int etaBin = mcEff_q->GetXaxis()->FindBin(eta);
-                    int ptBin = mcEff_q->GetYaxis()->FindBin(pt);
-                    efficiency = mcEff_q->GetBinContent(etaBin,ptBin)+0.005;
+                    efficiency = mcEff_c->GetBinContent(etaBin,ptBin);
                 }
                 else
                 {
                     int etaBin = mcEff_other->GetXaxis()->FindBin(eta);
                     int ptBin = mcEff_other->GetYaxis()->FindBin(pt);
-                    efficiency = mcEff_other->GetBinContent(etaBin,ptBin)+0.005;
+                    efficiency = mcEff_other->GetBinContent(etaBin,ptBin);
                 }
                 if (efficiency<0.01)
                 {

@@ -34,8 +34,8 @@ class ThetaFit(Module):
             writer.writerow({"sys":unc,"mean":fitResult[unc]["mean"],"unc":fitResult[unc]["unc"]})
         outputFile.close()
         
-    def run(self,cfgFile="fit.cfg"):
-        fullPath = os.path.join(self.module("Utils").getOutputFolder(),cfgFile)
+    def run(self,modelName="fit"):
+        fullPath = os.path.join(self.module("Utils").getOutputFolder(),modelName+".cfg")
         self._logger.info("run fit model: "+fullPath)
         p = subprocess.Popen(["theta", fullPath],
             #shell=True,
@@ -53,15 +53,15 @@ class ThetaFit(Module):
             if nextline.find("warnings:")!=-1:
                 self._logger.info("run fit: "+nextline.replace("\n","").replace("\r","").replace(" ",""))
 
-    def checkFitResult(self,rootFile="fit.root",modelName="fit"):
-        fullPath = os.path.join(self.module("Utils").getOutputFolder(),rootFile)
+    def checkFitResult(self,modelName="fit"):
+        fullPath = os.path.join(self.module("Utils").getOutputFolder(),modelName+".root")
         if os.path.exists(fullPath):
             self._logger.info("fit result already exists: "+fullPath)
-            return self.module("ThetaFit").readFitResult(rootFile,modelName)
+            return self.module("ThetaFit").readFitResult(modelName)
         return None
         
-    def readFitResult(self,rootFile="fit.root",modelName="fit"):
-        fullPath = os.path.join(self.module("Utils").getOutputFolder(),rootFile)
+    def readFitResult(self,modelName="fit"):
+        fullPath = os.path.join(self.module("Utils").getOutputFolder(),modelName+".root")
         self._logger.info("read fit result: "+fullPath)
         f = ROOT.TFile(fullPath)
         tree = f.Get("products")

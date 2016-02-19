@@ -227,9 +227,9 @@ qcdFitResult+="(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJe
 qcdFitResult+="(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==2)*0.223)"
 
 '''
-#qcdFitResult="1"
+globalWeight="1"
 
-globalDataWeight="1"
+globalDataWeight="1*"+globalWeight
 #globalDataWeight+="*(Reconstructed_1__Flag_CSCTightHaloFilter==1)"
 #globalDataWeight+="*(Reconstructed_1__Flag_EcalDeadCellTriggerPrimitiveFilter==1)"
 #globalDataWeight+="*(Reconstructed_1__Flag_HBHENoiseFilter==1)"
@@ -241,17 +241,17 @@ globalDataWeight="1"
 #globalDataWeight+="*(Reconstructed_1__Flag_trackingFailureFilter==1)"
 #globalDataWeight+="*(Reconstructed_1__Flag_trkPOGFilters==1)"
 
-globalMCWeight="Reconstructed_1__btagging_nominal*Reconstructed_1__PU69000_weight*(Reconstructed_1__HLT_IsoMu20_v1==1)*2119.4/0.7*mc_weight"
+globalMCWeight="Reconstructed_1__btagging_nominal*Reconstructed_1__PU69000_weight*(Reconstructed_1__HLT_IsoMu20_v3==1)*(testing==1)*2165.0*mc_weight/splitweight*"+globalWeight
 
-
-tChanYield="((Reconstructed_1__nSelectedBJet==0)*1.27+(Reconstructed_1__nSelectedBJet>0)*1.197)"
-topbgYield="((Reconstructed_1__nSelectedBJet==0)*1.27+(Reconstructed_1__nSelectedBJet>0)*1.025)"
-otherYield="((Reconstructed_1__nSelectedBJet==0)*1.27+(Reconstructed_1__nSelectedBJet>0)*1.623)"
+'''
+tChanYield="((Reconstructed_1__nSelectedBJet==0)*1.12+(Reconstructed_1__nSelectedBJet>0)*1.134)"
+topbgYield="((Reconstructed_1__nSelectedBJet==0)*1.12+(Reconstructed_1__nSelectedBJet>0)*0.841)"
+otherYield="((Reconstructed_1__nSelectedBJet==0)*1.12+(Reconstructed_1__nSelectedBJet>0)*1.282)"
 qcdMCYield="1"
-qcdDDYield="((Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==0)*0.201+"
-qcdDDYield+="(Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==1)*0.130+"
-qcdDDYield+="(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==1)*0.183+"
-qcdDDYield+="(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==2)*0.177)"
+qcdDDYield="((Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==0)*0.300+"
+qcdDDYield+="(Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet==1)*0.181+"
+qcdDDYield+="(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==1)*0.202+"
+qcdDDYield+="(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==2)*0.269)"
 
 '''
 tChanYield="1"
@@ -259,17 +259,17 @@ topbgYield="1"
 otherYield="1"
 qcdMCYield="1"
 qcdDDYield="1"
-'''
+
 region = "_iso"
 
 sampleDict = {
     "tChannel":
     {
         "processes":[
-            "ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1"+region,
+            #"ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1"+region,
             "ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1_ext"+region,
         ],
-        "weight":"0.5*((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)*"+globalMCWeight+"*"+tChanYield
+        "weight":"((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)*"+globalMCWeight+"*"+tChanYield
     },
 
     "tWChannel":
@@ -310,7 +310,7 @@ sampleDict = {
     "DY":
     {
         "processes":[
-            "DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8"+region,
+            "DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_ext"+region,
         ],
         "weight":"((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)*"+globalMCWeight+"*"+otherYield
     },
@@ -329,13 +329,13 @@ sampleDict = {
     "MC_antiiso":
     {
         "processes":[
-            "ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1_antiiso",
+            "ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1_ext_antiiso",
             "ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1_antiiso",
             "ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1_antiiso",
             "TT_TuneCUETP8M1_13TeV-powheg-pythia8_ext_antiiso",
-            "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_antiiso",
-            #"WJetsToLNu_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_antiiso",
-            "DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_antiiso"
+            #"WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_antiiso",
+            "WJetsToLNu_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_antiiso",
+            #"DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_ext_antiiso"
         ],
         "weight":"(-1.0)*((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)*"+globalMCWeight
     },
@@ -345,7 +345,8 @@ sampleDict = {
         "processes":[
             "SingleMuon_Run2015D-05Oct2015-v1_antiiso",
         ],
-        "weight":"(((Reconstructed_1__HLT_IsoMu20_v2==1)||(Reconstructed_1__HLT_IsoTkMu20_v3==1))+((Reconstructed_1__HLT_IsoMu20_v3==1)||(Reconstructed_1__HLT_IsoTkMu20_v3==1)))*"+globalDataWeight
+        #"weight":"(((Reconstructed_1__HLT_IsoMu20_v2==1)||(Reconstructed_1__HLT_IsoTkMu20_v3==1))+((Reconstructed_1__HLT_IsoMu20_v3==1)||(Reconstructed_1__HLT_IsoTkMu20_v3==1)))*"+globalDataWeight
+        "weight":"((Reconstructed_1__HLT_IsoMu20_v2==1)+(Reconstructed_1__HLT_IsoMu20_v3==1))*"+globalDataWeight
     },
     
     "data2_antiiso":
@@ -353,9 +354,19 @@ sampleDict = {
         "processes":[
             "SingleMuon_Run2015D-PromptReco-v4_antiiso",
         ],
-        "weight":"((Reconstructed_1__HLT_IsoMu20_v3==1) || (Reconstructed_1__HLT_IsoTkMu20_v4==1))*"+globalDataWeight
+        #"weight":"((Reconstructed_1__HLT_IsoMu20_v3==1) || (Reconstructed_1__HLT_IsoTkMu20_v4==1))*"+globalDataWeight
+        "weight":"(Reconstructed_1__HLT_IsoMu20_v3==1)*"+globalDataWeight
     },
     
+    "data76_antiiso":
+    {
+        "processes":[
+            "SingleMuon_Run2015D-16Dec2015-v1_antiiso",
+        ],
+        
+        #"weight":"((Reconstructed_1__HLT_IsoMu20_v3==1) || (Reconstructed_1__HLT_IsoTkMu20_v4==1))*"+globalDataWeight
+        "weight":"((Reconstructed_1__HLT_IsoMu20_v2==1)+(Reconstructed_1__HLT_IsoMu20_v3==1))*"+globalDataWeight
+    },
     
     
     "data1":
@@ -363,7 +374,8 @@ sampleDict = {
         "processes":[
             "SingleMuon_Run2015D-05Oct2015-v1"+region,
         ],
-        "weight":"(((Reconstructed_1__HLT_IsoMu20_v2==1)||(Reconstructed_1__HLT_IsoTkMu20_v3==1))+((Reconstructed_1__HLT_IsoMu20_v3==1)||(Reconstructed_1__HLT_IsoTkMu20_v3==1)))*"+globalDataWeight
+        #"weight":"(((Reconstructed_1__HLT_IsoMu20_v2==1)||(Reconstructed_1__HLT_IsoTkMu20_v3==1))+((Reconstructed_1__HLT_IsoMu20_v3==1)||(Reconstructed_1__HLT_IsoTkMu20_v3==1)))*"+globalDataWeight
+        "weight":"((Reconstructed_1__HLT_IsoMu20_v2==1)+(Reconstructed_1__HLT_IsoMu20_v3==1))*"+globalDataWeight
     },
     
     "data2":
@@ -372,7 +384,18 @@ sampleDict = {
             "SingleMuon_Run2015D-PromptReco-v4"+region,
         ],
         
-        "weight":"((Reconstructed_1__HLT_IsoMu20_v3==1) || (Reconstructed_1__HLT_IsoTkMu20_v4==1))*"+globalDataWeight
+        #"weight":"((Reconstructed_1__HLT_IsoMu20_v3==1) || (Reconstructed_1__HLT_IsoTkMu20_v4==1))*"+globalDataWeight
+        "weight":"(Reconstructed_1__HLT_IsoMu20_v3==1)*"+globalDataWeight
+    },
+    
+    "data76":
+    {
+        "processes":[
+            "SingleMuon_Run2015D-16Dec2015-v1"+region,
+        ],
+        
+        #"weight":"((Reconstructed_1__HLT_IsoMu20_v3==1) || (Reconstructed_1__HLT_IsoTkMu20_v4==1))*"+globalDataWeight
+        "weight":"((Reconstructed_1__HLT_IsoMu20_v2==1)+(Reconstructed_1__HLT_IsoMu20_v3==1))*"+globalDataWeight
     }
 }
 
@@ -428,6 +451,27 @@ sets = {
         "title":"W+LF",
         #"addtitle":"(MadGraph)",
     },
+    "WJetsAMCBF": {
+        "samples": ["WJetsAMC"],
+        "weight":"(Reconstructed_1__nBFlavorSelectedJet>0)",
+        "color":ROOT.gROOT.GetColor(ROOT.kGreen+2),
+        "title":"W+bX",
+        "addtitle":"(aMC@NLO)",
+    },
+    "WJetsAMCCF": {
+        "samples": ["WJetsAMC"],
+        "weight":"(Reconstructed_1__nBFlavorSelectedJet==0)*(Reconstructed_1__nCFlavorSelectedJet>0)",
+        "color":ROOT.gROOT.GetColor(ROOT.kGreen-3),
+        "title":"W+cX",
+        #"addtitle":"(MadGraph)",
+    },
+    "WJetsAMCLF": {
+        "samples": ["WJetsAMC"],
+        "weight":"(Reconstructed_1__nBFlavorSelectedJet==0)*(Reconstructed_1__nCFlavorSelectedJet==0)",
+        "color":ROOT.gROOT.GetColor(ROOT.kGreen-7),
+        "title":"W+LF",
+        #"addtitle":"(MadGraph)",
+    },
     "WJetsAMC": {
         "samples": ["WJetsAMC"],
         "weight":"1",
@@ -450,7 +494,7 @@ sets = {
     },
             
     "QCD_DD": {
-        "samples": ["data1_antiiso","data2_antiiso","MC_antiiso"],
+        "samples": ["data76_antiiso","MC_antiiso"],
         "weight":qcdDDYield,
         "color":ROOT.gROOT.GetColor(ROOT.kGray),
         "title":"QCD (DD)",# #lower[-0.06]{#scale[0.85]{#times#frac{1}{5}}}",
@@ -460,7 +504,13 @@ sets = {
         "weight":"1",
         "color":ROOT.gROOT.GetColor(ROOT.kBlack),
         "title":"Data",
-    }
+    },
+    "data76": {
+        "samples": ["data76"],
+        "weight":"1",
+        "color":ROOT.gROOT.GetColor(ROOT.kBlack),
+        "title":"Data",
+    },
 }
 
 parser = OptionParser()
@@ -468,14 +518,23 @@ parser = OptionParser()
 
 rootFiles=[]
 
-basedirMC = "/nfs/user/mkomm/ST13/evaluate25ns"
-matchMC = re.compile("mc[0-9]+.root")
-basedirData = "/nfs/user/mkomm/ST13/evaluate25nsData"
-matchData = re.compile("data[0-9]+.root")
+basedirSignalMC = "/nfs/user/mkomm/ST13/evaluate25ns/MC76X_30/signal_noveto"
+#basedirSignalMC = "/nfs/user/mkomm/ST13/reconstruction25ns/MC76X_30"
+matchSignalMC = re.compile("mcSignal[0-9]+.root")
 
-for f in os.listdir(basedirMC):
-    if matchMC.match(f):
-        rootFiles.append(os.path.join(basedirMC,f))
+basedirBackgroundMC = "/nfs/user/mkomm/ST13/evaluate25ns/MC76X_30/background_noveto"
+matchBackgroundMC = re.compile("mcBackground[0-9]+.root")
+
+basedirData = "/nfs/user/mkomm/ST13/evaluate25ns/data76X/data_noveto"
+matchData = re.compile("mcData[0-9]+.root")
+
+for f in os.listdir(basedirSignalMC):
+    if matchSignalMC.match(f):
+        rootFiles.append(os.path.join(basedirSignalMC,f))
+
+for f in os.listdir(basedirBackgroundMC):
+    if matchBackgroundMC.match(f):
+        rootFiles.append(os.path.join(basedirBackgroundMC,f))
 
 for f in os.listdir(basedirData):
     if matchData.match(f):
@@ -498,6 +557,185 @@ for setName in sets.keys():
 
 
 binning=30
+etaJECbins = numpy.array([0.0,0.2,0.4,0.6,0.8,1.0,1.2,1.4,1.6,1.8,2.0,2.2,2.4,2.6,2.8,3.0,3.5,4.0,4.4,5.4])
+
+
+variables = []
+'''
+variables.extend([
+    ["electron_logpt","Reconstructed_1__Electron_1__Pt","electron p_{T}","GeV","1",binning,numpy.logspace(1.3,2.35,num=(binning+1)),0,"logx"],
+    ["electron_fbrem","Reconstructed_1__Electron_1__fbrem","electron fbrem","","1",binning,0.0,1.0],
+    ["electron_hadronicOverEm","Reconstructed_1__Electron_1__hadronicOverEm","electron H/EM","","1",binning,numpy.logspace(-2,1,num=(binning+1)),0,"logx"],
+    ["electron_ooEmooP","Reconstructed_1__Electron_1__ooEmooP","electron ooEmooP","","1",binning,numpy.logspace(-2,1,num=(binning+1)),0,"logx"],
+    
+    ["electron_caloIso","Reconstructed_1__Electron_1__caloIso","electron calo iso","","1",binning,0.0,0.3,"logy"],
+    ["electron_chargedHadronIso","Reconstructed_1__Electron_1__chargedHadronIso","electron ch. had. iso","","1",binning,0.0,0.3,"logy"],
+    ["electron_particleIso","Reconstructed_1__Electron_1__particleIso","electron particle iso","","1",binning,0.0,0.3,"logy"],
+    ["electron_photonIso","Reconstructed_1__Electron_1__photonIso","electron photon iso","","1",binning,0.0,0.3,"logy"],
+    ["electron_puChargedHadronIso","Reconstructed_1__Electron_1__puChargedHadronIso","electron ch. PU had. iso","","1",binning,0.0,0.3,"logy"],
+    
+    ["electron_dxy","Reconstructed_1__Electron_1__dxy","electron d_{xy}","","1",binning,numpy.logspace(-4,-0,num=(binning+1)),0,"logx"],
+    ["electron_dz","fabs(Reconstructed_1__Electron_1__dz)","electron |d_{z}|","","1",binning,numpy.logspace(-4,0,num=(binning+1)),0,"logx"],
+    ["electron_ecalIso","Reconstructed_1__Electron_1__ecalIso","electron ECAL iso","","1",binning,0.0,0.2,"logy"],
+    ["electron_hcalIso","Reconstructed_1__Electron_1__hcalIso","electron HCAL iso","","1",binning,0.0,0.2,"logy"],
+    ["electron_full55sigmaIetaIphi","Reconstructed_1__Electron_1__full5x5_sigmaIetaIphi","electron full5x5 #sigma#eta#phi","","1",binning,-10.0,10.0],
+    
+
+
+])
+'''
+variables.extend([
+    #["fit","(SingleTop_1__mtw_beforePz<50.0)*SingleTop_1__mtw_beforePz+(SingleTop_1__mtw_beforePz>50.0)*(Reconstructed_1__BDT_adaboost04_minnode001_maxvar3_ntree1000_invboost_binned*75.0+75.0+50.0)","fit variable","","1",binning,0,200],
+    #["BDT_adaboost04_minnode001_maxvar3_ntree1000_invboost","Reconstructed_1__BDT_adaboost04_minnode001_maxvar3_ntree1000_invboost","BDT discriminant","","1",binning,-1,1],
+    #["BDT_adaboost04_minnode001_maxvar3_ntree1000_invboost_binned","Reconstructed_1__BDT_adaboost04_minnode001_maxvar3_ntree1000_invboost_binned","BDT discriminant #eta-binned","","1",binning,-1,1],
+
+
+    ["muon_logpt","Reconstructed_1__TightMuon_1__Pt","muon p_{T}","GeV","1",binning,numpy.logspace(1.3,2.35,num=(binning+1)),0,"logx"],
+    ["muon_pt","Reconstructed_1__TightMuon_1__Pt","muon p_{T}","GeV","1",binning,0,200],
+    ["ljet_logpt","SingleTop_1__LightJet_1__Pt","j' p_{T}","GeV","1",binning,numpy.logspace(1.5,2.5,num=(binning+1)),0,"logx"],
+    ["ljet_abseta","fabs(SingleTop_1__LightJet_1__Eta)","j' |#eta|","","1",binning,0,5.0],
+    #["ljet_abseta_binned","fabs(SingleTop_1__LightJet_1__Eta)","j' |#eta|","","1",len(etaJECbins)-1,etaJECbins,0],
+    ["met","Reconstructed_1__MET_1__Pt","MET","GeV","1",binning,0,200],
+    ["met_phi","Reconstructed_1__MET_1__Phi","MET #phi","","1",binning,-3.2,3.2],
+    ["mtw","SingleTop_1__mtw_beforePz","MTW","GeV","1",binning,0,200],
+    
+    
+    
+    #["top_logpt","SingleTop_1__Top_1__Pt","top p_{T}","GeV","1",binning,numpy.logspace(1,2.5,num=(binning+1)),0,"logx"],
+    #["top_absy","fabs(SingleTop_1__Top_1__y)","top |y|","","1",binning,0,2.5],     
+    #["top_logmass","SingleTop_1__Top_1__Mass","top mass","GeV","1",binning,numpy.logspace(1.9,2.9,num=(binning+1)),0,"logx"],
+])
+
+'''
+variables.extend([
+    ["nVertices","Reconstructed_1__PU_1__nVertices","#vertices","","1",26,-0.5,25.5],
+    
+    ["fit","(SingleTop_1__mtw_beforePz<50.0)*SingleTop_1__mtw_beforePz+(SingleTop_1__mtw_beforePz>50.0)*(Reconstructed_1__BDT_adaboost04_minnode001_maxvar3_ntree1000_invboost_binned*75.0+75.0+50.0)","fit variable","","1",binning,0,200],
+    ["BDT_adaboost04_minnode001_maxvar3_ntree1000_invboost","Reconstructed_1__BDT_adaboost04_minnode001_maxvar3_ntree1000_invboost","BDT discriminant","","1",binning,-1,1],
+    ["BDT_adaboost04_minnode001_maxvar3_ntree1000_invboost_binned","Reconstructed_1__BDT_adaboost04_minnode001_maxvar3_ntree1000_invboost_binned","BDT discriminant #eta-binned","","1",binning,-1,1],
+
+    ["muon_logpt","Reconstructed_1__TightMuon_1__Pt","muon p_{T}","GeV","1",binning,numpy.logspace(1.3,2.35,num=(binning+1)),0,"logx"],
+    ["muon_pt","Reconstructed_1__TightMuon_1__Pt","muon p_{T}","GeV","1",binning,0,200],
+    ["muon_eta","Reconstructed_1__TightMuon_1__Eta","muon #eta","","1",binning,-2.6,2.6],
+    ["muon_abseta","fabs(Reconstructed_1__TightMuon_1__Eta)","muon #eta","","1",binning,0.0,2.6],
+    
+    ["ljet_logpt","SingleTop_1__LightJet_1__Pt","j' p_{T}","GeV","1",binning,numpy.logspace(1.5,2.5,num=(binning+1)),0,"logx"],
+    ["ljet_pt","SingleTop_1__LightJet_1__Pt","j' p_{T}","GeV","1",binning,0,250],
+    ["ljet_eta","SingleTop_1__LightJet_1__Eta","j' |#eta|","","1",binning,-5.0,5.0],
+    ["ljet_abseta","fabs(SingleTop_1__LightJet_1__Eta)","j' |#eta|","","1",binning,0,5.0],
+    ["ljet_abseta_binned","fabs(SingleTop_1__LightJet_1__Eta)","j' |#eta|","","1",len(etaJECbins)-1,etaJECbins,0],
+    ["ljet_mass","SingleTop_1__LightJet_1__Mass","j' mass","GeV","1",binning,0.0,40.0],
+    ["ljet_nhf","SingleTop_1__LightJet_1__neutralHadronEnergy","j' neutral had. E","GeV","1",binning,0.0,1500.0,"y"],
+    ["ljet_csv","SingleTop_1__LightJet_1__pfCombinedInclusiveSecondaryVertexV2BJetTags","j' CSV","","1",binning,0,1],
+    ["ljet_n60","SingleTop_1__LightJet_1__n60","j' n60","","1",41,-0.5,40.5],
+    ["ljet_n90","SingleTop_1__LightJet_1__n90","j' n90","","1",51,-0.5,50.5],
+    ["ljet_qgLikelihood","SingleTop_1__LightJet_1__qgLikelihood","j' q/g likelihood","","1",binning,-1,1.0],
+
+    ["bjet_logpt","SingleTop_1__BJet_1__Pt","b jet p_{T}","GeV","1",binning,numpy.logspace(1.5,2.5,num=(binning+1)),0,"logx"],
+    ["bjet_pt","SingleTop_1__BJet_1__Pt","b jet p_{T}","GeV","1",binning,0,250],
+    ["bjet_eta","SingleTop_1__BJet_1__Eta","b jet #eta","","1",binning,-5.0,5.0],
+    ["bjet_abseta","fabs(SingleTop_1__BJet_1__Eta)","b-jet |#eta|","","1",binning,0,5.0],
+    ["bjet_mass","SingleTop_1__BJet_1__Mass","b jet mass","GeV","1",binning,0.0,40.0],
+    ["bjet_n60","SingleTop_1__BJet_1__n60","b jet n60","","1",41,-0.5,40.5],
+    ["bjet_n90","SingleTop_1__BJet_1__n90","b jet n90","","1",51,-0.5,50.5],
+    
+    ["bjet_muon_deltaR","SingleTop_1__BJet_TightMuon_dR","#Delta R(b jet,#mu)","","1",binning,0,6],
+    ["bjet_muon_deltaEta","fabs(SingleTop_1__BJet_TightMuon_dEta)","|#Delta #eta(b jet,#mu)|","","1",binning,0,5],
+    ["bjet_muon_deltaPhi","SingleTop_1__BJet_TightMuon_dPhi","#Delta #phi(b jet,#mu)","","1",binning,0,3.2],
+
+    ["dijet_pt","SingleTop_1__Dijet_1__Pt","dijet p_{T}","GeV","1",binning,0,350],
+    ["dijet_eta","SingleTop_1__Dijet_1__Eta","dijet #eta","","1",binning,-6.5,6.5],
+    ["dijet_abseta","fabs(SingleTop_1__Dijet_1__Eta)","dijet |#eta|","","1",binning,0,6.5],
+    ["dijet_mass","SingleTop_1__Dijet_1__Mass","dijet mass","GeV","1",binning,0,800],
+    ["dijet_deltaEta","fabs(SingleTop_1__Dijet_1__DEta)","|#Delta #eta(j',b jet)|","","1",binning,0,8],
+    ["dijet_deltaR","SingleTop_1__Dijet_1__DR","#Delta R(j',b jet)","","1",binning,0,7],
+    ["dijet_deltaPhi","SingleTop_1__Dijet_1__DPhi","#Delta #phi(j',b jet)","","1",binning,0,3.2],
+
+
+    ["met","Reconstructed_1__MET_1__Pt","MET","GeV","1",binning,0,200],
+    ["met_phi","Reconstructed_1__MET_1__Phi","MET #phi","","1",binning,-3.2,3.2],
+    ["mtw","SingleTop_1__mtw_beforePz","MTW","GeV","1",binning,0,200],
+    ["muon_met_deltaPhi","fabs(SingleTop_1__TightMuon_MET_dPhi)","|#Delta #phi(MET,#mu)|","","1",binning,0,3.2],
+    
+    ["top_logpt","SingleTop_1__Top_1__Pt","top p_{T}","GeV","1",binning,numpy.logspace(1,2.5,num=(binning+1)),0,"logx"],
+    ["top_pt","SingleTop_1__Top_1__Pt","top p_{T}","GeV","1",binning,0,350],
+    ["top_eta","SingleTop_1__Top_1__Eta","top #eta","","1",binning,-6,6],
+    ["top_y","SingleTop_1__Top_1__y","top y","","1",binning,-2.5,2.5],  
+    ["top_absy","fabs(SingleTop_1__Top_1__y)","top |y|","","1",binning,0,2.5],     
+    ["top_abseta","fabs(SingleTop_1__Top_1__Eta)","top |#eta|","","1",binning,0,6],
+    ["top_logmass","SingleTop_1__Top_1__Mass","top mass","GeV","1",binning,numpy.logspace(1.9,2.9,num=(binning+1)),0,"logx"],
+    ["top_mass","SingleTop_1__Top_1__Mass","top mass","GeV","1",binning,0,800],
+
+    
+    ["cosTheta_tPL","SingleTop_1__cosTheta_tPL","cos#theta_{l,q}^{top}","","1",binning,-1,1],
+
+    ["shat_logpt","SingleTop_1__Shat_1__Pt","#hat{s} p_{T}","GeV","1",binning,numpy.logspace(0,2.5,num=(binning+1)),0,"logx"],
+    ["shat_pt","SingleTop_1__Shat_1__Pt","#hat{s} p_{T}","GeV","1",binning,0,300],
+    ["shat_logmass","SingleTop_1__Shat_1__Mass","#hat{s}","GeV","1",binning,numpy.logspace(2,3.2,num=(binning+1)),0,"logx"],
+    ["shat_mass","SingleTop_1__Shat_1__Mass","#hat{s}","GeV","1",binning,0,1500],
+    ["shat_eta","SingleTop_1__Shat_1__Eta","#hat{s} #eta","","1",binning,-7,7],
+    ["shat_abseta","fabs(SingleTop_1__Shat_1__Eta)","#hat{s} |#eta|","","1",binning,0,7],
+
+
+    ["aplanarity","Reconstructed_1__logaplanarity","log(aplanarity)","","1",binning,-12,0.0],
+    ["circularity","Reconstructed_1__circularity","circularity","","1",binning,0,1],
+    ["C","Reconstructed_1__C","C","","1",binning,0,1],
+    ["isotropy","Reconstructed_1__isotropy","isotropy","","1",binning,0,1],
+    ["sphericity","Reconstructed_1__sphericity","sphericity","","1",binning,0,1],
+])
+'''
+
+qcdCuts = []
+
+qcdCuts.extend([
+    #["qcdnone","1",""],
+    #["qcdmtw","(SingleTop_1__mtw_beforePz>50.0)","MTW>50#kern[-0.5]{ }GeV"],
+    ["0e","(Reconstructed_1__Electron_1__E<0.0)","0e"],
+    #["1e_20pt","(Reconstructed_1__Electron_1__Pt>20.0)*(Reconstructed_1__Electron_2__Pt<20.0)","1e: pT>20#kern[-0.5]{ }GeV"],
+    #["1e_0pt","(Reconstructed_1__Electron_1__Pt>0.0)*(Reconstructed_1__Electron_1__Pt<20.0)*(Reconstructed_1__Electron_2__Pt<20.0)","1e: pT<20#kern[-0.5]{ }GeV"],
+    #["bdt","(SingleTop_1__mtw_beforePz>50.0)*(Reconstructed_1__BDT_adaboost04_minnode001_maxvar3_ntree1000_invboost_binned>0.25)","MTW>50#kern[-0.5]{ }GeV & BDT>0.25"],
+    #["bdtonly","(Reconstructed_1__BDT_boost02_minnode005_maxvar2_ntree1000_invboost>0.2)","BDT>0.2"],
+    #["barrel","(Reconstructed_1__isBarrel==1)","Barrel"],
+    #["foward","(Reconstructed_1__isBarrel==0)","Forward"],
+])
+
+
+'''
+genPt = numpy.array([0.0, 30, 47.5, 70.0, 105., 300.0])
+genY = numpy.array([0.0, 0.35, 0.7, 1.1, 1.6, 2.4])
+
+for ipt in range(len(genPt)-1):
+    qcdCuts.append(
+        [
+            "toppt"+str(ipt)+"_qcdnone",
+            "(SingleTop_1__Top_1__Pt>"+str(genPt[ipt])+")*(SingleTop_1__Top_1__Pt<"+str(genPt[ipt+1])+")",
+            str(genPt[ipt])+"<top pT<"+str(genPt[ipt+1])+"GeV"
+        ]
+    )
+    qcdCuts.append(
+        [
+            "toppt"+str(ipt)+"_qcdmtw",
+            "(SingleTop_1__mtw_beforePz>50.0)*(SingleTop_1__Top_1__Pt>"+str(genPt[ipt])+")*(SingleTop_1__Top_1__Pt<"+str(genPt[ipt+1])+")",
+            str(genPt[ipt])+"<top pT<"+str(genPt[ipt+1])+"GeV"
+        ]
+    )
+
+for iy in range(len(genY)-1):
+    qcdCuts.append(
+        [
+            "toppt"+str(iy)+"_qcdnone",
+            "(SingleTop_1__Top_1__Pt>"+str(genY[iy])+")*(SingleTop_1__Top_1__Pt<"+str(genY[iy+1])+")",
+            str(genY[iy])+"<top |y|<"+str(genY[iy+1])
+        ]
+    )
+    qcdCuts.append(
+        [
+            "toppt"+str(iy)+"_qcdmtw",
+            "(SingleTop_1__mtw_beforePz>50.0)*(SingleTop_1__Top_1__Pt>"+str(genY[iy])+")*(SingleTop_1__Top_1__Pt<"+str(genY[iy+1])+")",
+            str(genY[iy])+"<top |y|<"+str(genY[iy+1])
+        ]
+    )
+'''
 
 for category in [
     #["1j","(Reconstructed_1__nSelectedJet==1)"],
@@ -509,96 +747,11 @@ for category in [
     ["3j2t","(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==2)"]
 ]:
     
-    if category[0]!=args[0]:
+    if len(args)>0 and category[0]!=args[0]:
         continue
-    
-    for var in [
-        ["nVertices","Reconstructed_1__PU_1__nVertices","#vertices","","1",26,-0.5,25.5],
-        
-        ["fit","(SingleTop_1__mtw_beforePz<50.0)*SingleTop_1__mtw_beforePz+(SingleTop_1__mtw_beforePz>50.0)*(Reconstructed_1__BDT_adaboost04_minnode001_maxvar3_ntree1000_invboost_binned*75.0+75.0+50.0)","fit variable","","1",binning,0,200],
-        ["BDT_adaboost04_minnode001_maxvar3_ntree1000_invboost","Reconstructed_1__BDT_adaboost04_minnode001_maxvar3_ntree1000_invboost","BDT discriminant","","1",binning,-1,1],
-        ["BDT_adaboost04_minnode001_maxvar3_ntree1000_invboost_binned","Reconstructed_1__BDT_adaboost04_minnode001_maxvar3_ntree1000_invboost_binned","BDT discriminant #eta-binned","","1",binning,-1,1],
 
-        ["muon_logpt","Reconstructed_1__TightMuon_1__Pt","muon p_{T}","GeV","1",binning,numpy.logspace(1.3,2.35,num=(binning+1)),0,"logx"],
-        ["muon_pt","Reconstructed_1__TightMuon_1__Pt","muon p_{T}","GeV","1",binning,0,200],
-        ["muon_eta","Reconstructed_1__TightMuon_1__Eta","muon #eta","","1",binning,-2.6,2.6],
-        ["muon_abseta","fabs(Reconstructed_1__TightMuon_1__Eta)","muon #eta","","1",binning,0.0,2.6],
-        
-        ["ljet_logpt","SingleTop_1__LightJet_1__Pt","j' p_{T}","GeV","1",binning,numpy.logspace(1.5,2.5,num=(binning+1)),0,"logx"],
-        ["ljet_pt","SingleTop_1__LightJet_1__Pt","j' p_{T}","GeV","1",binning,0,250],
-        ["ljet_eta","SingleTop_1__LightJet_1__Eta","j' |#eta|","","1",binning,-5.0,5.0],
-        ["ljet_abseta","fabs(SingleTop_1__LightJet_1__Eta)","j' |#eta|","","1",binning,0,5.0],
-        ["ljet_mass","SingleTop_1__LightJet_1__Mass","j' mass","GeV","1",binning,0.0,40.0],
-        ["ljet_nhf","SingleTop_1__LightJet_1__neutralHadronEnergy","j' neutral had. E","GeV","1",binning,0.0,1500.0,"y"],
-        ["ljet_csv","SingleTop_1__LightJet_1__pfCombinedInclusiveSecondaryVertexV2BJetTags","j' CSV","","1",binning,0,1],
-        ["ljet_n60","SingleTop_1__LightJet_1__n60","j' n60","","1",41,-0.5,40.5],
-        ["ljet_n90","SingleTop_1__LightJet_1__n90","j' n90","","1",51,-0.5,50.5],
-
-        ["bjet_logpt","SingleTop_1__BJet_1__Pt","b jet p_{T}","GeV","1",binning,numpy.logspace(1.5,2.5,num=(binning+1)),0,"logx"],
-        ["bjet_pt","SingleTop_1__BJet_1__Pt","b jet p_{T}","GeV","1",binning,0,250],
-        ["bjet_eta","SingleTop_1__BJet_1__Eta","b jet #eta","","1",binning,-5.0,5.0],
-        ["bjet_abseta","fabs(SingleTop_1__BJet_1__Eta)","b-jet |#eta|","","1",binning,0,5.0],
-        ["bjet_mass","SingleTop_1__BJet_1__Mass","b jet mass","GeV","1",binning,0.0,40.0],
-        ["bjet_n60","SingleTop_1__BJet_1__n60","b jet n60","","1",41,-0.5,40.5],
-        ["bjet_n90","SingleTop_1__BJet_1__n90","b jet n90","","1",51,-0.5,50.5],
-        
-        ["bjet_muon_deltaR","SingleTop_1__BJet_TightMuon_dR","#Delta R(b jet,#mu)","","1",binning,0,6],
-        ["bjet_muon_deltaEta","fabs(SingleTop_1__BJet_TightMuon_dEta)","|#Delta #eta(b jet,#mu)|","","1",binning,0,5],
-        ["bjet_muon_deltaPhi","SingleTop_1__BJet_TightMuon_dPhi","#Delta #phi(b jet,#mu)","","1",binning,0,3.2],
-
-        ["dijet_pt","SingleTop_1__Dijet_1__Pt","dijet p_{T}","GeV","1",binning,0,350],
-        ["dijet_eta","SingleTop_1__Dijet_1__Eta","dijet #eta","","1",binning,-6.5,6.5],
-        ["dijet_abseta","fabs(SingleTop_1__Dijet_1__Eta)","dijet |#eta|","","1",binning,0,6.5],
-        ["dijet_mass","SingleTop_1__Dijet_1__Mass","dijet mass","GeV","1",binning,0,800],
-        ["dijet_deltaEta","fabs(SingleTop_1__Dijet_1__DEta)","|#Delta #eta(j',b jet)|","","1",binning,0,8],
-        ["dijet_deltaR","SingleTop_1__Dijet_1__DR","#Delta R(j',b jet)","","1",binning,0,7],
-        ["dijet_deltaPhi","SingleTop_1__Dijet_1__DPhi","#Delta #phi(j',b jet)","","1",binning,0,3.2],
-
-        #["ljet_logpt","SingleTop_1__BJet_1__Pt","light jet p_{T}","GeV","1",binning,numpy.logspace(1.5,2.5,num=(binning+1)),0,"logx"],
-        #["ljet_pt","SingleTop_1__BJet_1__Pt","light jet p_{T}","GeV","1",binning,0,250],
-        #["ljet_abseta","fabs(SingleTop_1__BJet_1__Eta)","light jet |#eta|","","1",binning,0,5.0],
-        
-        ["met","Reconstructed_1__MET_1__Pt","MET","GeV","1",binning,0,200],
-        ["met_phi","Reconstructed_1__MET_1__Phi","MET #phi","","1",binning,-3.2,3.2],
-        ["mtw","SingleTop_1__mtw_beforePz","MTW","GeV","1",binning,0,200],
-        ["muon_met_deltaPhi","fabs(SingleTop_1__TightMuon_MET_dPhi)","|#Delta #phi(MET,#mu)|","","1",binning,0,3.2],
-        
-        ["top_logpt","SingleTop_1__Top_1__Pt","top p_{T}","GeV","1",binning,numpy.logspace(1,2.5,num=(binning+1)),0,"logx"],
-        ["top_pt","SingleTop_1__Top_1__Pt","top p_{T}","GeV","1",binning,0,350],
-        ["top_eta","SingleTop_1__Top_1__Eta","top #eta","","1",binning,-6,6],
-        ["top_abseta","fabs(SingleTop_1__Top_1__Eta)","top |#eta|","","1",binning,0,6],
-        ["top_logmass","SingleTop_1__Top_1__Mass","top mass","GeV","1",binning,numpy.logspace(1.9,2.9,num=(binning+1)),0,"logx"],
-        ["top_mass","SingleTop_1__Top_1__Mass","top mass","GeV","1",binning,0,800],
-
-        
-        ["cosTheta_tPL","SingleTop_1__cosTheta_tPL","cos#theta_{l,q}^{top}","","1",binning,-1,1],
-    
-        ["shat_logpt","SingleTop_1__Shat_1__Pt","#hat{s} p_{T}","GeV","1",binning,numpy.logspace(0,2.5,num=(binning+1)),0,"logx"],
-        ["shat_pt","SingleTop_1__Shat_1__Pt","#hat{s} p_{T}","GeV","1",binning,0,300],
-        ["shat_logmass","SingleTop_1__Shat_1__Mass","#hat{s}","GeV","1",binning,numpy.logspace(2,3.2,num=(binning+1)),0,"logx"],
-        ["shat_mass","SingleTop_1__Shat_1__Mass","#hat{s}","GeV","1",binning,0,1500],
-        ["shat_eta","SingleTop_1__Shat_1__Eta","#hat{s} #eta","","1",binning,-7,7],
-        ["shat_abseta","fabs(SingleTop_1__Shat_1__Eta)","#hat{s} |#eta|","","1",binning,0,7],
-
-
-        ["aplanarity","Reconstructed_1__logaplanarity","log(aplanarity)","","1",binning,-12,0.0],
-        ["circularity","Reconstructed_1__circularity","circularity","","1",binning,0,1],
-        ["C","Reconstructed_1__C","C","","1",binning,0,1],
-        ["isotropy","Reconstructed_1__isotropy","isotropy","","1",binning,0,1],
-        ["sphericity","Reconstructed_1__sphericity","sphericity","","1",binning,0,1],
-
-         
-    ]:
-        
-        for qcd in [
-            ["qcdnone","1",""],
-            ["qcdmtw","(SingleTop_1__mtw_beforePz>50.0)","MTW>50#kern[-0.5]{ }GeV"],
-            #["bdt","(SingleTop_1__mtw_beforePz>50.0)*(Reconstructed_1__BDT_boost02_minnode005_maxvar2_ntree1000_invboost>0.2)","MTW>50#kern[-0.5]{ }GeV & BDT>0.2"],
-            #["bdtonly","(Reconstructed_1__BDT_boost02_minnode005_maxvar2_ntree1000_invboost>0.2)","BDT>0.2"],
-            #["barrel","(Reconstructed_1__isBarrel==1)","Barrel"],
-            #["foward","(Reconstructed_1__isBarrel==0)","Forward"],
-            
-        ]:
+    for var in variables:
+        for qcd in qcdCuts:
             print category[0],var[0],qcd[0]
             
             outputName=category[0]+"_"+var[0]+"_"+qcd[0]
@@ -627,8 +780,9 @@ for category in [
             totalMCError2 = 0.0
             
             sumHistMC = None
-            for setName in (["tChannel","tWChannel","TTJets","WJetsMGBF","WJetsMGCF","WJetsMGLF","DY","QCD_DD"]):
-                #for setName in (["tChannel","tWChannel","TTJets","WJetsMGBF","WJetsMGCF","WJetsMGLF","DY","QCD_MC"]):
+            #for setName in (["tChannel","tWChannel","TTJets","WJetsMGBF","WJetsMGCF","WJetsMGLF","QCD_DD"]):
+            #for setName in (["tChannel","tWChannel","TTJets","WJetsMGBF","WJetsMGCF","WJetsMGLF","QCD_MC"]):
+            for setName in (["tChannel","tWChannel","TTJets","WJetsAMCBF","WJetsAMCCF","WJetsAMCLF","DY","QCD_MC"]):
                 setHist=ROOT.TH1F("setHist"+setName+str(random.random()),"",nbins,binarray)
                 setHist.Sumw2()
                 setHist.SetFillColor(sets[setName]["color"].GetNumber())
@@ -640,7 +794,6 @@ for category in [
                 for sampleName in sets[setName]["samples"]:
                     
                     sample=sampleDict[sampleName]
-                    
                     for process in sample["processes"]:
                         for f in rootFiles:
                             
@@ -652,9 +805,8 @@ for category in [
                                 tempHist.SetName(setHist.GetName()+process+str(random.random()))
                                 tree.Project(tempHist.GetName(),variableName,sets[setName]["weight"]+"*"+sample["weight"]+"*"+weight)
                                 tempHist.SetDirectory(0)
-                                addUnderflowOverflow(tempHist)
+                                #addUnderflowOverflow(tempHist)
                                 setHist.Add(tempHist)
-                                #print f,tree.GetEntries(),tempHist.GetEntries()
                             rootFile.Close()
                             
                             
@@ -662,7 +814,6 @@ for category in [
                     sumHistMC=setHist.Clone()
                 else:
                     sumHistMC.Add(setHist)
-                #addUnderflowOverflow(sampleHist)
                 totalMC+=setHist.Integral()
                 error = 0.0
                 if setHist.GetEntries()>0:
@@ -679,7 +830,7 @@ for category in [
              
             sumHistData = None
                 
-            for setName in ["data"]:
+            for setName in ["data76"]:
                 setHist=ROOT.TH1F("setHist"+setName+str(random.random()),"",nbins,binarray)
                 setHist.Sumw2()
                 setHist.SetMarkerColor(sets[setName]["color"].GetNumber())
@@ -701,7 +852,7 @@ for category in [
                                 tempHist.SetName(setHist.GetName()+process+str(random.random()))
                                 tree.Project(tempHist.GetName(),variableName,sets[setName]["weight"]+"*"+sample["weight"]+"*"+weight)
                                 tempHist.SetDirectory(0)
-                                addUnderflowOverflow(tempHist)
+                                #addUnderflowOverflow(tempHist)
                                 setHist.Add(tempHist)
                             rootFile.Close()
                             
@@ -709,7 +860,6 @@ for category in [
                     sumHistData=setHist.Clone()
                 else:
                     sumHistData.Add(setHist)
-                #addUnderflowOverflow(sampleHist)
                 print "\t",setName,round(setHist.GetEntries(),1),round(setHist.Integral(),1),"+-",round(setHist.Integral()/setHist.GetEntries()*math.sqrt(setHist.GetEntries()),1)
                 
             legendEntries.append([sumHistData,"Data","P"])
@@ -887,7 +1037,7 @@ for category in [
             pLumi.SetTextFont(43)
             pLumi.SetTextSize(28)
             pLumi.SetTextAlign(31)
-            pLumi.AddText("2.1#kern[-0.5]{ }fb#lower[-0.7]{#scale[0.7]{-1}} (13TeV)")
+            pLumi.AddText("2.2#kern[-0.5]{ }fb#lower[-0.7]{#scale[0.7]{-1}} (13TeV)")
             pLumi.Draw("Same")
             
             
@@ -926,10 +1076,10 @@ for category in [
                 if d>0:
                     h = min(sumHistMC.GetBinError(ibin+1)/sumHistData.GetBinContent(ibin+1),0.8)
                     box = ROOT.TBox(c-0.5*w,1-h,c+0.5*w,1+h)
-                    box.SetFillStyle(3245)
+                    box.SetFillStyle(3345)
                     box.SetLineColor(ROOT.kGray+1)
                     box.SetFillColor(ROOT.kGray)
-                    box.SetLineWidth(2)
+                    box.SetLineWidth(3)
                     rootObj.append(box)
                     box.Draw("SameF")
                     box2 = ROOT.TBox(c-0.5*w,1-h,c+0.5*w,1+h)
@@ -962,8 +1112,11 @@ for category in [
             legend.Draw("Same")
             
             cv.Update()
-            cv.Print("plots25ns/"+category[0]+"/"+outputName+"_MG.pdf")
-            cv.Print("plots25ns/"+category[0]+"/"+outputName+"_MG.png")
+            #cv.Print("plots25ns/"+category[0]+"/"+outputName+"_MG.pdf")
+            #cv.Print("plots25ns/"+category[0]+"/"+outputName+"_MG.png")
+            
+            cv.Print("plotsVeto/"+outputName+"_MG.pdf")
+            cv.Print("plotsVeto/"+outputName+"_MG.png")
             cv.WaitPrimitive()
             #break
         #break

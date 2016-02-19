@@ -196,6 +196,8 @@ ROOT.gStyle.SetPaintTextFormat("4.2f")
 parser = OptionParser()
 parser.add_option("-m", "--module", dest="modules",
                   action="append", type="string", default=[])
+parser.add_option("-c", "--cfg", dest="cfg",
+                  action="append", type="string", default=[])
 
 (options, args) = parser.parse_args()
 
@@ -230,7 +232,15 @@ logger.setLevel(logging.DEBUG)
 
 pluginPath = os.path.join(os.getcwd(),"plugins")
 
-module = defaultModules.Module()
+config = []
+for cfg in options.cfg:
+    scfg = cfg.split(":")
+    if len(scfg)!=2:
+        logger.warning("Option string '"+cfg+"' not valid!")
+    else:
+        config.append(scfg)
+
+module = defaultModules.Module(options=config)
     
 for moduleName in options.modules:
     try:

@@ -17,11 +17,11 @@ class ThetaModel(Module):
         
     def getUncertaintsDict(self):
         uncertainties = {
-            "WZjets":{"type":"log_normal","config":{"mu": "0.0", "sigma":str(math.sqrt(math.log(1.0+1)))}},
+            "WZjets":{"type":"log_normal","config":{"mu": "0.0", "sigma":str(math.sqrt(math.log(0.5+1)))}},
             #"BF":{"type":"gauss","config":{"mean": "1.0", "width":"0.3", "range":"(0.0,\"inf\")"}},
             #"CF":{"type":"gauss","config":{"mean": "1.0", "width":"0.3", "range":"(0.0,\"inf\")"}},
             #"LF":{"type":"gauss","config":{"mean": "1.0", "width":"0.3", "range":"(0.0,\"inf\")"}},
-            "TopBkg":{"type":"log_normal","config":{"mu": "0.0", "sigma":str(math.sqrt(math.log(0.3+1)))}},
+            "TopBkg":{"type":"log_normal","config":{"mu": "0.0", "sigma":str(math.sqrt(math.log(0.2+1)))}},
             "tChannel":{"type":"log_normal","config":{"mu": "0.0", "sigma":str(math.sqrt(math.log(1.0+1)))}},
             "QCD_2j1t":{"type":"log_normal","config":{"mu": "0.0", "sigma":str(math.sqrt(math.log(1.0+1)))}},
             "QCD_3j1t":{"type":"log_normal","config":{"mu": "0.0", "sigma":str(math.sqrt(math.log(1.0+1)))}},
@@ -46,7 +46,7 @@ class ThetaModel(Module):
         return observables
         
     def getBinning(self):
-        return 30
+        return 40
         
     def getRange(self):
         return [0.0,200.0]
@@ -105,7 +105,7 @@ class ThetaModel(Module):
                 "color":ROOT.kGray
             }
         }
-    
+            
         return components
         
     def getDataDict(self):
@@ -121,14 +121,14 @@ class ThetaModel(Module):
     def getModel(self,name):
         return Model(name, {"bb_uncertainties":"true"})
     
-    def makeModel(self,name="fit",pseudo=False,addCut="1"):
-        self._logger.info("Creating model: "+name)
+    def makeModel(self,modelName="fit",pseudo=False,addCut="1"):
+        self._logger.info("Creating model: "+modelName)
         
         histograms={}
     
-        file = open(os.path.join(self.module("Utils").getOutputFolder(),name+".cfg"),"w")
+        file = open(os.path.join(self.module("Utils").getOutputFolder(),modelName+".cfg"),"w")
         
-        model=self.module("ThetaModel").getModel(name)
+        model=self.module("ThetaModel").getModel(modelName)
         
         
         uncertainties = self.module("ThetaModel").getUncertaintsDict()
@@ -368,7 +368,7 @@ class ThetaModel(Module):
         file.write('    model="@'+model.getVarname()+'";\n')
         file.write('    output_database={\n')
         file.write('        type="rootfile_database";\n')
-        file.write('        filename="'+os.path.join(self.module("Utils").getOutputFolder(),name+'.root')+'";\n')
+        file.write('        filename="'+os.path.join(self.module("Utils").getOutputFolder(),modelName+'.root')+'";\n')
         file.write('    };\n')
         file.write('    producers=("@pd"\n')
         file.write('    );\n')

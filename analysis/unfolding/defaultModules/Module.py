@@ -9,12 +9,19 @@ class Module(object):
     def __init__(self,options=[]):
         self._logger = logging.getLogger(__file__)
         self._logger.setLevel(logging.DEBUG)
+        self._options = options
         
         if Module._classes == None:
             Module._classes = {}
             for cl in Module.__subclasses__():
                 Module._classes[cl.__name__]=cl
                 self._logger.info("add default class: "+cl.__name__)
+                
+    def getOption(self,name):
+        for opt in self._options:
+            if opt[0]==name:
+                return opt[1]
+        return None
                 
             
     def loadModule(self,name,pluginPath):
@@ -41,7 +48,7 @@ class Module(object):
         if Module._modules == None:
             Module._modules = {}
             for clName in Module._classes.keys():
-                Module._modules[clName]=Module._classes[clName]()
+                Module._modules[clName]=Module._classes[clName](options=self._options)
                 self._logger.info("init module '"+clName+"' with class '"+Module._classes[clName].__name__+"'")
         
     def module(self,name):

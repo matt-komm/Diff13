@@ -22,15 +22,44 @@ class Program(Module):
         ROOT.gRandom.SetSeed(123)
         
         ### FITTING
-        fitResult = self.module("ThetaFit").checkFitResult()
-        if fitResult==None:
+        fitResultNominal = self.module("ThetaFit").checkFitResult(modelName='fit')
+        if fitResultNominal==None:
             #self.module("ThetaModel").makeModel(pseudo=True,addCut="(Reconstructed_1__isBarrel==1)")
-            self.module("ThetaModel").makeModel(pseudo=False)
-            self.module("ThetaFit").run()
-            fitResult = self.module("ThetaFit").readFitResult()
-        self.module("Drawing").drawFitCorrelation(fitResult["correlations"])
+            self.module("ThetaModel").makeModel(pseudo=False, modelName='fit')
+            self.module("ThetaFit").run(modelName='fit')
+            fitResultNominal = self.module("ThetaFit").readFitResult()
             
             
+        ptRecoBinning = self.module("ResponseMatrixPt").getRecoBinning()
+        ptRecoVariable = self.module("ResponseMatrixPt").getRecoUnfoldingVariable()
+        for ipt in range(len(ptRecoBinning)-1):
+            fitResultByPt = self.module("ThetaFit").checkFitResult(modelName="fit_pt"+str(ipt))
+            if fitResultByPt==None:
+                self.module("ThetaModel").makeModel(
+                    pseudo=False, 
+                    modelName="fit_pt"+str(ipt),
+                    addCut="("+ptRecoVariable+">"+str(ptRecoBinning[ipt])+")*("+ptRecoVariable+"<"+str(ptRecoBinning[ipt+1])+")"
+                )
+                self.module("ThetaFit").run(modelName="fit_pt"+str(ipt))
+                fitResultByPt = self.module("ThetaFit").readFitResult()
+            
+            
+        yRecoBinning = self.module("ResponseMatrixY").getRecoBinning()
+        yRecoVariable = self.module("ResponseMatrixY").getRecoUnfoldingVariable()
+        for iy in range(len(yRecoBinning)-1):
+            fitResultByY = self.module("ThetaFit").checkFitResult(modelName="fit_y"+str(iy))
+            if fitResultByY==None:
+                self.module("ThetaModel").makeModel(
+                    pseudo=False, 
+                    modelName="fit_y"+str(iy),
+                    addCut="("+yRecoVariable+">"+str(yRecoBinning[iy])+")*("+yRecoVariable+"<"+str(yRecoBinning[iy+1])+")"
+                )
+                self.module("ThetaFit").run(modelName="fit_y"+str(iy))
+                fitResultByY = self.module("ThetaFit").readFitResult()
+            
+        #self.module("Drawing").drawFitCorrelation(fitResult["correlations"])
+            
+        '''    
         ###YIELDS
         histogramsAllYield = self.module("HistogramCreator").loadHistograms("yields_all")
         if not histogramsAllYield:
@@ -74,12 +103,7 @@ class Program(Module):
             )
             self.module("HistogramCreator").scaleHistogramsToFitResult(histogramsPt,fitResult)
             self.module("HistogramCreator").saveHistograms(histogramsPt,"reco_top_pt")
-        '''
-        for ibin in range(histogramsPt["data"]["hists"]["data"].GetNbinsX()):
-            histogramsPt["data"]["hists"]["data"].SetBinContent(ibin+1,
-                ROOT.gRandom.Poisson(histogramsPt["data"]["hists"]["data"].GetBinContent(ibin+1))
-            )
-        '''
+
         self.module("Drawing").plotHistograms(histogramsPt,"top quark pT","reco_top_Pt")
             
         histogramsY = self.module("HistogramCreator").loadHistograms("reco_top_y")
@@ -92,12 +116,7 @@ class Program(Module):
             )
             self.module("HistogramCreator").scaleHistogramsToFitResult(histogramsY,fitResult)
             self.module("HistogramCreator").saveHistograms(histogramsY,"reco_top_y")
-        '''
-        for ibin in range(histogramsY["data"]["hists"]["data"].GetNbinsX()):
-            histogramsY["data"]["hists"]["data"].SetBinContent(ibin+1,
-                ROOT.gRandom.Poisson(histogramsY["data"]["hists"]["data"].GetBinContent(ibin+1))
-            )
-        '''
+
         self.module("Drawing").plotHistograms(histogramsY,"top quark |y|","reco_top_Y")
         
        
@@ -141,12 +160,7 @@ class Program(Module):
             if componentName=="tChannel" or componentName=="data":
                 continue
             dataHistPtSubtracted.Add(componentHist,-1.0)
-            '''
-            backgroundDictPt[componentName]={}
-            backgroundDictPt[componentName]["hist"]=componentHist
-            backgroundDictPt[componentName]["mean"]=1.0
-            backgroundDictPt[componentName]["unc"]=fitResult[componentName]["unc"]
-            '''
+
         
         
         
@@ -170,12 +184,7 @@ class Program(Module):
             if componentName=="tChannel" or componentName=="data":
                 continue
             dataHistYSubtracted.Add(componentHist,-1.0)
-            '''
-            backgroundDictY[componentName]={}
-            backgroundDictY[componentName]["hist"]=componentHist
-            backgroundDictY[componentName]["mean"]=1.0
-            backgroundDictY[componentName]["unc"]=fitResult[componentName]["unc"]
-            '''
+
             
 
         
@@ -272,5 +281,5 @@ class Program(Module):
         #self.module("Utils").normalizeByBinWidth(genHistY)
         self.module("Drawing").drawBiasTest(trueUnfoldedHistY,genHistY,"top quark |y|","unfolded_true_Y")
         self.module("Drawing").drawBiasTest(unfoldedHistY,genHistY,"top quark |y|","unfolded_data_Y")
-
+        '''
         
