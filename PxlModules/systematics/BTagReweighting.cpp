@@ -41,8 +41,8 @@ class BTagReweighting:
             
         BWGHT::BTagWeightCalculator _btagWeightCalc;
         
-        constexpr static float MaxBJetPt = 670;
-        constexpr static float MaxLJetPt = 1000;
+        constexpr static float MaxBJetPt = 670.0;
+        constexpr static float MaxLJetPt = 1000.0;
         
         std::string _bTaggingAlgorithmName;
         
@@ -51,13 +51,16 @@ class BTagReweighting:
         std::string _eventViewName;
         std::vector<std::string> _jetNames;
         std::string _ljetName;
+        
+        double _wp;
 
     public:
         BTagReweighting():
-            Module(),
+            Module(),               
             _bTaggingAlgorithmName("pfCombinedInclusiveSecondaryVertexV2BJetTags"),
             _eventViewName("Reconstructed"),
-            _jetNames({"SelectedBJet","SelectedJet"})
+            _jetNames({"SelectedBJet","SelectedJet"}),
+            _wp(0.935)
         {
             addSink("input", "input");
             _outputSource = addSource("output","output");
@@ -68,6 +71,8 @@ class BTagReweighting:
             addOption("MC efficiency file","",_mcFile,pxl::OptionDescription::USAGE_FILE_OPEN);
             addOption("event view name","",_eventViewName);
             addOption("jet names","",_jetNames);
+            
+            addOption("workingpoint","",_wp);
             
             
         }
@@ -120,6 +125,8 @@ class BTagReweighting:
             getOption("event view name",_eventViewName);
             getOption("jet names",_jetNames);
             
+            getOption("workingpoint",_wp);
+            
             TFile mcEffFile(_mcFile.c_str());
             
             TH2F* hist_b = dynamic_cast<TH2F*>(mcEffFile.Get("b"));
@@ -158,7 +165,7 @@ class BTagReweighting:
    
                         
                         
-            BWGHT::WorkingPoint tightWP(0.935);
+            BWGHT::WorkingPoint tightWP(_wp);
             
             tightWP.setEfficiencyFunction(new BWGHT::LambdaEfficiencyFunction([&](const BWGHT::Jet& jet, BWGHT::SYS::TYPE sys) -> double
             {

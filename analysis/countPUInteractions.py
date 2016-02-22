@@ -45,14 +45,14 @@ class Example(modules.PythonModule):
         if not event:
             return "out"
             
-        weight=1.0
+        weight=event.getUserRecord("mc_weight")
         nVertices=0
         nInteractions=[0,0,0]
         nTrueInteractions=[0,0,0]
         
         for eventView in event.getEventViews():
             if eventView.getName()=="Generated":
-                weight=eventView.getUserRecord("genweight")
+                weight*=eventView.getUserRecord("genweight")
             if eventView.getName()=="Reconstructed":
                 for particle in eventView.getParticles():
                     if particle.getName()=="PU":

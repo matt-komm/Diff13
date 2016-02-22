@@ -261,11 +261,12 @@ let "number %= 100"
 echo "sleeping for ... "$number
 sleep $number
 echo "HOSTNAME: "$HOSTNAME
-tries=0
+tries=1
 until [ "$tries" -gt "20" ] || (ls > /dev/null && ls /storage/data/cms/store/user/mkomm > /dev/null && ls /nfs/user/mkomm > /dev/null && ls /home/fynu/mkomm > /dev/null)
 do
+  sleep 10s
+  sleep $tries
   echo "Try again "$tries"/20"
-  sleep 1s
   let "tries++"
 done
 if [ "$tries" -gt "20" ]

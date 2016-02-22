@@ -29,7 +29,7 @@ class Program(Module):
             self.module("ThetaFit").run(modelName='fit')
             fitResultNominal = self.module("ThetaFit").readFitResult()
             
-            
+        '''
         ptRecoBinning = self.module("ResponseMatrixPt").getRecoBinning()
         ptRecoVariable = self.module("ResponseMatrixPt").getRecoUnfoldingVariable()
         for ipt in range(len(ptRecoBinning)-1):
@@ -69,7 +69,7 @@ class Program(Module):
                 numpy.linspace(-0.5,12.5,14),
                 pseudo=False
             )
-            self.module("HistogramCreator").scaleHistogramsToFitResult(histogramsAllYield,fitResult)
+            self.module("HistogramCreator").scaleHistogramsToFitResult(histogramsAllYield,fitResultNominal)
             self.module("HistogramCreator").saveHistograms(histogramsAllYield,"yields_all")
         histogramsMTWYield = self.module("HistogramCreator").loadHistograms("yields_mtw")
         if not histogramsMTWYield:
@@ -79,7 +79,7 @@ class Program(Module):
                 numpy.linspace(-0.5,12.5,14),
                 pseudo=False
             )
-            self.module("HistogramCreator").scaleHistogramsToFitResult(histogramsMTWYield,fitResult)
+            self.module("HistogramCreator").scaleHistogramsToFitResult(histogramsMTWYield,fitResultNominal)
             self.module("HistogramCreator").saveHistograms(histogramsMTWYield,"yields_mtw")
         histogramsBDTYield = self.module("HistogramCreator").loadHistograms("yields_bdt")
         if not histogramsBDTYield:
@@ -89,7 +89,7 @@ class Program(Module):
                 numpy.linspace(-0.5,12.5,14),
                 pseudo=False
             )
-            self.module("HistogramCreator").scaleHistogramsToFitResult(histogramsBDTYield,fitResult)
+            self.module("HistogramCreator").scaleHistogramsToFitResult(histogramsBDTYield,fitResultNominal)
             self.module("HistogramCreator").saveHistograms(histogramsBDTYield,"yields_bdt")
         
         ### RECO HIST AND SCALING
@@ -101,7 +101,7 @@ class Program(Module):
                 self.module("ResponseMatrixPt").getRecoBinning(),
                 pseudo=False
             )
-            self.module("HistogramCreator").scaleHistogramsToFitResult(histogramsPt,fitResult)
+            self.module("HistogramCreator").scaleHistogramsToFitResult(histogramsPt,fitResultNominal)
             self.module("HistogramCreator").saveHistograms(histogramsPt,"reco_top_pt")
 
         self.module("Drawing").plotHistograms(histogramsPt,"top quark pT","reco_top_Pt")
@@ -114,7 +114,7 @@ class Program(Module):
                 self.module("ResponseMatrixY").getRecoBinning(),
                 pseudo=False
             )
-            self.module("HistogramCreator").scaleHistogramsToFitResult(histogramsY,fitResult)
+            self.module("HistogramCreator").scaleHistogramsToFitResult(histogramsY,fitResultNominal)
             self.module("HistogramCreator").saveHistograms(histogramsY,"reco_top_y")
 
         self.module("Drawing").plotHistograms(histogramsY,"top quark |y|","reco_top_Y")
@@ -128,14 +128,14 @@ class Program(Module):
             responseMatrixPt = self.module("ResponseMatrixPt").getResponseMatrix()
             self.module("ResponseMatrixPt").saveResponseMatrix(responseMatrixPt)
         self.module("Drawing").drawResponseMatrix(responseMatrixPt,"top quark pT","responsePt")
-        responseMatrixPt.Scale(fitResult["tChannel"]["mean"])
+        responseMatrixPt.Scale(fitResultNominal["tChannel"]["mean"])
         
         responseMatrixY = self.module("ResponseMatrixY").loadResponseMatrix()
         if responseMatrixY==None:
             responseMatrixY = self.module("ResponseMatrixY").getResponseMatrix()
             self.module("ResponseMatrixY").saveResponseMatrix(responseMatrixY)
         self.module("Drawing").drawResponseMatrix(responseMatrixY,"top quark |y|","responseY")
-        responseMatrixY.Scale(fitResult["tChannel"]["mean"])
+        responseMatrixY.Scale(fitResultNominal["tChannel"]["mean"])
 
 
 
@@ -281,5 +281,5 @@ class Program(Module):
         #self.module("Utils").normalizeByBinWidth(genHistY)
         self.module("Drawing").drawBiasTest(trueUnfoldedHistY,genHistY,"top quark |y|","unfolded_true_Y")
         self.module("Drawing").drawBiasTest(unfoldedHistY,genHistY,"top quark |y|","unfolded_data_Y")
-        '''
+        
         

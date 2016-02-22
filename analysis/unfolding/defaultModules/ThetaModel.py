@@ -329,7 +329,7 @@ class ThetaModel(Module):
         file.write("};\n")
 
         file.write('pd = {\n')
-        file.write('    name= "fit";\n')
+        file.write('    name= "'+modelName+'";\n')
         file.write('    type = "mle";\n')
         file.write('    parameters = ('+model.getParameterNames()+');\n')
         file.write('    minimizer = \"@myminimizer\";\n')

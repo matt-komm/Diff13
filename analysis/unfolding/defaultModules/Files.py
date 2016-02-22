@@ -15,10 +15,10 @@ class Files(Module):
 
     def getMCFiles(self):
         rootFiles = []
-        basedirSignalMC = "/nfs/user/mkomm/ST13/evaluate25ns/MC76X_30/signal"
+        basedirSignalMC = "/nfs/user/mkomm/ST13/evaluate25ns/MC76X_30/signal_new"
         matchSignalMC = re.compile("mcSignal[0-9]+.root")
 
-        basedirBackgroundMC = "/nfs/user/mkomm/ST13/evaluate25ns/MC76X_30/background"
+        basedirBackgroundMC = "/nfs/user/mkomm/ST13/evaluate25ns/MC76X_30/background_new"
         matchBackgroundMC = re.compile("mcBackground[0-9]+.root")
         
         for f in os.listdir(basedirSignalMC):
@@ -29,7 +29,7 @@ class Files(Module):
             if matchBackgroundMC.match(f):
                 rootFiles.append(os.path.join(basedirBackgroundMC,f))
         
-        self._logger.debug("mc files ("+str(len(rootFiles))+") found")
+        self._logger.debug("mc files ("+str(len(rootFiles))+") found in "+basedirSignalMC+", "+basedirBackgroundMC)
         return rootFiles
         
     def getDataFiles(self):
@@ -44,7 +44,7 @@ class Files(Module):
         
     def getResponseFiles(self):
         rootFiles = []
-        basedirSignalMC = "/nfs/user/mkomm/ST13/evaluate25ns/MC76X_30/signal"
+        basedirSignalMC = "/nfs/user/mkomm/ST13/evaluate25ns/MC76X_30/signal_new"
         matchSignalMC = re.compile("mcSignal[0-9]+.root")
 
         
@@ -53,12 +53,12 @@ class Files(Module):
                 rootFiles.append(os.path.join(basedirSignalMC,f))
 
         
-        self._logger.debug("mc files ("+str(len(rootFiles))+") found")
+        self._logger.debug("response files ("+str(len(rootFiles))+") found in "+basedirSignalMC)
         return rootFiles
         
     def getEfficiencyFiles(self):
         rootFiles = []
-        basedirSignalMC = "/nfs/user/mkomm/ST13/evaluate25ns/MC76X_30/signal"
+        basedirSignalMC = "/nfs/user/mkomm/ST13/evaluate25ns/MC76X_30/signal_new"
         matchSignalMC = re.compile("efficiencySignal[0-9]+.root")
 
         
@@ -67,5 +67,5 @@ class Files(Module):
                 rootFiles.append(os.path.join(basedirSignalMC,f))
 
         
-        self._logger.debug("mc files ("+str(len(rootFiles))+") found")
+        self._logger.debug("efficiency files ("+str(len(rootFiles))+") found in "+basedirSignalMC)
         return rootFiles

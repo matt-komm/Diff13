@@ -21,6 +21,7 @@ class ResponseMatrixPt(Module):
         return "Generated_1__top_pt"
         
     def getRecoBinning(self):
+        '''
         genBinning = self.module("ResponseMatrixPt").getGenBinning()
         b = numpy.zeros(len(genBinning)*2-1)
         for i in range(len(genBinning)-1):
@@ -28,9 +29,13 @@ class ResponseMatrixPt(Module):
             b[2*i+1]=0.5*(genBinning[i]+genBinning[i+1])
         b[-1]=genBinning[-1]
         return b
+        '''
+        return numpy.array([0.,35,50.,70.,85.,110.,140.,180.0,300.0])
         
     def getGenBinning(self):
-        return numpy.array([0.0, 30, 47.5, 70.0, 105., 300.0])
+        #return numpy.array([0.,42.5, 70.0,  110.,300.])
+        #return numpy.array([0.,45.,75.,130.,  300.])
+        return numpy.array([0.,50.,85.,140.0,300.0])
         
     def getSignalProcessNames(self):
         return ["ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1_ext"]
@@ -112,6 +117,48 @@ class ResponseMatrixPt(Module):
                         self.module("ResponseMatrixPt").getGenUnfoldingVariable(),
                         genweight
                     )
+                    
+        purityHist = ROOT.TH1F("purity"+str(random.random()),";top quark pT;purity=N(reco. & gen.)/N(reco.)",len(genBinning)-1,genBinning)
+        stabilityHist = ROOT.TH1F("stability"+str(random.random()),";top quark pT;stability=N(reco. & gen.)/N(gen.)",len(genBinning)-1,genBinning)
+        
+        responseMatrixSelectedPStest = responseMatrixSelected.Clone(responseMatrixSelected.GetName()+"RStest")
+        responseMatrixSelectedPStest.RebinY(2)
+        
+        for recoBin in range(responseMatrixSelectedPStest.GetNbinsY()):
+            sumGen = 0.0
+            for genBin in range(responseMatrixSelectedPStest.GetNbinsX()):
+                sumGen+=responseMatrixSelectedPStest.GetBinContent(genBin+1,recoBin+1)
+            stability = responseMatrixSelectedPStest.GetBinContent(recoBin+1,recoBin+1)/sumGen
+            stabilityHist.SetBinContent(recoBin+1,stability)
+        
+        for genBin in range(responseMatrixSelectedPStest.GetNbinsX()):
+            sumReco = 0.0
+            for recoBin in range(responseMatrixSelectedPStest.GetNbinsY()):
+                sumReco+=responseMatrixSelectedPStest.GetBinContent(genBin+1,recoBin+1)
+            purity = responseMatrixSelectedPStest.GetBinContent(genBin+1,genBin+1)/sumReco
+            purityHist.SetBinContent(genBin+1,purity)
+        
+        axis = ROOT.TH2F("axis"+str(random.random()),";top quark pT;",50,genBinning[0],genBinning[-1],50,0.0,0.85)
+        cv = ROOT.TCanvas("cvPS"+str(random.random()),"",800,700)
+        axis.Draw("AXIS")
+        stabilityHist.SetLineWidth(3)
+        stabilityHist.SetLineColor(ROOT.kAzure-5)
+        stabilityHist.Draw("SAME")
+        purityHist.SetLineWidth(3)
+        purityHist.SetLineColor(ROOT.kOrange+8)
+        purityHist.Draw("SAME")
+        
+        legend = ROOT.TLegend(0.35,0.35,0.65,0.24)
+        legend.SetBorderSize(0)
+        legend.SetTextFont(42)
+        legend.SetFillColor(ROOT.kWhite)
+        legend.AddEntry(stabilityHist,"stability","L")
+        legend.AddEntry(purityHist,"purity","L")
+        legend.Draw("Same")
+        
+        cv.Print(os.path.join(self.module("Utils").getOutputFolder(),"PStest_topPt.pdf"))
+        cv.Print(os.path.join(self.module("Utils").getOutputFolder(),"PStest_topPt.png"))
+                    
         self._logger.debug("response matrix selected: "+str(responseMatrixSelected.Integral())+" events")
         self._logger.debug("response matrix unselected: "+str(responseMatrixUnselected.Integral())+" events")
         self._logger.debug("efficiency: "+str(efficiencyHist.Integral())+" events")
