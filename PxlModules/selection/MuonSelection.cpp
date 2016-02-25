@@ -37,6 +37,7 @@ class MuonSelection:
         double _pfRelIsoCorDbBetaTightMuon; //Muon Isolation:Relative Isolation Correction (Cor) Delta beta (Db)- Beta parameter
 
       
+        int64_t _numMuons;
     public:
         MuonSelection():
 
@@ -49,7 +50,9 @@ class MuonSelection:
             _etaMaxTightMuon(2.1),
             _pfRelIsoLessCorDbTightMuon(0.06),
             _pfRelIsoMoreCorDbTightMuon(0.12),
-            _pfRelIsoCorDbBetaTightMuon(0.5)
+            _pfRelIsoCorDbBetaTightMuon(0.5),
+            
+            _numMuons(1)
 
 
         /*Initial Values for tight Muons taken TOP Muon Information for Analysis (Run2)
@@ -74,6 +77,8 @@ class MuonSelection:
             addOption("TightMuon Minimum Relative IsoLess DeltaBeta","",_pfRelIsoLessCorDbTightMuon);
             addOption("TightMuon Minimum Relative IsoMore DeltaBeta","",_pfRelIsoMoreCorDbTightMuon);
             addOption("TightMuon Relative Iso DeltaBeta; Beta Parameter","",_pfRelIsoCorDbBetaTightMuon);
+        
+            addOption("number of muons","",_numMuons);
         }
 
         ~MuonSelection()
@@ -114,6 +119,8 @@ class MuonSelection:
             getOption("TightMuon Minimum Relative IsoLess DeltaBeta",_pfRelIsoLessCorDbTightMuon);
             getOption("TightMuon Minimum Relative IsoMore DeltaBeta",_pfRelIsoMoreCorDbTightMuon);
             getOption("TightMuon Relative Iso DeltaBeta; Beta Parameter",_pfRelIsoCorDbBetaTightMuon);
+        
+            getOption("number of muons",_numMuons);
         }
 
         bool passesTightCriteria(pxl::Particle* particle)
@@ -224,7 +231,7 @@ class MuonSelection:
                         }
                     }
                     //1 highly iso muon, 0 intermediate iso muons
-                    if (tightIsoLessMuons.size()==1 && tightIsoMoreMuons.size()==0)
+                    if (tightIsoLessMuons.size()==_numMuons && tightIsoMoreMuons.size()==0)
                     {
                         pxl::Particle* tightMuon = tightIsoLessMuons.front();
                         tightMuon->setName(_tightMuonName);
@@ -232,7 +239,7 @@ class MuonSelection:
                         return _outputIsoLessSource->processTargets();
                     }
                     //0 highly iso muon, 1 intermediate iso muons
-                    else if (tightIsoLessMuons.size()==0 && tightIsoMoreMuons.size()==1)
+                    else if (tightIsoLessMuons.size()==0 && tightIsoMoreMuons.size()==_numMuons)
                     {
                         pxl::Particle* tightMuon = tightIsoMoreMuons.front();
                         tightMuon->setName(_tightMuonName);
@@ -240,7 +247,7 @@ class MuonSelection:
                         return _outputIsoMoreSource->processTargets();
                     }
                     //0 highly iso muon, 0 intermediate iso muons, 1 non-iso muon
-                    else if (tightIsoLessMuons.size()==0 && tightIsoMoreMuons.size()==0 && tightAntiIsoMuons.size()==1)
+                    else if (tightIsoLessMuons.size()==0 && tightIsoMoreMuons.size()==0 && tightAntiIsoMuons.size()==_numMuons)
                     {
                         pxl::Particle* tightMuon = tightAntiIsoMuons.front();
                         tightMuon->setName(_tightMuonName);
