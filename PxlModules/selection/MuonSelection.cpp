@@ -16,6 +16,8 @@
 
 static pxl::Logger logger("MuonSelection");
 
+
+
 class MuonSelection:
     public pxl::Module
 {
@@ -38,6 +40,16 @@ class MuonSelection:
 
       
         int64_t _numMuons;
+        
+        
+        struct SortByPt
+        {
+            bool operator()(const pxl::Particle* p1, const pxl::Particle* p2) const
+            {
+                //sort descending
+                return p1->getPt()>p2->getPt();
+            }
+        };
     public:
         MuonSelection():
 
@@ -206,10 +218,10 @@ class MuonSelection:
 
                                 if (particle->getName()==_inputMuonName)
                                 {
+                                    const float relIso = pfRelIsoCorrectedDeltaBetaR04(particle,_pfRelIsoCorDbBetaTightMuon);
+                                    particle->setUserRecord("relIso",relIso);
                                     if (passesTightCriteria(particle))
                                     {
-                                        const float relIso = pfRelIsoCorrectedDeltaBetaR04(particle,_pfRelIsoCorDbBetaTightMuon);
-                                        particle->setUserRecord("relIso",relIso);
                                         if (relIso<_pfRelIsoLessCorDbTightMuon)
                                         {
                                             //highly isolated muons
@@ -230,8 +242,12 @@ class MuonSelection:
                             }
                         }
                     }
-                    //1 highly iso muon, 0 intermediate iso muons
-                    if (tightIsoLessMuons.size()==_numMuons && tightIsoMoreMuons.size()==0)
+                    std::sort(tightIsoLessMuons.begin(),tightIsoLessMuons.end(),MuonSelection::SortByPt());
+                    std::sort(tightIsoMoreMuons.begin(),tightIsoMoreMuons.end(),MuonSelection::SortByPt());
+                    std::sort(tightAntiIsoMuons.begin(),tightAntiIsoMuons.end(),MuonSelection::SortByPt());
+                    
+                    //1 highly iso muon
+                    if (tightIsoLessMuons.size()==_numMuons)// && tightIsoMoreMuons.size()==0)
                     {
                         pxl::Particle* tightMuon = tightIsoLessMuons.front();
                         tightMuon->setName(_tightMuonName);

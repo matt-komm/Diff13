@@ -35,6 +35,16 @@ class JetSelection:
         bool _nhfBarrelOnly;
         bool _emBarrelOnly;
         std::vector<std::string> _dRObjects;
+        
+        
+        struct SortByPt
+        {
+            bool operator()(const pxl::Particle* p1, const pxl::Particle* p2) const
+            {
+                //sort descending
+                return p1->getPt()>p2->getPt();
+            }
+        };
 
     public:
         JetSelection():
@@ -290,6 +300,10 @@ class JetSelection:
                         
                         applyDRcleaning(inputEventView,selectedJets,dRCleaningObjects);
                     }
+                    
+                    
+                    std::sort(selectedJets.begin(),selectedJets.end(),JetSelection::SortByPt());
+                    
                     unsigned char nBFlavor = 0;
                     unsigned char nCFlavor = 0;
                     unsigned char nLFlavor = 0;
