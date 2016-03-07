@@ -21,15 +21,19 @@ class Program(Module):
         
         ROOT.gRandom.SetSeed(123)
         
+        
+        multiFitResultsPt=[]
+        
         ### FITTING
-        fitResultNominal = self.module("ThetaFit").checkFitResult(modelName='fit')
-        if fitResultNominal==None:
+        fitResultInc = self.module("ThetaFit").checkFitResult(modelName='fit')
+        if fitResultInc==None:
             #self.module("ThetaModel").makeModel(pseudo=True,addCut="(Reconstructed_1__isBarrel==1)")
             self.module("ThetaModel").makeModel(pseudo=False, modelName='fit')
             self.module("ThetaFit").run(modelName='fit')
-            fitResultNominal = self.module("ThetaFit").readFitResult()
+            fitResultInc = self.module("ThetaFit").readFitResult()
             
-        '''
+        self.module("Drawing").drawFitCorrelation(fitResultInc["correlations"])
+        
         ptRecoBinning = self.module("ResponseMatrixPt").getRecoBinning()
         ptRecoVariable = self.module("ResponseMatrixPt").getRecoUnfoldingVariable()
         for ipt in range(len(ptRecoBinning)-1):
@@ -41,8 +45,22 @@ class Program(Module):
                     addCut="("+ptRecoVariable+">"+str(ptRecoBinning[ipt])+")*("+ptRecoVariable+"<"+str(ptRecoBinning[ipt+1])+")"
                 )
                 self.module("ThetaFit").run(modelName="fit_pt"+str(ipt))
-                fitResultByPt = self.module("ThetaFit").readFitResult()
-            
+                fitResultByPt = self.module("ThetaFit").readFitResult(modelName="fit_pt"+str(ipt))
+            multiFitResultsPt.append({
+                "range":[ptRecoBinning[ipt],ptRecoBinning[ipt+1]],
+                "res":fitResultByPt
+            })
+        
+        
+        multiFitResultsPt.append({
+            "range":[ptRecoBinning[0],ptRecoBinning[-1]],
+            "res":fitResultInc
+        })
+        
+        self.module("Drawing").drawMultiFitResults(multiFitResultsPt,"top_pt")
+        
+        
+        multiFitResultsY=[]
             
         yRecoBinning = self.module("ResponseMatrixY").getRecoBinning()
         yRecoVariable = self.module("ResponseMatrixY").getRecoUnfoldingVariable()
@@ -55,11 +73,24 @@ class Program(Module):
                     addCut="("+yRecoVariable+">"+str(yRecoBinning[iy])+")*("+yRecoVariable+"<"+str(yRecoBinning[iy+1])+")"
                 )
                 self.module("ThetaFit").run(modelName="fit_y"+str(iy))
-                fitResultByY = self.module("ThetaFit").readFitResult()
+                fitResultByY = self.module("ThetaFit").readFitResult(modelName="fit_y"+str(iy))
+            multiFitResultsY.append({
+                "range":[yRecoBinning[iy],yRecoBinning[iy+1]],
+                "res":fitResultByY
+            })
+        
+        multiFitResultsY.append({
+            "range":[yRecoBinning[0],yRecoBinning[-1]],
+            "res":fitResultInc
+        })
+        
+        self.module("Drawing").drawMultiFitResults(multiFitResultsY,"top_y")
+        
+        
+        
+
             
-        #self.module("Drawing").drawFitCorrelation(fitResult["correlations"])
-            
-        '''    
+        
         ###YIELDS
         histogramsAllYield = self.module("HistogramCreator").loadHistograms("yields_all")
         if not histogramsAllYield:
@@ -69,8 +100,10 @@ class Program(Module):
                 numpy.linspace(-0.5,12.5,14),
                 pseudo=False
             )
-            self.module("HistogramCreator").scaleHistogramsToFitResult(histogramsAllYield,fitResultNominal)
-            self.module("HistogramCreator").saveHistograms(histogramsAllYield,"yields_all")
+        self.module("HistogramCreator").saveHistograms(histogramsAllYield,"yields_all")
+        self.module("HistogramCreator").scaleHistogramsToFitResult(histogramsAllYield,fitResultInc)
+        self.module("HistogramCreator").saveHistograms(histogramsAllYield,"yields_all_scaled")
+            
         histogramsMTWYield = self.module("HistogramCreator").loadHistograms("yields_mtw")
         if not histogramsMTWYield:
             histogramsMTWYield = self.module("HistogramCreator").makeHistograms(
@@ -79,8 +112,10 @@ class Program(Module):
                 numpy.linspace(-0.5,12.5,14),
                 pseudo=False
             )
-            self.module("HistogramCreator").scaleHistogramsToFitResult(histogramsMTWYield,fitResultNominal)
-            self.module("HistogramCreator").saveHistograms(histogramsMTWYield,"yields_mtw")
+        self.module("HistogramCreator").saveHistograms(histogramsMTWYield,"yields_mtw")
+        self.module("HistogramCreator").scaleHistogramsToFitResult(histogramsMTWYield,fitResultInc)
+        self.module("HistogramCreator").saveHistograms(histogramsMTWYield,"yields_mtw_scaled")
+            
         histogramsBDTYield = self.module("HistogramCreator").loadHistograms("yields_bdt")
         if not histogramsBDTYield:
             histogramsBDTYield = self.module("HistogramCreator").makeHistograms(
@@ -89,61 +124,139 @@ class Program(Module):
                 numpy.linspace(-0.5,12.5,14),
                 pseudo=False
             )
-            self.module("HistogramCreator").scaleHistogramsToFitResult(histogramsBDTYield,fitResultNominal)
-            self.module("HistogramCreator").saveHistograms(histogramsBDTYield,"yields_bdt")
+        self.module("HistogramCreator").saveHistograms(histogramsBDTYield,"yields_bdt")
+        self.module("HistogramCreator").scaleHistogramsToFitResult(histogramsBDTYield,fitResultInc)
+        self.module("HistogramCreator").saveHistograms(histogramsBDTYield,"yields_bdt_scaled")
+        
+        
+        
         
         ### RECO HIST AND SCALING
         histogramsPt = self.module("HistogramCreator").loadHistograms("reco_top_pt")
         if not histogramsPt:
             histogramsPt = self.module("HistogramCreator").makeHistograms(
                 self.module("ResponseMatrixPt").getRecoUnfoldingVariable(),
+                self.module("Utils").getCategoryCutStr(2,1),
+                self.module("ResponseMatrixPt").getRecoBinning(),
+                pseudo=False
+            )
+        self.module("HistogramCreator").saveHistograms(histogramsPt,"reco_top_pt")
+        self.module("HistogramCreator").scaleHistogramsToMultiFitResult(histogramsPt,multiFitResultsPt)
+        #self.module("HistogramCreator").scaleHistogramsToFitResult(histogramsPt,fitResultInc)
+        self.module("HistogramCreator").saveHistograms(histogramsPt,"reco_top_pt_scaled")
+        
+        histogramsPt_BDT = self.module("HistogramCreator").loadHistograms("reco_top_pt_bdt")
+        if not histogramsPt_BDT:
+            histogramsPt_BDT = self.module("HistogramCreator").makeHistograms(
+                self.module("ResponseMatrixPt").getRecoUnfoldingVariable(),
                 self.module("Utils").getCategoryCutStr(2,1)+"*"+self.module("Utils").getMTWCutStr()+"*"+self.module("Utils").getBDTCutStr(),
                 self.module("ResponseMatrixPt").getRecoBinning(),
                 pseudo=False
             )
-            self.module("HistogramCreator").scaleHistogramsToFitResult(histogramsPt,fitResultNominal)
-            self.module("HistogramCreator").saveHistograms(histogramsPt,"reco_top_pt")
+        self.module("HistogramCreator").saveHistograms(histogramsPt_BDT,"reco_top_pt_bdt")
+        self.module("HistogramCreator").scaleHistogramsToMultiFitResult(histogramsPt_BDT,multiFitResultsPt)
+        #self.module("HistogramCreator").scaleHistogramsToFitResult(histogramsPt,fitResultInc)
+        self.module("HistogramCreator").saveHistograms(histogramsPt_BDT,"reco_top_pt_bdt_scaled")
+            
 
         self.module("Drawing").plotHistograms(histogramsPt,"top quark pT","reco_top_Pt")
-            
+        self.module("Drawing").plotHistograms(histogramsPt_BDT,"top quark pT","reco_top_Pt_bdt")
+        
+        
+        
+        
+        
         histogramsY = self.module("HistogramCreator").loadHistograms("reco_top_y")
         if not histogramsY:
             histogramsY = self.module("HistogramCreator").makeHistograms(
+                self.module("ResponseMatrixY").getRecoUnfoldingVariable(),
+                self.module("Utils").getCategoryCutStr(2,1),
+                self.module("ResponseMatrixY").getRecoBinning(),
+                pseudo=False
+            )
+        self.module("HistogramCreator").saveHistograms(histogramsY,"reco_top_y")
+        self.module("HistogramCreator").scaleHistogramsToMultiFitResult(histogramsY,multiFitResultsY)
+        #self.module("HistogramCreator").scaleHistogramsToFitResult(histogramsY,fitResultInc)
+        self.module("HistogramCreator").saveHistograms(histogramsY,"reco_top_y_scaled")
+
+        
+        
+        histogramsY_BDT = self.module("HistogramCreator").loadHistograms("reco_top_y_bdt")
+        if not histogramsY_BDT:
+            histogramsY_BDT = self.module("HistogramCreator").makeHistograms(
                 self.module("ResponseMatrixY").getRecoUnfoldingVariable(),
                 self.module("Utils").getCategoryCutStr(2,1)+"*"+self.module("Utils").getMTWCutStr()+"*"+self.module("Utils").getBDTCutStr(),
                 self.module("ResponseMatrixY").getRecoBinning(),
                 pseudo=False
             )
-            self.module("HistogramCreator").scaleHistogramsToFitResult(histogramsY,fitResultNominal)
-            self.module("HistogramCreator").saveHistograms(histogramsY,"reco_top_y")
+        self.module("HistogramCreator").saveHistograms(histogramsY_BDT,"reco_top_y_bdt")
+        self.module("HistogramCreator").scaleHistogramsToMultiFitResult(histogramsY_BDT,multiFitResultsY)
+        #self.module("HistogramCreator").scaleHistogramsToFitResult(histogramsY,fitResultInc)
+        self.module("HistogramCreator").saveHistograms(histogramsY_BDT,"reco_top_y_bdt_scaled")
 
         self.module("Drawing").plotHistograms(histogramsY,"top quark |y|","reco_top_Y")
+        self.module("Drawing").plotHistograms(histogramsY_BDT,"top quark |y|","reco_top_Y_bdt")
         
        
-       
-       
+        
         ### RESPONSEMATRIX
-        responseMatrixPt = self.module("ResponseMatrixPt").loadResponseMatrix()
-        if responseMatrixPt==None:
-            responseMatrixPt = self.module("ResponseMatrixPt").getResponseMatrix()
-            self.module("ResponseMatrixPt").saveResponseMatrix(responseMatrixPt)
-        self.module("Drawing").drawResponseMatrix(responseMatrixPt,"top quark pT","responsePt")
-        responseMatrixPt.Scale(fitResultNominal["tChannel"]["mean"])
+        genBinningPt = self.module("ResponseMatrixPt").getGenBinning()
+        genBinningY = self.module("ResponseMatrixY").getGenBinning()
         
-        responseMatrixY = self.module("ResponseMatrixY").loadResponseMatrix()
+        
+        
+        responseMatrixPt = self.module("ResponseMatrixPt").loadResponseMatrix("response_pt")
+        if responseMatrixPt==None:
+            responseMatrixPt = self.module("ResponseMatrixPt").getResponseMatrix(
+                self.module("Utils").getCategoryCutStr(2,1)
+            )
+            self.module("ResponseMatrixPt").saveResponseMatrix(responseMatrixPt,"response_pt")
+        self.module("Drawing").drawPStest(responseMatrixPt,genBinningPt,"top quark pT","responsePt")
+        self.module("Drawing").drawResponseMatrix(responseMatrixPt,"top quark pT","responsePt")
+        
+        responseMatrixPt_BDT = self.module("ResponseMatrixPt").loadResponseMatrix("response_pt_bdt")
+        if responseMatrixPt_BDT==None:
+            responseMatrixPt_BDT = self.module("ResponseMatrixPt").getResponseMatrix(
+                self.module("Utils").getCategoryCutStr(2,1)+"*"+self.module("Utils").getMTWCutStr()+"*"+self.module("Utils").getBDTCutStr(),
+            )
+            self.module("ResponseMatrixPt").saveResponseMatrix(responseMatrixPt_BDT,"response_pt_bdt")
+        self.module("Drawing").drawPStest(responseMatrixPt_BDT,genBinningPt,"top quark pT","responsePt_bdt")
+        self.module("Drawing").drawResponseMatrix(responseMatrixPt_BDT,"top quark pT","responsePt_bdt")
+        
+        
+        
+        responseMatrixY = self.module("ResponseMatrixY").loadResponseMatrix("response_y")
         if responseMatrixY==None:
-            responseMatrixY = self.module("ResponseMatrixY").getResponseMatrix()
-            self.module("ResponseMatrixY").saveResponseMatrix(responseMatrixY)
+            responseMatrixY = self.module("ResponseMatrixY").getResponseMatrix(
+                self.module("Utils").getCategoryCutStr(2,1)
+            )
+            self.module("ResponseMatrixY").saveResponseMatrix(responseMatrixY,"response_y")
+        self.module("Drawing").drawPStest(responseMatrixY,genBinningY,"top quark |y|","responseY")
         self.module("Drawing").drawResponseMatrix(responseMatrixY,"top quark |y|","responseY")
-        responseMatrixY.Scale(fitResultNominal["tChannel"]["mean"])
+        
+        responseMatrixY_BDT = self.module("ResponseMatrixY").loadResponseMatrix("response_y_bdt")
+        if responseMatrixY_BDT==None:
+            responseMatrixY_BDT = self.module("ResponseMatrixY").getResponseMatrix(
+                self.module("Utils").getCategoryCutStr(2,1)+"*"+self.module("Utils").getMTWCutStr()+"*"+self.module("Utils").getBDTCutStr(),
+            )
+            self.module("ResponseMatrixY").saveResponseMatrix(responseMatrixY_BDT,"response_y_bdt")
+        self.module("Drawing").drawPStest(responseMatrixY_BDT,genBinningY,"top quark |y|","responseY_bdt")
+        self.module("Drawing").drawResponseMatrix(responseMatrixY_BDT,"top quark |y|","responseY_bdt")
 
 
+        dataHistPt = histogramsPt_BDT["data"]["hists"]["data"]
+        responseMatrixPt = responseMatrixPt_BDT
+        histogramsPt = histogramsPt_BDT
 
+        
+        dataHistY = histogramsY_BDT["data"]["hists"]["data"]
+        responseMatrixY = responseMatrixY_BDT
+        histogramsY = histogramsY_BDT
 
+        
+        
         ### BACKGROUND SUBTRACTION
         genHistPt = responseMatrixPt.ProjectionX()
-        genBinningPt = self.module("ResponseMatrixPt").getGenBinning()
-        dataHistPt = histogramsPt["data"]["hists"]["data"]
         dataHistPtSubtracted = dataHistPt.Clone("datahistPt_subtracted")
         dataHistPtSubtracted.SetDirectory(0)
         backgroundDictPt = {}
@@ -166,8 +279,6 @@ class Program(Module):
         
         
         genHistY = responseMatrixY.ProjectionX()
-        genBinningY = self.module("ResponseMatrixY").getGenBinning()
-        dataHistY = histogramsY["data"]["hists"]["data"]
         dataHistYSubtracted = dataHistY.Clone("datahistY_subtracted")
         dataHistYSubtracted.SetDirectory(0)
         backgroundDictY = {}
@@ -186,10 +297,12 @@ class Program(Module):
             dataHistYSubtracted.Add(componentHist,-1.0)
 
             
-
         
 
-          
+        
+        #dataHistPtSubtracted = histogramsPt["tChannel"]["hists"]["sum"]
+        #dataHistYSubtracted = histogramsY["tChannel"]["hists"]["sum"]
+
             
         ### UNFOLDING        
         recoPtHist=responseMatrixPt.ProjectionY()
@@ -281,5 +394,5 @@ class Program(Module):
         #self.module("Utils").normalizeByBinWidth(genHistY)
         self.module("Drawing").drawBiasTest(trueUnfoldedHistY,genHistY,"top quark |y|","unfolded_true_Y")
         self.module("Drawing").drawBiasTest(unfoldedHistY,genHistY,"top quark |y|","unfolded_data_Y")
-        
-        
+
+

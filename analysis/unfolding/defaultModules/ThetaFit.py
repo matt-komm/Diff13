@@ -15,25 +15,6 @@ class ThetaFit(Module):
         self._logger.setLevel(logging.DEBUG)
         self.fitResult = None
         
-    def storeFitResult(self,fitResult):
-        self.fitResult=fitResult
-        uncertainties = self.module("ThetaModel").getUncertaintsDict()
-        csvFileName = os.path.join(self.module("Utils").getOutputFolder(),"fitresult.csv")
-        self._logger.info("write fit result csv: "+csvFileName)
-        outputFile = open(csvFileName, 'wb')
-        writer = csv.DictWriter(
-            outputFile, 
-            ["sys","mean","unc"], 
-            restval='NAN', 
-            extrasaction='raise', 
-            dialect='excel', 
-            quoting=csv.QUOTE_NONNUMERIC
-        )
-        writer.writeheader()
-        for unc in uncertainties.keys():
-            writer.writerow({"sys":unc,"mean":fitResult[unc]["mean"],"unc":fitResult[unc]["unc"]})
-        outputFile.close()
-        
     def run(self,modelName="fit"):
         fullPath = os.path.join(self.module("Utils").getOutputFolder(),modelName+".cfg")
         self._logger.info("run fit model: "+fullPath)
@@ -105,8 +86,6 @@ class ThetaFit(Module):
         result["correlations"]=correlations
 
         f.Close()
-        
-        self.module("ThetaFit").storeFitResult(result)
         
         return result
         

@@ -10,60 +10,8 @@ class Samples(Module):
         self._logger.setLevel(logging.DEBUG)
         
     def getQCDIsoCutStr(self):
-        return "(Reconstructed_1__TightMuon_1__relIso>0.12)*(Reconstructed_1__TightMuon_1__relIso<10000.0)"
+        return "(Reconstructed_1__TightMuon_1__relIso>0.20)*(Reconstructed_1__TightMuon_1__relIso<10000.0)"
         
-    def getComponent(self,name):
-        components={
-            "other":
-            {
-                "sets":["WJetsMG","DY"],
-                "weight":"1",
-                "color":ROOT.kGreen+1,
-            },
-            "topbg":
-            {
-                "sets":["tWChannel","TTJets"],
-                "weight":"1",
-                "color":ROOT.kOrange,
-            },
-            "tChan":
-            {
-                "sets":["tChannel"],
-                "weight":"1",
-                "color":ROOT.kMagenta,
-            },
-            "QCD_MC":
-            {
-                "sets":["QCD_MC"],
-                "weight":"1",
-                "color":ROOT.kGray+1,
-            },
-            "QCD_DD":
-            {
-                "sets":["data1_antiiso","data2_antiiso","MC_antiiso"],
-                "weight":"1",
-                "color":ROOT.kGray+1,
-            },
-            "otherBF":
-            {
-                "sets":["WJetsMG","DY"],
-                "weight":"(Reconstructed_1__nBFlavorSelectedJet>0)",
-                "color":ROOT.kGreen+2
-            },
-            "otherCF":
-            {
-                "sets":["WJetsMG","DY"],
-                "weight":"(Reconstructed_1__nBFlavorSelectedJet==0)*(Reconstructed_1__nCFlavorSelectedJet>0)",
-                "color":ROOT.kGreen-3
-            },
-            "otherLF":
-            {
-                "sets":["WJetsMG","DY"],
-                "weight":"(Reconstructed_1__nBFlavorSelectedJet==0)*(Reconstructed_1__nCFlavorSelectedJet==0)",
-                "color":ROOT.kGreen-7
-            }
-        }
-        return components[name]
         
     def getSample(self,name):
         syst = self.module("Utils").getRecoSamplePrefix()
@@ -127,7 +75,7 @@ class Samples(Module):
             "DY":
             {
                 "processes":[
-                    "DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_ext_iso"+syst
+                    "DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_iso"+syst
                 ],
                 "color":ROOT.gROOT.GetColor(ROOT.kBlue-1),
                 "title":"Drell-Yan",
@@ -153,32 +101,14 @@ class Samples(Module):
                     "TT_TuneCUETP8M1_13TeV-powheg-pythia8_ext_antiiso",
                     #"WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_antiiso",
                     "WJetsToLNu_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_antiiso",
-                    "DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_ext_antiiso"
+                    "DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_antiiso"
                 ],
                 "color":ROOT.gROOT.GetColor(ROOT.kBlue-1),
                 "title":"QCD (DD)",
                 "weight":"(-1.0)*"+mcweight+"*"+self.module("Samples").getQCDIsoCutStr()
             },
             
-            "data1_antiiso":
-            {
-                "processes":[
-                    "SingleMuon_Run2015D-05Oct2015-v1_antiiso",
-                ],
-                "color":ROOT.gROOT.GetColor(ROOT.kBlack),
-                "title":"Data",
-                "weight":"((Reconstructed_1__HLT_IsoMu20_v2==1)+(Reconstructed_1__HLT_IsoMu20_v3==1))*"+dataweight+"*"+self.module("Samples").getQCDIsoCutStr()
-            },
-            
-            "data2_antiiso":
-            {
-                "processes":[
-                    "SingleMuon_Run2015D-PromptReco-v4_antiiso",
-                ],
-                "color":ROOT.gROOT.GetColor(ROOT.kBlack),
-                "title":"Data",
-                "weight":"((Reconstructed_1__HLT_IsoMu20_v3==1))*"+dataweight+"*"+self.module("Samples").getQCDIsoCutStr()
-            },
+
             
             "data76_antiiso":
             {
@@ -186,29 +116,10 @@ class Samples(Module):
                     "SingleMuon_Run2015D-16Dec2015-v1_antiiso",
                 ],
                 
-                #"weight":"((Reconstructed_1__HLT_IsoMu20_v3==1) || (Reconstructed_1__HLT_IsoTkMu20_v4==1))*"+globalDataWeight
-                "weight":"((Reconstructed_1__HLT_IsoMu20_v2==1)+(Reconstructed_1__HLT_IsoMu20_v3==1))*"+dataweight+"*"+self.module("Samples").getQCDIsoCutStr()
+                "weight":self.module("Utils").getTriggerCutDataStr()+"*"+dataweight+"*"+self.module("Samples").getQCDIsoCutStr()
             },
             
-            "data1":
-            {
-                "processes":[
-                    "SingleMuon_Run2015D-05Oct2015-v1_iso",
-                ],
-                "color":ROOT.gROOT.GetColor(ROOT.kBlack),
-                "title":"Data",
-                "weight":"((Reconstructed_1__HLT_IsoMu20_v2==1)+(Reconstructed_1__HLT_IsoMu20_v3==1))*"+dataweight
-            },
-            
-            "data2":
-            {
-                "processes":[
-                    "SingleMuon_Run2015D-PromptReco-v4_iso",
-                ],
-                "color":ROOT.gROOT.GetColor(ROOT.kBlack),
-                "title":"Data",
-                "weight":"((Reconstructed_1__HLT_IsoMu20_v3==1))*"+dataweight
-            },
+
             
             "data76":
             {
@@ -216,10 +127,11 @@ class Samples(Module):
                     "SingleMuon_Run2015D-16Dec2015-v1_iso",
                 ],
                 
-                #"weight":"((Reconstructed_1__HLT_IsoMu20_v3==1) || (Reconstructed_1__HLT_IsoTkMu20_v4==1))*"+globalDataWeight
-                "weight":"((Reconstructed_1__HLT_IsoMu20_v2==1)+(Reconstructed_1__HLT_IsoMu20_v3==1))*"+dataweight
+                "weight":self.module("Utils").getTriggerCutDataStr()+"*"+dataweight
+               
             }
         }
+        
         return sampleDict[name]
         
     def getSamplePseudo(self,name):
@@ -299,7 +211,27 @@ class Samples(Module):
                 "color":ROOT.gROOT.GetColor(ROOT.kGray),
                 "title":"QCD (MC)",# #lower[-0.06]{#scale[0.85]{#times#frac{1}{5}}}",
                 "weight":mcweight
-            }
+            },
+            
+            #take iso MC-QCD as antiiso data to generate pseudo data 
+            "data76_antiiso":
+            {
+                "processes":[
+                    "QCD_Pt-20toInf_MuEnrichedPt15_TuneCUETP8M1_13TeV_pythia8_iso"+syst,
+                ],
+                
+                "weight":mcweight
+            },
+            
+            #do not subtract any other process
+            "MC_antiiso":
+            {
+                "processes":[
+                ],
+                "color":ROOT.gROOT.GetColor(ROOT.kBlue-1),
+                "title":"QCD (DD)",
+                "weight":"1"
+            },
         }
         return sampleDict[name]
         

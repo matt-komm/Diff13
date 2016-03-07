@@ -46,16 +46,16 @@ class ResponseMatrixPt(Module):
             res.SetBinContent(igen+1,0,efficiencyHist.GetBinContent(igen+1))
         return res
 
-    def saveResponseMatrix(self,responseMatrix):
-        fullPath = os.path.join(self.module("Utils").getOutputFolder(),"responsePt.root")
+    def saveResponseMatrix(self,responseMatrix,name):
+        fullPath = os.path.join(self.module("Utils").getOutputFolder(),name+".root")
         rootFile = ROOT.TFile(fullPath,"RECREATE")
         responseMatrixSave = responseMatrix.Clone("responseMatrixPt")
         responseMatrixSave.SetDirectory(rootFile)
         responseMatrixSave.Write()
         rootFile.Close()
         
-    def loadResponseMatrix(self):
-        fullPath = os.path.join(self.module("Utils").getOutputFolder(),"responsePt.root")
+    def loadResponseMatrix(self,name):
+        fullPath = os.path.join(self.module("Utils").getOutputFolder(),name+".root")
         if not os.path.exists(fullPath):
             return None
         rootFile = ROOT.TFile(fullPath)
@@ -64,16 +64,18 @@ class ResponseMatrixPt(Module):
         rootFile.Close()
         return responseMatrix
         
-    def getResponseMatrix(self):  
+    def getResponseMatrix(self,cut="1"):  
         responseFiles = self.module("Files").getResponseFiles()
         efficiencyFiles = self.module("Files").getEfficiencyFiles()
         
         genweight = self.module("Utils").getGenWeightStr()
         recoweight = self.module("Utils").getRecoWeightStr()
-        cut = self.module("Utils").getMTWCutStr()
+
+        
         cut += "*"+self.module("Utils").getTriggerCutMCStr()
-        cut += "*"+self.module("Utils").getCategoryCutStr(2,1)
-        cut += "*"+self.module("Utils").getBDTCutStr()
+        #cut += "*"+self.module("Utils").getCategoryCutStr(2,1)
+        #cut += "*"+self.module("Utils").getMTWCutStr()
+        #cut += "*"+self.module("Utils").getBDTCutStr()
         
         self._logger.debug("apply gen weight for response matrix: "+genweight)
         self._logger.debug("apply reco weight for response matrix: "+recoweight)
@@ -118,46 +120,7 @@ class ResponseMatrixPt(Module):
                         genweight
                     )
                     
-        purityHist = ROOT.TH1F("purity"+str(random.random()),";top quark pT;purity=N(reco. & gen.)/N(reco.)",len(genBinning)-1,genBinning)
-        stabilityHist = ROOT.TH1F("stability"+str(random.random()),";top quark pT;stability=N(reco. & gen.)/N(gen.)",len(genBinning)-1,genBinning)
         
-        responseMatrixSelectedPStest = responseMatrixSelected.Clone(responseMatrixSelected.GetName()+"RStest")
-        responseMatrixSelectedPStest.RebinY(2)
-        
-        for recoBin in range(responseMatrixSelectedPStest.GetNbinsY()):
-            sumGen = 0.0
-            for genBin in range(responseMatrixSelectedPStest.GetNbinsX()):
-                sumGen+=responseMatrixSelectedPStest.GetBinContent(genBin+1,recoBin+1)
-            stability = responseMatrixSelectedPStest.GetBinContent(recoBin+1,recoBin+1)/sumGen
-            stabilityHist.SetBinContent(recoBin+1,stability)
-        
-        for genBin in range(responseMatrixSelectedPStest.GetNbinsX()):
-            sumReco = 0.0
-            for recoBin in range(responseMatrixSelectedPStest.GetNbinsY()):
-                sumReco+=responseMatrixSelectedPStest.GetBinContent(genBin+1,recoBin+1)
-            purity = responseMatrixSelectedPStest.GetBinContent(genBin+1,genBin+1)/sumReco
-            purityHist.SetBinContent(genBin+1,purity)
-        
-        axis = ROOT.TH2F("axis"+str(random.random()),";top quark pT;",50,genBinning[0],genBinning[-1],50,0.0,0.85)
-        cv = ROOT.TCanvas("cvPS"+str(random.random()),"",800,700)
-        axis.Draw("AXIS")
-        stabilityHist.SetLineWidth(3)
-        stabilityHist.SetLineColor(ROOT.kAzure-5)
-        stabilityHist.Draw("SAME")
-        purityHist.SetLineWidth(3)
-        purityHist.SetLineColor(ROOT.kOrange+8)
-        purityHist.Draw("SAME")
-        
-        legend = ROOT.TLegend(0.35,0.35,0.65,0.24)
-        legend.SetBorderSize(0)
-        legend.SetTextFont(42)
-        legend.SetFillColor(ROOT.kWhite)
-        legend.AddEntry(stabilityHist,"stability","L")
-        legend.AddEntry(purityHist,"purity","L")
-        legend.Draw("Same")
-        
-        cv.Print(os.path.join(self.module("Utils").getOutputFolder(),"PStest_topPt.pdf"))
-        cv.Print(os.path.join(self.module("Utils").getOutputFolder(),"PStest_topPt.png"))
                     
         self._logger.debug("response matrix selected: "+str(responseMatrixSelected.Integral())+" events")
         self._logger.debug("response matrix unselected: "+str(responseMatrixUnselected.Integral())+" events")

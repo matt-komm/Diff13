@@ -194,7 +194,7 @@ class BTagReweighting:
                 }
                 if (efficiency<0.01)
                 {
-                    efficiency+=0.002;
+                    efficiency+=0.005;
                 }
                 return efficiency;
             
@@ -206,7 +206,7 @@ class BTagReweighting:
                 float eta = jet.eta;
                 bool doubleUncertainty = false;
                 
-                BTagEntry::JetFlavor flavor = BTagEntry::FLAV_B;
+                BTagEntry::JetFlavor flavor = BTagEntry::FLAV_UDSG;
                 double jet_scalefactor =  1.0;
                 double jet_scalefactor_up =  1.0;
                 double jet_scalefactor_down = 1.0;

@@ -15,7 +15,7 @@ class UtilsLtagDown(Module.getClass("Utils")):
         self._logger.setLevel(logging.DEBUG)
         
     def getRecoWeightStr(self):
-        return self.module("Utils").getGenWeightStr()+"*(Reconstructed_1__PU69000_weight*Reconstructed_1__btagging_l_down)"
+        return self.module("Utils").getGenWeightStr()+"*(testing==1)/splitweight*(Reconstructed_1__PU69000_weight*Reconstructed_1__btagging_l_down)"
 
         
     def getOutputFolder(self):

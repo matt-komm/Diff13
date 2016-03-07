@@ -15,7 +15,7 @@ class SamplesIsoDown(Module.getClass("Samples")):
         self._logger.setLevel(logging.DEBUG)
         
     def getQCDIsoCutStr(self):
-        return "(Reconstructed_1__TightMuon_1__relIso>0.12)*(Reconstructed_1__TightMuon_1__relIso<0.4)"
+        return "(Reconstructed_1__TightMuon_1__relIso>0.20)*(Reconstructed_1__TightMuon_1__relIso<0.4)"
 
         
 class UtilsIsoDown(Module.getClass("Utils")):

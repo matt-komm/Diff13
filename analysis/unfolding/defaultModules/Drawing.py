@@ -2,6 +2,7 @@ import logging
 import ROOT
 import os
 import random
+import math
 from Module import Module
 
 class Drawing(Module):
@@ -148,6 +149,153 @@ class Drawing(Module):
         cvCovariance.Update()
         cvCovariance.WaitPrimitive()
         
+    def drawMultiFitResults(self,fitResults,name):
+    
+        axisRange = {}
+        values = {}
+
+        for fitResult in fitResults:
+            ranges = fitResult["range"]
+            for comp in self.module("ThetaModel").getComponentsDict().keys():
+                if not axisRange.has_key(comp):
+                    axisRange[comp]={"xmin":1000,"xmax":-1000,"ymin":1000,"ymax":-1000}
+                    values[comp]=[]
+                mean = fitResult["res"][comp]["mean"]
+                unc = fitResult["res"][comp]["unc"]
+                
+                values[comp].append({"mean":mean,"unc":unc,"range":ranges})
+                
+                axisRange[comp]["xmin"]=min(axisRange[comp]["xmin"],ranges[0])
+                axisRange[comp]["xmax"]=max(axisRange[comp]["xmax"],ranges[1])
+
+                axisRange[comp]["ymin"]=min(axisRange[comp]["ymin"],mean-2*unc)
+                axisRange[comp]["ymax"]=max(axisRange[comp]["ymax"],mean+2*unc)
+                
+                
+        for comp in values.keys():
+            cvMulti = ROOT.TCanvas("cvMulti"+str(random.random()),"",800,700)
+            #cvMulti.SetRightMargin(0.17)
+            #cvMulti.SetLeftMargin(0.165)
+            axis = ROOT.TH2F("axis"+str(random.random()),";"+name.replace("_"," ")+";"+comp+" nuisance parameter",50,axisRange[comp]["xmin"],axisRange[comp]["xmax"],50,axisRange[comp]["ymin"],axisRange[comp]["ymax"])
+            axis.Draw("AXIS")
+            
+            rootObj=[]
+            for value in values[comp]:
+                reRange = 0.1*math.fabs(value["range"][0]-value["range"][1])
+            
+                marker = ROOT.TMarker(
+                    0.5*(value["range"][0]+value["range"][1]),value["mean"],
+                    20
+                )
+                rootObj.append(marker)
+                marker.SetMarkerColor(ROOT.kBlack)
+                marker.SetMarkerSize(1.2)
+                marker.Draw("SameP")
+            
+            
+                line = ROOT.TLine(
+                    value["range"][0],value["mean"],
+                    value["range"][1],value["mean"],
+                )
+                rootObj.append(line)
+                line.SetLineColor(ROOT.kBlack)
+                line.SetLineWidth(2)
+                line.Draw("SameL")
+                
+                lineUp = ROOT.TLine(
+                    value["range"][0]+reRange,value["mean"]+value["unc"],
+                    value["range"][1]-reRange,value["mean"]+value["unc"],
+                )
+                rootObj.append(lineUp)
+                lineUp.SetLineColor(ROOT.kBlack)
+                lineUp.SetLineWidth(1)
+                lineUp.SetLineStyle(1)
+                lineUp.Draw("SameL")
+                
+                lineDown = ROOT.TLine(
+                    value["range"][0]+reRange,value["mean"]-value["unc"],
+                    value["range"][1]-reRange,value["mean"]-value["unc"],
+                )
+                rootObj.append(lineDown)
+                lineDown.SetLineColor(ROOT.kBlack)
+                lineDown.SetLineWidth(1)
+                lineDown.SetLineStyle(1)
+                lineDown.Draw("SameL")
+                
+                lineCenter = ROOT.TLine(
+                    0.5*(value["range"][0]+value["range"][1]),value["mean"]-value["unc"],
+                    0.5*(value["range"][0]+value["range"][1]),value["mean"]+value["unc"],
+                )
+                rootObj.append(lineCenter)
+                lineCenter.SetLineColor(ROOT.kBlack)
+                lineCenter.SetLineWidth(2)
+                lineCenter.Draw("SameL")
+                
+                pCMS=ROOT.TPaveText(1-cvMulti.GetRightMargin()-0.25,0.94,1-cvMulti.GetRightMargin()-0.25,0.94,"NDC")
+                pCMS.SetFillColor(ROOT.kWhite)
+                pCMS.SetBorderSize(0)
+                pCMS.SetTextFont(63)
+                pCMS.SetTextSize(30)
+                pCMS.SetTextAlign(11)
+                pCMS.AddText("CMS")
+                pCMS.Draw("Same")
+                
+                pPreliminary=ROOT.TPaveText(1-cvMulti.GetRightMargin()-0.165,0.94,1-cvMulti.GetRightMargin()-0.165,0.94,"NDC")
+                pPreliminary.SetFillColor(ROOT.kWhite)
+                pPreliminary.SetBorderSize(0)
+                pPreliminary.SetTextFont(53)
+                pPreliminary.SetTextSize(30)
+                pPreliminary.SetTextAlign(11)
+                pPreliminary.AddText("Preliminary")
+                pPreliminary.Draw("Same")
+                
+            cvMulti.Update()
+            cvMulti.Print(os.path.join(self.module("Utils").getOutputFolder(),"multi_"+name+"_"+comp+".png"))
+            cvMulti.Print(os.path.join(self.module("Utils").getOutputFolder(),"multi_"+name+"_"+comp+".pdf"))
+
+        
+    def drawPStest(self,responseMatrix,genBinning,varname,name):
+        purityHist = ROOT.TH1F("purity"+str(random.random()),";top quark pT;purity=N(reco. & gen.)/N(reco.)",len(genBinning)-1,genBinning)
+        stabilityHist = ROOT.TH1F("stability"+str(random.random()),";top quark pT;stability=N(reco. & gen.)/N(gen.)",len(genBinning)-1,genBinning)
+        
+        responseMatrixSelectedPStest = responseMatrix.Clone(responseMatrix.GetName()+"RStest")
+        responseMatrixSelectedPStest.RebinY(2)
+        
+        for recoBin in range(responseMatrixSelectedPStest.GetNbinsY()):
+            sumGen = 0.0
+            for genBin in range(responseMatrixSelectedPStest.GetNbinsX()):
+                sumGen+=responseMatrixSelectedPStest.GetBinContent(genBin+1,recoBin+1)
+            stability = responseMatrixSelectedPStest.GetBinContent(recoBin+1,recoBin+1)/sumGen
+            stabilityHist.SetBinContent(recoBin+1,stability)
+        
+        for genBin in range(responseMatrixSelectedPStest.GetNbinsX()):
+            sumReco = 0.0
+            for recoBin in range(responseMatrixSelectedPStest.GetNbinsY()):
+                sumReco+=responseMatrixSelectedPStest.GetBinContent(genBin+1,recoBin+1)
+            purity = responseMatrixSelectedPStest.GetBinContent(genBin+1,genBin+1)/sumReco
+            purityHist.SetBinContent(genBin+1,purity)
+        
+        axis = ROOT.TH2F("axis"+str(random.random()),";"+varname+";",50,genBinning[0],genBinning[-1],50,0.0,0.85)
+        cv = ROOT.TCanvas("cvPS"+str(random.random()),"",800,700)
+        axis.Draw("AXIS")
+        stabilityHist.SetLineWidth(3)
+        stabilityHist.SetLineColor(ROOT.kAzure-5)
+        stabilityHist.Draw("SAME")
+        purityHist.SetLineWidth(3)
+        purityHist.SetLineColor(ROOT.kOrange+8)
+        purityHist.Draw("SAME")
+        
+        legend = ROOT.TLegend(0.35,0.35,0.65,0.24)
+        legend.SetBorderSize(0)
+        legend.SetTextFont(42)
+        legend.SetFillColor(ROOT.kWhite)
+        legend.AddEntry(stabilityHist,"stability","L")
+        legend.AddEntry(purityHist,"purity","L")
+        legend.Draw("Same")
+        
+        cv.Print(os.path.join(self.module("Utils").getOutputFolder(),"PStest_"+name+".pdf"))
+        cv.Print(os.path.join(self.module("Utils").getOutputFolder(),"PStest_"+name+".png"))
+
     def plotHistogram(self,histogram,title,output):
         
         cvHist = ROOT.TCanvas("cvHist","",800,700)

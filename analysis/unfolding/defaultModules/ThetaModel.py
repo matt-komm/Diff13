@@ -15,17 +15,27 @@ class ThetaModel(Module):
         self._logger.setLevel(logging.DEBUG)
 
         
+    def makeLogNormal(self,mean,unc):
+        sigma2 = math.log(1+unc**2/mean**2)
+        mu = math.log(mean)-0.5*sigma2
+        #mu = 0.0
+        return {"type":"log_normal","config":{"mu": "%4.3f"%(mu), "sigma":"%4.3f"%(math.sqrt(sigma2))}}
+        #return {"type":"gauss","config":{"mean": "%4.3f"%(mean), "width":"%4.3f"%(unc), "range":"(0.0,\"inf\")"}}
+       
+    def makeGaus(self,mean,unc):
+        return {"type":"gauss","config":{"mean": "%4.3f"%(mean), "width":"%4.3f"%(unc), "range":"(0.0,\"inf\")"}}
+        
     def getUncertaintsDict(self):
         uncertainties = {
-            "WZjets":{"type":"log_normal","config":{"mu": "0.0", "sigma":str(math.sqrt(math.log(0.5+1)))}},
+            "WZjets":self.module("ThetaModel").makeLogNormal(1.5,0.5),
             #"BF":{"type":"gauss","config":{"mean": "1.0", "width":"0.3", "range":"(0.0,\"inf\")"}},
             #"CF":{"type":"gauss","config":{"mean": "1.0", "width":"0.3", "range":"(0.0,\"inf\")"}},
             #"LF":{"type":"gauss","config":{"mean": "1.0", "width":"0.3", "range":"(0.0,\"inf\")"}},
-            "TopBkg":{"type":"log_normal","config":{"mu": "0.0", "sigma":str(math.sqrt(math.log(0.2+1)))}},
-            "tChannel":{"type":"log_normal","config":{"mu": "0.0", "sigma":str(math.sqrt(math.log(1.0+1)))}},
-            "QCD_2j1t":{"type":"log_normal","config":{"mu": "0.0", "sigma":str(math.sqrt(math.log(1.0+1)))}},
-            "QCD_3j1t":{"type":"log_normal","config":{"mu": "0.0", "sigma":str(math.sqrt(math.log(1.0+1)))}},
-            "QCD_3j2t":{"type":"log_normal","config":{"mu": "0.0", "sigma":str(math.sqrt(math.log(1.0+1)))}},
+            "TopBkg":self.module("ThetaModel").makeLogNormal(1.0,0.1),
+            "tChannel":self.module("ThetaModel").makeGaus(1.0,100.0),
+            "QCD_2j1t":self.module("ThetaModel").makeLogNormal(1.0,1.0),
+            "QCD_3j1t":self.module("ThetaModel").makeLogNormal(1.0,1.0),
+            "QCD_3j2t":self.module("ThetaModel").makeLogNormal(1.0,1.0),
             
             #"lumi":{"type":"gauss","config":{"mean": "1.0", "width":"0.1", "range":"(0.0,\"inf\")"}}
         }
@@ -46,13 +56,13 @@ class ThetaModel(Module):
         return observables
         
     def getBinning(self):
-        return 40
+        return 20
         
     def getRange(self):
         return [0.0,200.0]
         
     def getFitVariableStr(self):
-        return "(SingleTop_1__mtw_beforePz<50.0)*SingleTop_1__mtw_beforePz+(SingleTop_1__mtw_beforePz>50.0)*(Reconstructed_1__BDT_adaboost04_minnode001_maxvar3_ntree1000_invboost_binned*75.0+75.0+50.0)"
+        return "(SingleTop_1__mtw_beforePz<50.0)*SingleTop_1__mtw_beforePz+(SingleTop_1__mtw_beforePz>50.0)*(TMath::TanH((Reconstructed_1__BDT_adaboost04_minnode001_maxvar3_ntree1000_invboost_binned)*3.0)*75.0+75.0+50.0)"
     
     
     def getComponentsDict(self):
@@ -75,7 +85,7 @@ class ThetaModel(Module):
             
             "WZjets":
             {
-                "sets":["WJetsMG"],#,"DY"],
+                "sets":["WJetsMG","DY"],
                 "uncertainties":["WZjets"],
                 "weight":"1",
                 "color":ROOT.kGreen+1
@@ -146,34 +156,57 @@ class ThetaModel(Module):
         for uncertaintyName in uncertainties.keys():
             uncertainties[uncertaintyName]["dist"]=Distribution(uncertaintyName, uncertainties[uncertaintyName]["type"], uncertainties[uncertaintyName]["config"])
             file.write(uncertainties[uncertaintyName]["dist"].toConfigString())
+            
+        histograms = {}
 
         for iobs,observableName in enumerate(observables.keys()):
             observable = Observable(observableName, binning, ranges)
             observableWeight = observables[observableName]["weight"]+"*"+addCut
+            
+            if not histograms.has_key(observableName):
+                histograms[observableName] = {}
+            
 
-            for componentName in components.keys():
+            for icomp,componentName in enumerate(components.keys()):
                 componentWeight = components[componentName]["weight"]
                 componentUncertainties = components[componentName]["uncertainties"]
                 
+                if not histograms[observableName].has_key(componentName):
+                    histograms[observableName][componentName] = {}
+                
                 self._logger.debug("Creating model: "+observableName+" "+componentName)
+                
+                componentHist = HistoAdd(observableName+"__"+componentName,{
+                    "zerobin_fillfactor": 0.0001,
+                    "allow_negative":"false",
+                })
+                    
+                component=ObservableComponent(observableName+"__"+componentName+"__"+str(icomp))
+                coeff=CoefficientMultiplyFunction()
+                for uncertaintyName in componentUncertainties:
+                    coeff.addDistribution(uncertainties[uncertaintyName]["dist"],uncertainties[uncertaintyName]["dist"].getParameterName())
+                component.setCoefficientFunction(coeff)
+                component.setNominalHistogram(componentHist)
+                observable.addComponent(component)
+                
+                totalEntries = 0.0
+                totalIntegral = 0.0
                 
                 for componentSetName in components[componentName]["sets"]:
                     sampleDict = self.module("Samples").getSample(componentSetName)
-                    
+
                     for processName in sampleDict["processes"]:
                         processWeight = sampleDict["weight"]
+                        
+                        if not histograms[observableName][componentName].has_key(processName):
+                            histograms[observableName][componentName][processName] = ROOT.TH1F(observableName+"_"+componentName+"_"+processName+"__"+str(random.random()),"",binning,ranges[0],ranges[1])
+
 
                         for i,f in enumerate(rootFiles):
                             rootFile = ROOT.TFile(f)
                             tree = rootFile.Get(processName)
                             
                             if (tree):
-                                component=ObservableComponent(observableName+"__"+componentName+"__"+componentSetName+"__"+processName+"__"+str(i))
-                                coeff=CoefficientMultiplyFunction()
-                                for uncertaintyName in componentUncertainties:
-                                    coeff.addDistribution(uncertainties[uncertaintyName]["dist"],uncertainties[uncertaintyName]["dist"].getParameterName())
-                                component.setCoefficientFunction(coeff)
-                                
                                 hist=RootProjectedHistogram(observableName+"__"+componentName+"__"+componentSetName+"__"+processName+"__"+str(i),{"use_errors":"true"})
                                 hist.setFileName(f)
                                 hist.setVariableString(varName)
@@ -182,12 +215,28 @@ class ThetaModel(Module):
                                 hist.setBinning(binning)
                                 hist.setRange(ranges)
                                 file.write(hist.toConfigString())
-                                component.setNominalHistogram(hist)
                                 
-                                observable.addComponent(component)
+                                
+                                self.module("Utils").getHist1D(
+                                    histograms[observableName][componentName][processName],
+                                    f,
+                                    processName,
+                                    varName,
+                                    observableWeight+"*"+componentWeight+"*"+processWeight
+                                )
+                                
+                                componentHist.addHisto(hist.getVarname())
+                                
                             rootFile.Close()
                             
+                        self._logger.debug("\t-> "+processName+" with events: "+str(round(histograms[observableName][componentName][processName].Integral(),1)))
+                        totalEntries += histograms[observableName][componentName][processName].GetEntries()
+                        totalIntegral += histograms[observableName][componentName][processName].Integral()
+                        
+                file.write(componentHist.toConfigString())
                 
+                self._logger.debug("-> total events: "+str(round(totalIntegral,1)))
+                        
             model.addObservable(observable)
 
 
@@ -196,13 +245,25 @@ class ThetaModel(Module):
                 data = self.module("ThetaModel").getDataDict()
                 for componentName in data.keys():
                     componentWeight=data[componentName]["weight"]
+                    
+                    if not histograms[observableName].has_key(componentName):
+                        histograms[observableName][componentName] = {}
                       
                     self._logger.debug("Creating model: "+observableName+" "+componentName)
                     
+                    totalEntries = 0.0
+                    totalIntegral = 0.0
+                    
                     for componentSetName in data[componentName]["sets"]:
                         sampleDict = self.module("Samples").getSample(componentSetName)
+                        
+                        
                         for processName in sampleDict["processes"]:
                             processWeight = sampleDict["weight"]
+                            
+                            if not histograms[observableName][componentName].has_key(processName):
+                                histograms[observableName][componentName][processName] = ROOT.TH1F(observableName+"_"+componentName+"_"+processName+"__"+str(random.random()),"",binning,ranges[0],ranges[1])
+
                             
                             for i,f in enumerate(rootFiles):
                                 rootFile = ROOT.TFile(f)
@@ -217,9 +278,22 @@ class ThetaModel(Module):
                                     hist.setRange(ranges)
                                     file.write(hist.toConfigString())
                                     histoadd.addHisto(hist.getVarname())
+                                    
+                                    self.module("Utils").getHist1D(
+                                        histograms[observableName][componentName][processName],
+                                        f,
+                                        processName,
+                                        varName,
+                                        observableWeight+"*"+componentWeight+"*"+processWeight
+                                    )
 
                                     #break
                                 rootFile.Close()
+                                
+                            self._logger.debug("\t-> "+processName+" with events: "+str(round(histograms[observableName][componentName][processName].Integral(),1)))
+                            totalEntries += histograms[observableName][componentName][processName].GetEntries()
+                            totalIntegral += histograms[observableName][componentName][processName].Integral()
+                    self._logger.debug("-> total events: "+str(round(totalIntegral,1)))
 
                 file.write(histoadd.toConfigString())
                 
@@ -259,13 +333,13 @@ class ThetaModel(Module):
 
                 file.write(histoadd.toConfigString())
             
-        '''  
-        csvFileName = os.path.join(self.module("Utils").getOutputFolder(),"prefitYields.csv")
-        self._logger.info("write prefit yield csv: "+csvFileName)
+        
+        csvFileName = os.path.join(self.module("Utils").getOutputFolder(),modelName+"_prefitYields.csv")
+        self._logger.info("write prefit yield csv: "+modelName+"_prefitYields.csv")
         outputFile = open(csvFileName, 'wb')
         writer = csv.DictWriter(
             outputFile, 
-            ["category","component","sample","cut","entries","integral","unc"], 
+            ["category","component","process","entries","integral","unc"], 
             restval='NAN', 
             extrasaction='raise', 
             dialect='excel', 
@@ -274,30 +348,31 @@ class ThetaModel(Module):
         writer.writeheader()
         for cat in histograms.keys():
             for comp in histograms[cat].keys():
-                for sample in histograms[cat][comp].keys():
-                    for cut in histograms[cat][comp][sample].keys():
-                        if histograms[cat][comp][sample][cut].GetEntries()>0.0:
-                            writer.writerow({
-                                "category":cat,
-                                "component":comp,
-                                "sample":sample,
-                                "cut":cut,
-                                "entries":histograms[cat][comp][sample][cut].GetEntries(),
-                                "integral":round(histograms[cat][comp][sample][cut].Integral(),1),
-                                "unc":round(histograms[cat][comp][sample][cut].Integral()/math.sqrt(histograms[cat][comp][sample][cut].GetEntries()),1),
-                            })
-                        else:
-                            writer.writerow({
-                                "category":cat,
-                                "component":comp,
-                                "sample":sample,
-                                "cut":cut,
-                                "entries":histograms[cat][comp][sample][cut].GetEntries(),
-                                "integral":0.0,
-                                "unc":0.0,
-                            })
+                totalEntries = 0.0
+                totalIntegral = 0.0
+                for process in histograms[cat][comp].keys():
+                    hist = histograms[cat][comp][process]
+                    writer.writerow({
+                        "category":cat,
+                        "component":comp,
+                        "process":process,
+                        "entries":round(hist.GetEntries(),1),
+                        "integral":round(hist.Integral(),1),
+                        "unc":round(hist.Integral()/math.sqrt(hist.GetEntries()),1),
+                    })
+                    totalEntries+=hist.GetEntries()
+                    totalIntegral+=hist.Integral()
+                writer.writerow({
+                        "category":cat,
+                        "component":comp,
+                        "process":"total",
+                        "entries":round(totalEntries,1),
+                        "integral":round(totalIntegral,1),
+                        "unc":round(totalIntegral/math.sqrt(totalEntries),1),
+                    })
+
         outputFile.close()
-        '''
+
                             
         file.write(model.toConfigString())
 

@@ -63,7 +63,7 @@ class Unfolding(Module):
         
         
         
-    def unfold(self,responseMatrix,data,genBinning,backgroundDict=None,scan=None,fixedTau=None):
+    def unfold(self,responseMatrix,data,genBinning,scan=None,fixedTau=None):
         genHist = responseMatrix.ProjectionX(responseMatrix.GetName()+"genX")
 
         responseMatrixReweighted = responseMatrix.Clone(responseMatrix.GetName()+"Reweighted")
@@ -79,20 +79,14 @@ class Unfolding(Module):
         
         tunfold = ROOT.PyUnfold(responseMatrixReweighted)
         tunfold.setData(data)
-        if backgroundDict:
-            for backgroundName in backgroundDict.keys():
-                tunfold.addBackground(
-                    backgroundDict[backgroundName]["hist"],
-                    backgroundName,
-                    backgroundDict[backgroundName]["mean"],
-                    backgroundDict[backgroundName]["error"]
-                )
+
         if scan:
             self.module("Unfolding").doScan(tunfold,genBinning,scan)
         if fixedTau==None:
             bestTau = tunfold.scanTau()
         else:
             bestTau=fixedTau
+            
 
         self._logger.info("Found tau for regularization: "+str(bestTau))
         

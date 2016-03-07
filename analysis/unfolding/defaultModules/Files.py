@@ -15,10 +15,10 @@ class Files(Module):
 
     def getMCFiles(self):
         rootFiles = []
-        basedirSignalMC = "/nfs/user/mkomm/ST13/evaluate25ns/MC76X_30/signal_new"
+        basedirSignalMC = "/nfs/user/mkomm/ST13/evaluate25ns/MC76X_30v2/signal"
         matchSignalMC = re.compile("mcSignal[0-9]+.root")
 
-        basedirBackgroundMC = "/nfs/user/mkomm/ST13/evaluate25ns/MC76X_30/background_new"
+        basedirBackgroundMC = "/nfs/user/mkomm/ST13/evaluate25ns/MC76X_30v2/background"
         matchBackgroundMC = re.compile("mcBackground[0-9]+.root")
         
         for f in os.listdir(basedirSignalMC):
@@ -34,7 +34,7 @@ class Files(Module):
         
     def getDataFiles(self):
         rootFiles = []
-        basedirData = "/nfs/user/mkomm/ST13/evaluate25ns/data76X"
+        basedirData = "/nfs/user/mkomm/ST13/evaluate25ns/data76Xv2/data"
         matchData = re.compile("data[0-9]+.root")
         for f in os.listdir(basedirData):
             if matchData.match(f):
@@ -44,7 +44,7 @@ class Files(Module):
         
     def getResponseFiles(self):
         rootFiles = []
-        basedirSignalMC = "/nfs/user/mkomm/ST13/evaluate25ns/MC76X_30/signal_new"
+        basedirSignalMC = "/nfs/user/mkomm/ST13/evaluate25ns/MC76X_30v2/signal"
         matchSignalMC = re.compile("mcSignal[0-9]+.root")
 
         
@@ -58,7 +58,7 @@ class Files(Module):
         
     def getEfficiencyFiles(self):
         rootFiles = []
-        basedirSignalMC = "/nfs/user/mkomm/ST13/evaluate25ns/MC76X_30/signal_new"
+        basedirSignalMC = "/nfs/user/mkomm/ST13/evaluate25ns/MC76X_30v2/signal"
         matchSignalMC = re.compile("efficiencySignal[0-9]+.root")
 
         

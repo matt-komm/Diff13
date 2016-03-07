@@ -6,7 +6,7 @@
 from pxl import core, modules
 
 import math
-
+import re
 
 class Example(modules.PythonModule):
 
@@ -23,11 +23,7 @@ class Example(modules.PythonModule):
         module.addSink("in", "Input port")
         module.addSource("out", "Output port")
         module.addOption("processes", "", [
-        "ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1",
-        "ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1_ext",
-        "ST_t-channel_top_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1",
-        "ST_t-channel_antitop_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1",
-        "ST_t-channel_5f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1"
+        "ST_t-channel_[A-Za-z_\-0-9]+"
         ])
 
     def beginJob(self, parameters=None):
@@ -36,19 +32,51 @@ class Example(modules.PythonModule):
 
     def beginRun(self):
         ''' Executed before each run '''
-        self.processes = self.__module.getOption("processes")
+        self.processes = []
+        for pattern in self.__module.getOption("processes"):
+            self.processes.append(re.compile(pattern))
+        
+    def getFlags(self,particle):
+        flag = particle.getUserRecord("statusBits")
+        mask = [
+            "IsPrompt", 
+            "IsDecayedLeptonHadron", 
+            "IsTauDecayProduct", 
+            "IsPromptTauDecayProduct",
+            "IsDirectTauDecayProduct", 
+            "IsDirectPromptTauDecayProduct", 
+            "IsDirectHadronDecayProduct", 
+            "IsHardProcess",
+            "FromHardProcess", 
+            "IsHardProcessTauDecayProduct", 
+            "IsDirectHardProcessTauDecayProduct", 
+            "FromHardProcessBeforeFSR",
+            "IsFirstCopy", 
+            "IsLastCopy", 
+            "IsLastCopyBeforeFSR"
+        ]
+        power = 1
+        result = {}
+        
+        for m in mask:
+            result[m]= (flag & power) == power
+            particle.setUserRecord(m,result[m])
+            power <<=1
+        return result
+       
 
     def process(self, object, sink):
         ''' Executed on every object '''
         event = core.toEvent(object)
         if not event:
             pass
-        process = event.getUserRecord("ProcessName")  
+        processName = event.getUserRecord("ProcessName")  
         isSignal = False 
-        for p in self.processes:
-            if process.startswith(p):
+        for matcher in self.processes:
+            if matcher.match(processName):
                 isSignal=True
                 break
+                
         if not isSignal:
             return "out"
             
@@ -61,13 +89,14 @@ class Example(modules.PythonModule):
                 neutrino=None
                 lquark=None
                 for particle in eventView.getParticles():
-                    #check what 22 really means!!!
-                    if math.fabs(particle.getPdgNumber())==6 and particle.getUserRecord("status")==22:
+                
+                    if math.fabs(particle.getPdgNumber())==6 and self.getFlags(particle)["IsLastCopy"]==1:
                         if top!=None:
                             raise Exception("multiple top quarks at gen level for process "+str(event.getUserRecord("ProcessName"))+" detected")
                         top = particle
                 if top==None:
-                    raise Exception("no top quark at gen level found for process "+str(event.getUserRecord("ProcessName")))
+                    return "out"
+                    #raise Exception("no top quark at gen level found for process "+str(event.getUserRecord("ProcessName")))
                     
                 top.setName("found top")
                 
@@ -84,6 +113,8 @@ class Example(modules.PythonModule):
                 
                 bquark.setName("found bquark")
                 wboson.setName("found wboson")
+                '''
+                print wboson
                 
                 if len(wboson.getDaughters())!=2:
                     raise Exception("expected 2 daughter particles of gen level w boson but found: "+str(len(wboson.getDaughers())))  
@@ -132,16 +163,16 @@ class Example(modules.PythonModule):
                 if lquark==None:
                     raise Exception("lquark not found")
                 lquark.setName("found lq")
-                
+                '''
                 
                 eventView.setUserRecord("top_pt",top.getPt())
                 eventView.setUserRecord("top_eta",top.getEta())
                 eventView.setUserRecord("top_y",0.5*math.log((top.getE()+top.getPz())/(top.getE()-top.getPz())))
                 eventView.setUserRecord("top_mass",top.getMass())
                 
-                eventView.setUserRecord("neutrino_pt",neutrino.getPt())
-                eventView.setUserRecord("neutrino_eta",neutrino.getEta())
-                
+                #eventView.setUserRecord("neutrino_pt",neutrino.getPt())
+                #eventView.setUserRecord("neutrino_eta",neutrino.getEta())
+                '''
                 boostTop = top.getBoostVector()
                 lVec=core.LorentzVector(lepton.getVector())
                 lVec.boost(-boostTop)
@@ -149,7 +180,7 @@ class Example(modules.PythonModule):
                 qVec.boost(-boostTop)
                 cosTheta = (lVec.getPx()*qVec.getPx()+lVec.getPy()*qVec.getPy()+lVec.getPz()*qVec.getPz())/lVec.getMag()/qVec.getMag()
                 eventView.setUserRecord("cosTheta",cosTheta)
-
+                '''
         # return the name of the source
         return "out"
 

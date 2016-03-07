@@ -39,7 +39,10 @@ class HistogramCreator(Module):
             histograms[componentName]={"hists":{},"unc":componentUncertaintyNames}
             
             for componentSetName in components[componentName]["sets"]:
-                sampleDict = self.module("Samples").getSample(componentSetName)
+                if pseudo:
+                    sampleDict = self.module("Samples").getSamplePseudo(componentSetName)
+                else:
+                    sampleDict = self.module("Samples").getSample(componentSetName)
                 histograms[componentName]["hists"][componentSetName]=componentHist.Clone(componentHist.GetName()+componentSetName+str(random.random()))
                 
                 for processName in sampleDict["processes"]:
@@ -51,29 +54,8 @@ class HistogramCreator(Module):
                         
                 self._logger.debug("projected "+componentName+" "+componentSetName+": "+str(round(histograms[componentName]["hists"][componentSetName].Integral(),2)))
         
-        if not pseudo:
-            data = self.module("ThetaModel").getDataDict()
-            
-            dataHist = ROOT.TH1F("hist_"+componentName+"_"+str(random.random()),";"+varName+";Events",len(binningScheme)-1,binningScheme)
-            dataHist.SetDirectory(0)
-            dataHist.Sumw2()
-            dataHist.SetMarkerStyle(20)
-            dataHist.SetMarkerSize(0.8)
-            histograms["data"]={"hists":{}, "unc":[]}
-            histograms["data"]["hists"]["data"]=dataHist
-            
-            for componentName in data.keys():
-                componentWeight=data[componentName]["weight"]
-                for componentSetName in data[componentName]["sets"]:
-                    sampleDict = self.module("Samples").getSample(componentSetName)
-                    for processName in sampleDict["processes"]:
-                        processWeight = sampleDict["weight"]
-                        for i,f in enumerate(rootFiles):
-                            self.module("Utils").getHist1D(histograms["data"]["hists"]["data"],f,processName,varName,weight+"*"+componentWeight+"*"+processWeight)
-                            #break
-                self._logger.debug("projected "+componentName+" data: "+str(round(histograms["data"]["hists"]["data"].Integral(),2)))
-        else:
-            dataHist = ROOT.TH1F("hist_"+componentName+"_"+str(random.random()),";"+varName+";Events",len(binningScheme)-1,binningScheme)
+        if pseudo:
+            dataHist = ROOT.TH1F("hist_"+str(random.random()),";"+varName+";Events",len(binningScheme)-1,binningScheme)
             dataHist.SetDirectory(0)
             dataHist.Sumw2()
             dataHist.SetMarkerStyle(20)
@@ -86,6 +68,7 @@ class HistogramCreator(Module):
 
                 for componentSetName in components[componentName]["sets"]:
                     sampleDict = self.module("Samples").getSamplePseudo(componentSetName)
+                    
                     
                     for processName in sampleDict["processes"]:
                         processWeight = sampleDict["weight"]
@@ -105,11 +88,33 @@ class HistogramCreator(Module):
                 )
             histograms["data"]["hists"]["data"]=dataHist
             
+        else:
+            data = self.module("ThetaModel").getDataDict()
+            
+            dataHist = ROOT.TH1F("hist_"+str(random.random()),";"+varName+";Events",len(binningScheme)-1,binningScheme)
+            dataHist.SetDirectory(0)
+            dataHist.Sumw2()
+            dataHist.SetMarkerStyle(20)
+            dataHist.SetMarkerSize(0.8)
+            histograms["data"]={"hists":{}, "unc":[]}
+            histograms["data"]["hists"]["data"]=dataHist
+            
+            for componentName in data.keys():
+                componentWeight=data[componentName]["weight"]
+                for componentSetName in data[componentName]["sets"]:
+                    sampleDict = self.module("Samples").getSample(componentSetName)
+                    for processName in sampleDict["processes"]:
+                        processWeight = sampleDict["weight"]
+                        for i,f in enumerate(rootFiles):
+                            self.module("Utils").getHist1D(histograms["data"]["hists"]["data"],f,processName,varName,weight+"*"+componentWeight+"*"+processWeight)
+                            #break
+                self._logger.debug("projected "+componentName+" data: "+str(round(histograms["data"]["hists"]["data"].Integral(),2)))
+            
         return histograms
         
         
     def scaleHistogramsToFitResult(self,histograms,fitResult):
-        for component in histograms.keys():
+        for component in self.module("ThetaModel").getComponentsDict().keys():
             scaleFactor = 1.0
             for uncName in histograms[component]["unc"]:
                 scaleFactor*=fitResult[uncName]["mean"]
@@ -117,7 +122,23 @@ class HistogramCreator(Module):
             for sampleName in histograms[component]["hists"].keys():
                 histograms[component]["hists"][sampleName].Scale(scaleFactor)
                 
-                
+    def scaleHistogramsToMultiFitResult(self,histograms,multiFitResults):
+        for component in self.module("ThetaModel").getComponentsDict().keys():
+            for sampleName in histograms[component]["hists"].keys():
+                for ibin in range(histograms[component]["hists"][sampleName].GetNbinsX()):
+                    scaleFactor = 1.0
+                    scaleFactor_unc2 = 0.0
+                    for uncName in histograms[component]["unc"]:
+                        scaleFactor *= multiFitResults[ibin]["res"][uncName]["mean"]
+                        scaleFactor_unc2 += multiFitResults[ibin]["res"][uncName]["unc"]**2
+                    histograms[component]["hists"][sampleName].SetBinContent(
+                        ibin+1,
+                        scaleFactor*histograms[component]["hists"][sampleName].GetBinContent(ibin+1)
+                    )
+                    histograms[component]["hists"][sampleName].SetBinError(
+                        ibin+1,
+                        math.sqrt(scaleFactor_unc2)*histograms[component]["hists"][sampleName].GetBinContent(ibin+1)
+                    )
                 
     def saveHistograms(self,histograms,output):
         rootFile = ROOT.TFile(os.path.join(self.module("Utils").getOutputFolder(),output+".root"),"RECREATE")

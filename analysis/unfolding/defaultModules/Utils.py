@@ -17,21 +17,24 @@ class Utils(Module):
         return "/home/fynu/mkomm/Diff13/analysis/unfolding/result/nominal"
         
     def createOutputFolder(self,force=False):
-        print self.module("Utils").getOutputFolder()
-        if os.path.exists(self.module("Utils").getOutputFolder()) and not force:
-            self._logger.warning("Output folder already exists!")
-        elif os.path.exists(self.module("Utils").getOutputFolder()) and force:
-            self._logger.info("delete existing output folder")
-            shutil.rmtree(self.module("Utils").getOutputFolder())
-        if not os.path.exists(self.module("Utils").getOutputFolder()):
-            self._logger.info("creating output folder")
-            os.makedirs(self.module("Utils").getOutputFolder())
+        try:
+            print self.module("Utils").getOutputFolder()
+            if os.path.exists(self.module("Utils").getOutputFolder()) and not force:
+                self._logger.warning("Output folder already exists!")
+            elif os.path.exists(self.module("Utils").getOutputFolder()) and force:
+                self._logger.info("delete existing output folder")
+                shutil.rmtree(self.module("Utils").getOutputFolder())
+            if not os.path.exists(self.module("Utils").getOutputFolder()):
+                self._logger.info("creating output folder")
+                os.makedirs(self.module("Utils").getOutputFolder())
+        except Exception,e:
+            self._logger.error(str(e))
         
     def getBDTCutStr(self):
-        return "(Reconstructed_1__BDT_adaboost04_minnode001_maxvar3_ntree1000_invboost_binned>0.25)"
+        return "(TMath::TanH((Reconstructed_1__BDT_adaboost04_minnode001_maxvar3_ntree1000_invboost_binned)*3.0)>0.65)"
         
     def getLumi(self):
-        return 2165.0
+        return 2299.2
         
     def getRecoWeightStr(self):
         return self.module("Utils").getGenWeightStr()+"*(testing==1)/splitweight*(Reconstructed_1__PU69000_weight*Reconstructed_1__btagging_nominal)"
@@ -46,7 +49,10 @@ class Utils(Module):
         return str(self.module("Utils").getLumi())+"*mc_weight*((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)"
     
     def getTriggerCutMCStr(self):
-        return "(Reconstructed_1__HLT_IsoMu20_v3==1)"
+        return "((Reconstructed_1__HLT_IsoMu20_v3==1)||(Reconstructed_1__HLT_IsoTkMu20_v4==1))"
+        
+    def getTriggerCutDataStr(self):
+        return "((Reconstructed_1__HLT_IsoMu20_v2==1)||(Reconstructed_1__HLT_IsoTkMu20_v3==1)||(Reconstructed_1__HLT_IsoMu20_v3==1)||(Reconstructed_1__HLT_IsoTkMu20_v4==1))"
 
     def getCategoryCutStr(self,njets,nbtags):
         return "(Reconstructed_1__nSelectedJet=="+str(int(njets))+")*(Reconstructed_1__nSelectedBJet=="+str(int(nbtags))+")"
@@ -99,11 +105,12 @@ class Utils(Module):
         rootFile.Close()
         
     def normalizeByBinWidth(self,hist):
-        #hist.Scale(1./(hist.GetXaxis().GetXmax()-hist.GetXaxis().GetXmin())/hist.Integral())
         hist.Scale(1./hist.Integral())
+        
         for ibin in range(hist.GetNbinsX()):
-            hist.SetBinError(ibin+1,hist.GetBinError(ibin+1)/hist.GetBinWidth(ibin+1))
             hist.SetBinContent(ibin+1,hist.GetBinContent(ibin+1)/hist.GetBinWidth(ibin+1))
+            hist.SetBinError(ibin+1,hist.GetBinError(ibin+1)/hist.GetBinWidth(ibin+1))
+        
             
     def normalizeByTransistionProbability(self,responseMatrix):
         responseMatrixSelectedNormalized = responseMatrix.Clone(responseMatrix.GetName()+"Norm")
