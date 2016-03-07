@@ -1,7 +1,7 @@
 #!/bin/bash
 
 PWD=`pwd`
-for file in `find $PWD -name "*-vars.txt"`
+for file in `find $PWD -maxdepth 1 -name "*-vars.txt"`
     do
     echo "reading "$file" ..."
     for l in `cat $file`
