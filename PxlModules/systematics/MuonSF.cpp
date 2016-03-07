@@ -51,6 +51,10 @@ class MuonSF:
                 module->getOption(prefix+" add uncertainty", additionalUncertainty);
             
                 TFile rootFile(fileName.c_str());
+                if ((not rootFile.IsOpen()) or (rootFile.GetSize()==0))
+                {
+                    throw std::runtime_error("SF file '"+fileName+"' does not exits!");
+                }
                 TH2* h = dynamic_cast<TH2*>(rootFile.Get(histogramName.c_str()));
                 if (!h)
                 {
@@ -170,7 +174,9 @@ class MuonSF:
             getOption("event view name", _eventViewName);
             getOption("muon name", _muonName);
 
-
+            _triggerSF->init(this);
+            _isoSF->init(this);
+            _idSF->init(this);
         }
         
         bool analyse(pxl::Sink *sink) throw (std::runtime_error)
