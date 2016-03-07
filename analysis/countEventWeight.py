@@ -29,6 +29,8 @@ class Example(modules.PythonModule):
         self._outputFile=self.__module.getOption("output")
         self._step = self.__module.getOption("step")
         self._nEvents={}
+        
+        self._idEvents={}
 
     def beginRun(self):
         ''' Executed before each run '''
@@ -60,7 +62,17 @@ class Example(modules.PythonModule):
         else:
             self._nEvents[process][region]["negative"]+=1
         
-
+        if not self._idEvents.has_key(process):
+            self._idEvents[process]={}
+        if not self._idEvents[process].has_key(region):
+            self._idEvents[process][region]=[]
+        
+        self._idEvents[process][region].append({
+            "run":event.getUserRecord("Run"),
+            "lumi":event.getUserRecord("LuminosityBlock"),
+            "id":event.getUserRecord("Event number")
+        })
+        
         # return the name of the source
         return "out"
 
@@ -93,9 +105,14 @@ class Example(modules.PythonModule):
                     "MCnegative":self._nEvents[process][region]["negative"]
                 })
 
-        
         f.close()
         
+        for process in self._idEvents.keys():
+            for region in self._idEvents[process].keys():
+                f=open(self._outputFile+"."+process+"."+region,'w')
+                for ids in self._idEvents[process][region]:
+                    f.write("%12i, %8i, %8i\n"%(ids["id"],ids["run"],ids["lumi"]))
+                f.close()
         
         
         
