@@ -56,7 +56,7 @@ class ThetaModel(Module):
         return observables
         
     def getBinning(self):
-        return 20
+        return 40
         
     def getRange(self):
         return [0.0,200.0]

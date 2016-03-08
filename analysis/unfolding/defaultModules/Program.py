@@ -245,13 +245,13 @@ class Program(Module):
 
 
         dataHistPt = histogramsPt_BDT["data"]["hists"]["data"]
-        responseMatrixPt = responseMatrixPt_BDT
-        histogramsPt = histogramsPt_BDT
+        #responseMatrixPt = responseMatrixPt_BDT
+        #histogramsPt = histogramsPt_BDT
 
         
         dataHistY = histogramsY_BDT["data"]["hists"]["data"]
-        responseMatrixY = responseMatrixY_BDT
-        histogramsY = histogramsY_BDT
+        #responseMatrixY = responseMatrixY_BDT
+        #histogramsY = histogramsY_BDT
 
         
         
@@ -300,8 +300,8 @@ class Program(Module):
         
 
         
-        #dataHistPtSubtracted = histogramsPt["tChannel"]["hists"]["sum"]
-        #dataHistYSubtracted = histogramsY["tChannel"]["hists"]["sum"]
+        dataHistPtSubtracted = histogramsPt["tChannel"]["hists"]["sum"]
+        dataHistYSubtracted = histogramsY["tChannel"]["hists"]["sum"]
 
             
         ### UNFOLDING        
