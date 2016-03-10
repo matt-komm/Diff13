@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include <stdexcept>
 #include <cstdlib>
+#include <regex>
 
 #include "TH2.h"
 #include "TFile.h"
@@ -22,20 +23,19 @@ class TopPtReweighting:
     private:
         
     
-        std::vector<std::string> _processNames;
+        std::vector<std::regex> _processNames;
         
         pxl::Source* _outputSource;
         
 
-        
     public:
         TopPtReweighting():
             Module(),
-            _processNames({"TT_Tune[A-Za-z0-9_\\-]"})
+            _processNames()
         {
             addSink("input", "input");
             
-            addOption("processNames", "", _processNames);
+            addOption("processNames", "", std::vector<std::string>({"TT_[A-Za-z0-9_\\-]*"}));
             
             _outputSource = addSource("output","output");
 
@@ -70,7 +70,12 @@ class TopPtReweighting:
 
         void beginJob() throw (std::runtime_error)
         {
-            getOption("processNames", _processNames);
+            std::vector<std::string> strNames;
+            getOption("processNames", strNames);
+            for (const std::string& name: strNames)
+            {
+                _processNames.emplace_back(name);
+            }
 
         }
         
@@ -121,6 +126,22 @@ class TopPtReweighting:
                 pxl::Event *event  = dynamic_cast<pxl::Event*>(sink->get());
                 if (event)
                 {
+                    std::string processName = event->getUserRecord("ProcessName");
+                    bool isSelected = false;
+                    for (const std::regex& processMatch: _processNames)
+                    {
+                        if (std::regex_match(processName,processMatch))
+                        {
+                            isSelected=true;
+                            break;
+                        }
+                    }
+                    if (not isSelected)
+                    {
+                        _outputSource->setTargets(event);
+                        return _outputSource->processTargets();
+                    }
+                
                     std::vector<pxl::EventView*> eventViews;
                     event->getObjectsOfType(eventViews);
 
