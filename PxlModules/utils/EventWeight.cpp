@@ -615,7 +615,7 @@ const std::unordered_map<std::string,FileInfo> eventWeights76Xv3 = {
         {
             //total=1630900 eff=1630900 - 0 = 1630900
             1630900,
-            216.97 * 0.324
+            80.95 * 0.324
         }
     },
 
@@ -623,7 +623,7 @@ const std::unordered_map<std::string,FileInfo> eventWeights76Xv3 = {
         {
             //total=3299200 eff=3299200 - 0 = 3299200
             3299200,
-            216.97 * 0.324
+            136.02  * 0.324
         }
     },
 
