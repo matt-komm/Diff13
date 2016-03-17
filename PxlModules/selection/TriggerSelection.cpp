@@ -5,6 +5,8 @@
 #include "pxl/modules/Module.hh"
 #include "pxl/modules/ModuleFactory.hh"
 
+#include <regex>
+
 static pxl::Logger logger("TriggerSelection");
 
 class TriggerSelection:
@@ -15,30 +17,26 @@ class TriggerSelection:
         pxl::Source* _outputVetoSource;
         
         std::string _inputEventViewName;
-        std::vector<std::string> _triggerFlags;
+        std::vector<std::regex> _triggerRegex;
         std::string _combinedFlag;
         
         bool _requireAllFlags;
-        bool _cleanNoneRequired;
 
     public:
         TriggerSelection():
             Module(),
             _inputEventViewName("Reconstructed"),
-            _triggerFlags({"HLT_IsoMu24_eta2p1_IterTrk02_v1","HLT_IsoMu24_IterTrk02_v1"}),
-            _requireAllFlags(false),
-            _cleanNoneRequired(true)
+            _requireAllFlags(false)
         {
             addSink("input", "input");
             _outputSource = addSource("selected","selected");
             _outputVetoSource = addSource("veto", "veto");
 
             addOption("Event view","name of the event view",_inputEventViewName);
-            addOption("required trigger flags","",_triggerFlags);
+            addOption("required trigger flags","",std::vector<std::string>());
 
 
             addOption("require all","this option requires all triggers (if set to true) or at least one (if set to false) to be fired",_requireAllFlags);
-            addOption("remove other HLT","this option removes all HLT* trigger flags which are not in the list",_cleanNoneRequired);
             addOption("combined flag","if not empty a new user record will be added to the event view storing the selection result",_combinedFlag);
             
         }
@@ -73,40 +71,39 @@ class TriggerSelection:
         void beginJob() throw (std::runtime_error)
         {
             getOption("Event view",_inputEventViewName);
-            getOption("required trigger flags",_triggerFlags);
+            std::vector<std::string> triggerFlags;
+            getOption("required trigger flags",triggerFlags);
+            for (const std::string& flag: triggerFlags)
+            {
+                _triggerRegex.emplace_back(flag);
+            }
+            
             getOption("combined flag",_combinedFlag);
             getOption("require all",_requireAllFlags);
-            getOption("remove other HLT",_cleanNoneRequired);
     
         }
+        
 
         bool passTriggerSelection(pxl::EventView* eventView)
         {
             bool accepted = _requireAllFlags; //concatenate with AND if true. Otherwise with OR if false.
-            for (pxl::UserRecords::const_iterator it = eventView->getUserRecords().begin(); _cleanNoneRequired && it!=eventView->getUserRecords().end(); ++it)
+            for (pxl::UserRecords::const_iterator it = eventView->getUserRecords().begin(); it!=eventView->getUserRecords().end(); ++it)
             {
-                //std::cout<<"remove "<<it->first<<std::endl;
-                if (it->first.find("HLT")!=std::string::npos && std::find(_triggerFlags.begin(),_triggerFlags.end(),it->first)==_triggerFlags.end())
+
+                for (unsigned int itrigger = 0; itrigger<_triggerRegex.size(); ++itrigger)
                 {
-                    eventView->getUserRecords().erase(it->first);
-                }
-            }
-            for (unsigned int itrigger = 0; itrigger<_triggerFlags.size(); ++itrigger)
-            {
-                const std::string& triggerName = _triggerFlags[itrigger];
-                if (eventView->hasUserRecord(triggerName))
-                {
-                    if (_requireAllFlags)
+                    if (std::regex_match(it->first,_triggerRegex[itrigger]))
                     {
-                        accepted = accepted and eventView->getUserRecord(triggerName);
-                    }
-                    else
-                    {
-                        accepted = accepted or eventView->getUserRecord(triggerName);
+                        if (_requireAllFlags)
+                        {
+                            accepted = accepted and eventView->getUserRecord(it->first);
+                        }
+                        else
+                        {
+                            accepted = accepted or eventView->getUserRecord(it->first);
+                        }
                     }
                 }
-                //if true & accepted=false -> return false
-                //if false & accepted=true -> return true
                 if (_requireAllFlags!=accepted)
                 {
                     return accepted;
