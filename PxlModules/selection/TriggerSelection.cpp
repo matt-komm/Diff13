@@ -16,6 +16,8 @@ class TriggerSelection:
         
         std::string _inputEventViewName;
         std::vector<std::string> _triggerFlags;
+        std::string _combinedFlag;
+        
         bool _requireAllFlags;
         bool _cleanNoneRequired;
 
@@ -37,6 +39,8 @@ class TriggerSelection:
 
             addOption("require all","this option requires all triggers (if set to true) or at least one (if set to false) to be fired",_requireAllFlags);
             addOption("remove other HLT","this option removes all HLT* trigger flags which are not in the list",_cleanNoneRequired);
+            addOption("combined flag","if not empty a new user record will be added to the event view storing the selection result",_combinedFlag);
+            
         }
 
         ~TriggerSelection()
@@ -70,8 +74,10 @@ class TriggerSelection:
         {
             getOption("Event view",_inputEventViewName);
             getOption("required trigger flags",_triggerFlags);
+            getOption("combined flag",_combinedFlag);
             getOption("require all",_requireAllFlags);
             getOption("remove other HLT",_cleanNoneRequired);
+    
         }
 
         bool passTriggerSelection(pxl::EventView* eventView)
@@ -125,7 +131,13 @@ class TriggerSelection:
                         pxl::EventView* eventView = eventViews[ieventView];
                         if (eventView->getName()==_inputEventViewName)
                         {
-                            if (passTriggerSelection(eventView))
+                            bool result = passTriggerSelection(eventView);
+                            
+                            if (_combinedFlag.size()>0)
+                            {
+                                eventView->setUserRecord(_combinedFlag,result);
+                            }
+                            if (result)
                             {
                                 _outputSource->setTargets(event);
                                 return _outputSource->processTargets();
