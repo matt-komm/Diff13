@@ -27,8 +27,8 @@ class ThetaFit(Module):
             nextline = p.stdout.readline()
             if nextline == '' and p.poll() != None:
                 break
-            self._logger.debug(nextline.replace("\n","").replace("\r",""))
-
+            #self._logger.debug(nextline.replace("\n","").replace("\r",""))
+        
             if nextline.find("errors:")!=-1:
                 self._logger.info("run fit: "+nextline.replace("\n","").replace("\r","").replace(" ",""))
             if nextline.find("warnings:")!=-1:

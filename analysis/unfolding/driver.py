@@ -9,6 +9,7 @@ import logging
 import logging.config
 import defaultModules
 import numpy
+import time
 import ROOT
 from optparse import OptionParser
 
@@ -201,36 +202,23 @@ parser.add_option("-c", "--cfg", dest="cfg",
 
 (options, args) = parser.parse_args()
 
-logging.config.dictConfig({
-    "version":1,
-    'formatters': { 
-        'standard': { 
-            #'format': '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
-            'format': '%(levelname)-10s %(message)s'# [%(name)s:%(lineno)i]'
-        },
-    },
-    'handlers': {
-        'default': { 
-            #'level': 'INFO',
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-            'formatter': 'standard',
-            'stream': sys.stdout
-        },
-    },
-    'loggers': { 
-        '': { 
-            'handlers': ['default'],
-            'level': 'DEBUG',
-            'propagate': True
-        },
-    }
-    
-})
+formatterOutput = logging.Formatter("%(levelname)-10s %(message)s")
+formatterError = logging.Formatter("%(levelname)-10s %(message)s [%(filename)s:%(lineno)d]")
+streamOutputHandler = logging.StreamHandler(stream=sys.stdout)
+streamOutputHandler.setLevel(logging.DEBUG)
+streamErrorHandler = logging.StreamHandler(stream=sys.stderr)
+streamErrorHandler.setLevel(logging.ERROR)
+bufferedHandler = logging.handlers.MemoryHandler(capacity=20,flushLevel=logging.WARNING,target=streamOutputHandler)
+streamOutputHandler.setFormatter(formatterOutput)
+streamErrorHandler.setFormatter(formatterError)
+rootLogger = logging.getLogger()
+rootLogger.addHandler(bufferedHandler)
+rootLogger.addHandler(streamErrorHandler)
 logger = logging.getLogger(__file__)
 logger.setLevel(logging.DEBUG)
 
-pluginPath = os.path.join(os.getcwd(),"plugins")
+
+pluginPath = "/home/fynu/mkomm/Diff13/analysis/unfolding/plugins"
 
 config = []
 for cfg in options.cfg:

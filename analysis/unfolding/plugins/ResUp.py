@@ -18,5 +18,5 @@ class UtilsResUp(Module.getClass("Utils")):
         return "_ResUp"
         
     def getOutputFolder(self):
-        return "/home/fynu/mkomm/Diff13/analysis/unfolding/result/ResUp"
+        return os.path.join(os.getcwd(),"result/ResUp")
         

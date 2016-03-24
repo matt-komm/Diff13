@@ -26,10 +26,13 @@ uncertainties = [
     ["Iso","multijet isolation region"],
     ["En","jet energy scale"],
     ["Res","jet resolution"],
-    ["UnclEn","unclustered energy"],
+    #["UnclEn","unclustered energy"],
     ["QScaleTChannel","\\tch Q scale"], 
     ["QScaleTTbar","\\ttbar Q scale"],
-    ["TopMass","top quark mass"]
+    ["QScaleTW","\\tw Q scale"],
+    ["TopMass","top quark mass"],
+    ["Muon","muon selection"],
+    ["PDF","PDF"]
 ]
 
 nominal = readPrefitYield("result/nominal/fit_prefitYields.csv")

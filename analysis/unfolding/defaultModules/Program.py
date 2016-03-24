@@ -90,7 +90,7 @@ class Program(Module):
         
 
             
-        
+        '''
         ###YIELDS
         histogramsAllYield = self.module("HistogramCreator").loadHistograms("yields_all")
         if not histogramsAllYield:
@@ -127,7 +127,7 @@ class Program(Module):
         self.module("HistogramCreator").saveHistograms(histogramsBDTYield,"yields_bdt")
         self.module("HistogramCreator").scaleHistogramsToFitResult(histogramsBDTYield,fitResultInc)
         self.module("HistogramCreator").saveHistograms(histogramsBDTYield,"yields_bdt_scaled")
-        
+        '''
         
         
         
@@ -223,7 +223,7 @@ class Program(Module):
         self.module("Drawing").drawPStest(responseMatrixPt_BDT,genBinningPt,"top quark pT","responsePt_bdt")
         self.module("Drawing").drawResponseMatrix(responseMatrixPt_BDT,"top quark pT","responsePt_bdt")
         
-        
+        self.module("Drawing").drawBiasTest(responseMatrixPt.ProjectionX(),responseMatrixPt_BDT.ProjectionX(),"top quark pT","matching_pt_responsematrices")
         
         responseMatrixY = self.module("ResponseMatrixY").loadResponseMatrix("response_y")
         if responseMatrixY==None:
@@ -242,6 +242,8 @@ class Program(Module):
             self.module("ResponseMatrixY").saveResponseMatrix(responseMatrixY_BDT,"response_y_bdt")
         self.module("Drawing").drawPStest(responseMatrixY_BDT,genBinningY,"top quark |y|","responseY_bdt")
         self.module("Drawing").drawResponseMatrix(responseMatrixY_BDT,"top quark |y|","responseY_bdt")
+
+        self.module("Drawing").drawBiasTest(responseMatrixY.ProjectionX(),responseMatrixY_BDT.ProjectionX(),"top quark |y|","matching_y_responsematrices")
 
 
         dataHistPt = histogramsPt_BDT["data"]["hists"]["data"]
@@ -302,6 +304,14 @@ class Program(Module):
         
         dataHistPtSubtracted = histogramsPt["tChannel"]["hists"]["sum"]
         dataHistYSubtracted = histogramsY["tChannel"]["hists"]["sum"]
+        
+        self._logger.debug("pt hist for unfolding uncertainties")
+        for ibin in range(dataHistPtSubtracted.GetNbinsX()):
+            self._logger.debug("\t bin %2i: %6.1f +- %4.2f%%" % (ibin+1,dataHistPtSubtracted.GetBinContent(ibin+1),100.*dataHistPtSubtracted.GetBinError(ibin+1)/dataHistPtSubtracted.GetBinContent(ibin+1)))
+        self._logger.debug("|y| hist for unfolding uncertainties")
+        for ibin in range(dataHistYSubtracted.GetNbinsX()):
+            self._logger.debug("\t bin %2i: %6.1f +- %4.2f%%" % (ibin+1,dataHistYSubtracted.GetBinContent(ibin+1),100.*dataHistYSubtracted.GetBinError(ibin+1)/dataHistYSubtracted.GetBinContent(ibin+1)))
+
 
             
         ### UNFOLDING        
@@ -343,12 +353,14 @@ class Program(Module):
         dataHistPtSubtractedWrite.Write()
         rootFile.Close()
 
-        #self.module("Utils").normalizeByBinWidth(unfoldedHistPt)
-        #self.module("Utils").normalizeByBinWidth(trueUnfoldedHistPt)
-        #self.module("Utils").normalizeByBinWidth(genHistPt)
         self.module("Drawing").drawBiasTest(trueUnfoldedHistPt,genHistPt,"top quark pT","unfolded_true_Pt")
         self.module("Drawing").drawBiasTest(unfoldedHistPt,genHistPt,"top quark pT","unfolded_data_Pt")
         
+        self.module("Utils").normalizeByBinWidth(unfoldedHistPt)
+        self.module("Utils").normalizeByBinWidth(trueUnfoldedHistPt)
+        self.module("Utils").normalizeByBinWidth(genHistPt)
+        self.module("Drawing").drawBiasTest(trueUnfoldedHistPt,genHistPt,"top quark pT","unfolded_true_Pt_norm")
+        self.module("Drawing").drawBiasTest(unfoldedHistPt,genHistPt,"top quark pT","unfolded_data_Pt_norm")
         
 
         recoYHist=responseMatrixY.ProjectionY()
@@ -389,10 +401,21 @@ class Program(Module):
         dataHistYSubtractedWrite.Write()
         rootFile.Close()
         
-        #self.module("Utils").normalizeByBinWidth(unfoldedHistY)
-        #self.module("Utils").normalizeByBinWidth(trueUnfoldedHistY)
-        #self.module("Utils").normalizeByBinWidth(genHistY)
         self.module("Drawing").drawBiasTest(trueUnfoldedHistY,genHistY,"top quark |y|","unfolded_true_Y")
         self.module("Drawing").drawBiasTest(unfoldedHistY,genHistY,"top quark |y|","unfolded_data_Y")
+
+        self.module("Utils").normalizeByBinWidth(unfoldedHistY)
+        self.module("Utils").normalizeByBinWidth(trueUnfoldedHistY)
+        self.module("Utils").normalizeByBinWidth(genHistY)
+        self.module("Drawing").drawBiasTest(trueUnfoldedHistY,genHistY,"top quark |y|","unfolded_true_Y_norm")
+        self.module("Drawing").drawBiasTest(unfoldedHistY,genHistY,"top quark |y|","unfolded_data_Y_norm")
+
+
+        self._logger.debug("pt unfolded uncertainties")
+        for ibin in range(unfoldedHistPt.GetNbinsX()):
+            self._logger.debug("\t bin %2i: %6.1f +- %4.2f%%" % (ibin+1,unfoldedHistPt.GetBinContent(ibin+1),100.*unfoldedHistPt.GetBinError(ibin+1)/unfoldedHistPt.GetBinContent(ibin+1)))
+        self._logger.debug("|y| unfolded uncertainties")
+        for ibin in range(unfoldedHistY.GetNbinsX()):
+            self._logger.debug("\t bin %2i: %6.1f +- %4.2f%%" % (ibin+1,unfoldedHistY.GetBinContent(ibin+1),100.*unfoldedHistY.GetBinError(ibin+1)/unfoldedHistY.GetBinContent(ibin+1)))
 
 

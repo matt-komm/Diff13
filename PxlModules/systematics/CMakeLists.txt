@@ -12,11 +12,11 @@ install(
     LIBRARY DESTINATION ${PXL_PLUGIN_INSTALL_PATH}
 )
 
-#add_executable(btag-test
-#    BTagCalibrationStandalone.cpp
-#    test.cpp
-#)
-#target_link_libraries(btag-test ${ROOT_LIBRARIES})
+add_executable(btag-test
+    BTagCalibrationStandalone.cpp
+    test.cpp
+)
+target_link_libraries(btag-test ${ROOT_LIBRARIES})
 
 add_library(JetMETVariations MODULE JetMETVariations.cpp)
 target_link_libraries(JetMETVariations ${PXL_LIBRARIES} ${ROOT_LIBRARIES})

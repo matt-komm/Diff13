@@ -27,15 +27,15 @@ class ThetaModel(Module):
         
     def getUncertaintsDict(self):
         uncertainties = {
-            "WZjets":self.module("ThetaModel").makeLogNormal(1.5,0.5),
+            "WZjets":self.module("ThetaModel").makeLogNormal(1.0,0.3),
             #"BF":{"type":"gauss","config":{"mean": "1.0", "width":"0.3", "range":"(0.0,\"inf\")"}},
             #"CF":{"type":"gauss","config":{"mean": "1.0", "width":"0.3", "range":"(0.0,\"inf\")"}},
             #"LF":{"type":"gauss","config":{"mean": "1.0", "width":"0.3", "range":"(0.0,\"inf\")"}},
             "TopBkg":self.module("ThetaModel").makeLogNormal(1.0,0.1),
             "tChannel":self.module("ThetaModel").makeGaus(1.0,100.0),
-            "QCD_2j1t":self.module("ThetaModel").makeLogNormal(1.0,1.0),
-            "QCD_3j1t":self.module("ThetaModel").makeLogNormal(1.0,1.0),
-            "QCD_3j2t":self.module("ThetaModel").makeLogNormal(1.0,1.0),
+            "QCD_2j1t":self.module("ThetaModel").makeGaus(0.2,1.0),
+            "QCD_3j1t":self.module("ThetaModel").makeGaus(0.2,1.0),
+            "QCD_3j2t":self.module("ThetaModel").makeGaus(0.2,1.0),
             
             #"lumi":{"type":"gauss","config":{"mean": "1.0", "width":"0.1", "range":"(0.0,\"inf\")"}}
         }
@@ -53,16 +53,20 @@ class ThetaModel(Module):
                "weight":self.module("Utils").getCategoryCutStr(3,2)
             },
         }
+        
         return observables
         
     def getBinning(self):
-        return 40
+        return 20
         
     def getRange(self):
         return [0.0,200.0]
         
     def getFitVariableStr(self):
         return "(SingleTop_1__mtw_beforePz<50.0)*SingleTop_1__mtw_beforePz+(SingleTop_1__mtw_beforePz>50.0)*(TMath::TanH((Reconstructed_1__BDT_adaboost04_minnode001_maxvar3_ntree1000_invboost_binned)*3.0)*75.0+75.0+50.0)"
+        #return "(SingleTop_1__mtw_beforePz<50.0)*SingleTop_1__mtw_beforePz+(SingleTop_1__mtw_beforePz>50.0)*(Reconstructed_1__BDT_gradboost04_minnode001_maxvar3_ntree1000_pray_binned*75.0+75.0+50.0)"
+        #return "(SingleTop_1__mtw_beforePz<50.0)*SingleTop_1__mtw_beforePz+(SingleTop_1__mtw_beforePz>50.0)*(fabs(SingleTop_1__LightJet_1__Eta)/5.0*150.0+50.0)"
+        #return "(SingleTop_1__mtw_beforePz<50.0)*SingleTop_1__mtw_beforePz+(SingleTop_1__mtw_beforePz>50.0)*(Reconstructed_1__C*150.0+50.0)"
     
     
     def getComponentsDict(self):
@@ -85,7 +89,7 @@ class ThetaModel(Module):
             
             "WZjets":
             {
-                "sets":["WJetsMG","DY"],
+                "sets":["WJetsAMC","DY"],
                 "uncertainties":["WZjets"],
                 "weight":"1",
                 "color":ROOT.kGreen+1
@@ -135,8 +139,8 @@ class ThetaModel(Module):
         self._logger.info("Creating model: "+modelName)
         
         histograms={}
-    
-        file = open(os.path.join(self.module("Utils").getOutputFolder(),modelName+".cfg"),"w")
+        #20MB buffer
+        file = open(os.path.join(self.module("Utils").getOutputFolder(),modelName+".cfg"),"w",20971520)
         
         model=self.module("ThetaModel").getModel(modelName)
         
@@ -170,6 +174,10 @@ class ThetaModel(Module):
             for icomp,componentName in enumerate(components.keys()):
                 componentWeight = components[componentName]["weight"]
                 componentUncertainties = components[componentName]["uncertainties"]
+                
+                if componentName.startswith("QCD"):
+                    if componentName.find(observableName)<0:
+                        continue
                 
                 if not histograms[observableName].has_key(componentName):
                     histograms[observableName][componentName] = {}
@@ -358,7 +366,7 @@ class ThetaModel(Module):
                         "process":process,
                         "entries":round(hist.GetEntries(),1),
                         "integral":round(hist.Integral(),1),
-                        "unc":round(hist.Integral()/math.sqrt(hist.GetEntries()),1),
+                        "unc":round(hist.Integral()/math.sqrt(hist.GetEntries()+0.00001),1),
                     })
                     totalEntries+=hist.GetEntries()
                     totalIntegral+=hist.Integral()
@@ -368,7 +376,7 @@ class ThetaModel(Module):
                         "process":"total",
                         "entries":round(totalEntries,1),
                         "integral":round(totalIntegral,1),
-                        "unc":round(totalIntegral/math.sqrt(totalEntries),1),
+                        "unc":round(totalIntegral/math.sqrt(totalEntries+0.00001),1),
                     })
 
         outputFile.close()

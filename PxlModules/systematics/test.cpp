@@ -17,13 +17,14 @@ int main()
     constexpr static float MaxLJetPt = 1000;
 
     
-    _btagCalib=BTagCalibration("CSVv2", "CSVv2.csv");
+    _btagCalib=BTagCalibration("CSVv2", "CSVv2_76X.csv");
     _readerNominal = BTagCalibrationReader(
         &_btagCalib,               // calibration instance
         BTagEntry::OP_TIGHT,  // operating point
         "mujets",               // measurement type
         "central"             // systematics type
-    );           
+    );         
+      
     _readerUp = BTagCalibrationReader(&_btagCalib, BTagEntry::OP_TIGHT, "mujets", "up");  // sys up
     _readerDown = BTagCalibrationReader(&_btagCalib, BTagEntry::OP_TIGHT, "mujets", "down");  // sys down
                 

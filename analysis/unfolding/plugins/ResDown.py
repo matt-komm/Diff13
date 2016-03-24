@@ -18,5 +18,5 @@ class UtilsResDown(Module.getClass("Utils")):
         return "_ResDown"
         
     def getOutputFolder(self):
-        return "/home/fynu/mkomm/Diff13/analysis/unfolding/result/ResDown"
+        return os.path.join(os.getcwd(),"result/ResDown")
         

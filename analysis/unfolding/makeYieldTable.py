@@ -12,7 +12,7 @@ components = [
 ]
 
 def getTotalUnc(uncList):
-    NTOYS=5000
+    NTOYS=10000
     toys = numpy.zeros(NTOYS)
     for itoy in range(NTOYS):
         for unc in uncList:
@@ -59,19 +59,28 @@ noBBUnc = noBBFit["tChannel"]["unc"]
 
 
 systematics = [
-    #["QCD_2j1tYield","multijet normalization"],
-    #["TopBkgYield","\\tw, \\ttbar background normalization"],
-    #["WZjetsYield","\\wjets, \\zjets background normalization"],
+    ["DY","\\zjets yield"],
+    ["TW","\\tw yield"],
     ["Btag","b-tagging efficiency"],
     ["Ltag","mis-tagging efficiency"],
     ["PU","pileup reweighting"],
     ["Iso","multijet isolation region"],
     ["En","jet energy scale"],
     ["Res","jet resolution"],
+    ["Muon","muon selection"],
+    ["PDF","PDF"],
     #["UnclEn","unclustered energy"],
     ["QScaleTChannel","\\tch Q scale"], 
     ["QScaleTTbar","\\ttbar Q scale"],
-    #["TopMass","top quark mass"]
+    ["QScaleTW","\\tw Q scale"],
+    ["QScaleWjets","\\wjets Q scale"],
+    ["TopMass","top quark mass"]
+]
+
+systematicsSpecial = [
+    ["NoTopPt","top quark \\pt reweighting"],
+    ["Powheg","signal modeling"],
+    ["Herwig","hadronization modeling"]
 ]
 
 sysFits={}
@@ -84,8 +93,16 @@ for systematic in systematics:
         
         for par in fitResult.keys():
             sysFits[systematic[0]][shift][par]["shift"]=fitResult[par]["mean"]-nominalMean
-
-
+            
+for systematic in systematicsSpecial:
+    sysFits[systematic[0]]={}
+    fitResult = parseFitResult("result/"+systematic[0]+"/fit.root",sys=systematic[0])
+    sysFits[systematic[0]]["Down"]=fitResult
+    sysFits[systematic[0]]["Up"]=nominalFit
+    
+    for par in fitResult.keys():
+        sysFits[systematic[0]]["Down"][par]["shift"]=fitResult[par]["mean"]-nominalMean
+        sysFits[systematic[0]]["Up"][par]["shift"]=0.0
 
 ### print yield table ###
 totalSysList = []
@@ -94,7 +111,7 @@ print "%30s & %7s & %7s \\\\\\hline" % ("systematic source","up shift","down shi
 print "%30s & $%+6.1f\\%%$ & $%+6.1f\\%%$ \\\\" % ("statistical",100.*noBBUnc,-100.*noBBUnc)
 print "%30s & $%+6.1f\\%%$ & $%+6.1f\\%%$ \\\\" % ("limited MC statistics",100.*math.sqrt(nominalUnc**2-noBBUnc**2),-100.*math.sqrt(nominalUnc**2-noBBUnc**2))
 
-for systematic in systematics:
+for systematic in systematics+systematicsSpecial:
     upShift = sysFits[systematic[0]]["Up"]["tChannel"]["shift"]
     downShift = sysFits[systematic[0]]["Down"]["tChannel"]["shift"]
     totalSysList.append([upShift,downShift])
@@ -106,8 +123,12 @@ print "%30s & $%+6.1f\\%%$ & $%+6.1f\\%%$ \\\\" % ("total systematic",100.*total
 totalSysList.append([nominalUnc,-nominalUnc])
 print "\\hline"
 totalUnc = getTotalUnc(totalSysList)
-print "%30s & $%+6.1f\\%%$ & $%+6.1f\\%%$ \\\\" % ("total uncertainty",100.*totalSysUnc[2],100.*totalSysUnc[0])
+print "%30s & $%+6.1f\\%%$ & $%+6.1f\\%%$ \\\\" % ("total uncertainty",100.*totalUnc[2],100.*totalUnc[0])
 
+print "mean = ",totalUnc[1]+nominalMean
+mxsec = 216.99*(totalUnc[1]+nominalMean)
+print "xsec = %6.1f \\pm %5.1f \\mathrm{(stat)} {}^{%+5.1f}_{%+5.1f} \\mathrm{(syst)}~\\mathrm{pb}"% (mxsec,mxsec*noBBUnc,mxsec*totalSysUnc[2],mxsec*totalSysUnc[0])
+print "xsec = %6.1f {}^{%+5.1f}_{%+5.1f}~\\mathrm{pb}"% (mxsec,mxsec*totalUnc[2],mxsec*totalUnc[0])
 print
 print
 
@@ -128,7 +149,7 @@ print "\\\\"
 
 print "\\hline"
 
-for systematic in systematics:
+for systematic in systematics+systematicsSpecial:
     for shift in ["Up","Down"]:
         print "%30s %8s"%(systematic[1],shift),
         for par in ["tChannel","TopBkg","WZjets","QCD_2j1t"]:

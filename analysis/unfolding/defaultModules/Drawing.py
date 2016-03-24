@@ -275,7 +275,7 @@ class Drawing(Module):
             purity = responseMatrixSelectedPStest.GetBinContent(genBin+1,genBin+1)/sumReco
             purityHist.SetBinContent(genBin+1,purity)
         
-        axis = ROOT.TH2F("axis"+str(random.random()),";"+varname+";",50,genBinning[0],genBinning[-1],50,0.0,0.85)
+        axis = ROOT.TH2F("axis"+str(random.random()),";"+varname+";",50,genBinning[0],genBinning[-1],50,0.0,1.0)
         cv = ROOT.TCanvas("cvPS"+str(random.random()),"",800,700)
         axis.Draw("AXIS")
         stabilityHist.SetLineWidth(3)

@@ -18,7 +18,7 @@ ROOT.gStyle.SetOptFit(1111)
 ROOT.gStyle.SetPadTopMargin(0.08)
 ROOT.gStyle.SetPadLeftMargin(0.14)
 ROOT.gStyle.SetPadRightMargin(0.06)
-ROOT.gStyle.SetPadBottomMargin(0.14)
+ROOT.gStyle.SetPadBottomMargin(0.12)
 ROOT.gStyle.SetMarkerSize(0.16)
 ROOT.gStyle.SetHistLineWidth(1)
 ROOT.gStyle.SetStatFontSize(0.025)
@@ -123,9 +123,9 @@ ROOT.gStyle.SetTitleFont(43, "XYZ")
 ROOT.gStyle.SetTitleSize(40, "XYZ")
 # ROOT.gStyle.SetTitleXSize(Float_t size = 0.02) # Another way to set the size?
 # ROOT.gStyle.SetTitleYSize(Float_t size = 0.02)
-ROOT.gStyle.SetTitleXOffset(1.13)
-#ROOT.gStyle.SetTitleYOffset(1.2)
-ROOT.gStyle.SetTitleOffset(1.15, "YZ") # Another way to set the Offset
+ROOT.gStyle.SetTitleXOffset(0.99)
+ROOT.gStyle.SetTitleYOffset(1.2)
+#ROOT.gStyle.SetTitleOffset(1.15, "YZ") # Another way to set the Offset
 
 # For the axis labels:
 
@@ -140,8 +140,8 @@ ROOT.gStyle.SetLabelSize(34, "XYZ")
 ROOT.gStyle.SetAxisColor(1, "XYZ")
 ROOT.gStyle.SetAxisColor(1, "XYZ")
 ROOT.gStyle.SetStripDecimals(True)
-ROOT.gStyle.SetTickLength(0.03, "Y")
-ROOT.gStyle.SetTickLength(0.035, "X")
+ROOT.gStyle.SetTickLength(0.025, "Y")
+ROOT.gStyle.SetTickLength(0.025, "X")
 ROOT.gStyle.SetNdivisions(505, "X")
 ROOT.gStyle.SetNdivisions(512, "Y")
 
@@ -202,6 +202,8 @@ norm = nominalHist.Integral()
 
 
 
+
+
 def normalizeByBinWidth(hist):
     #hist.Scale(1./(hist.GetXaxis().GetXmax()-hist.GetXaxis().GetXmin())/hist.Integral())
     hist.Scale(1./norm)
@@ -209,26 +211,41 @@ def normalizeByBinWidth(hist):
         hist.SetBinError(ibin+1,hist.GetBinError(ibin+1)/hist.GetBinWidth(ibin+1))
         hist.SetBinContent(ibin+1,hist.GetBinContent(ibin+1)/hist.GetBinWidth(ibin+1))
         
-
+normalizeByBinWidth(nominalHist)
 
 sysHistograms = []
 
 uncertainties = [
+    ["DY","\\zjets yield"],
+    ["TW","\\tw yield"],
     ["Btag","b-tagging efficiency"],
     ["Ltag","mis-tagging efficiency"],
     ["PU","pileup reweighting"],
     ["Iso","multijet isolation region"],
     ["En","jet energy scale"],
     ["Res","jet resolution"],
+    ["Muon","muon selection"],
+    ["PDF","PDF"],
     #["UnclEn","unclustered energy"],
     ["QScaleTChannel","\\tch Q scale"], 
     ["QScaleTTbar","\\ttbar Q scale"],
-    ["QCD_2j1tYield","multijet normalization"],
-    #["TopBkgYield","\\tw, \\ttbar background normalization"],
-    #["WZjetsYield","\\wjets, \\zjets background normalization"],
-    ["tChannelYield","\\tch ML-fit uncertainty"],
-    #["TopMass","top quark mass"]
+    ["QScaleTW","\\tw Q scale"],
+    ["QScaleWjets","\\wjets Q scale"],
+    ["TopMass","top quark mass"]
 ]
+
+uncertaintiesSpecial = [
+    ["NoTopPt","top quark \\pt reweighting"],
+    ["Powheg","signal modeling"],
+    ["Herwig","hadronization modeling"]
+]
+
+print "%36s & %10s & %10s & %10s & %10s" % ("systematic source","bin 1 / \\%", "bin 2 / \\%","bin 3 / \\%", "bin 4 / \\%")
+print "%36s " % ("statistical"),
+for ibin in range(4):
+    print "& %10.1f " % (100.0*nominalHist.GetBinError(ibin+1)/nominalHist.GetBinContent(ibin+1)), 
+print "\\\\"
+print "\\hline"
 
 for unc in uncertainties:
     sysDict = []
@@ -237,27 +254,80 @@ for unc in uncertainties:
         hist = f.Get(histName).Clone()
         hist.SetDirectory(0)
         normalizeByBinWidth(hist)
+        print "%36s " % (unc[1]+" "+shift),
+        for ibin in range(4):
+            nominal = nominalHist.GetBinContent(ibin+1)
+            sysVal = hist.GetBinContent(ibin+1)
+            print "& %+10.1f " % (100.0*sysVal/nominal-100.), 
+        print "\\\\"
+        
         hist.SetLineWidth(2)
         #hist.SetLineStyle(2)
         sysDict.append(hist)
         f.Close()
+    print "\\hline"
     sysHistograms.append(sysDict)
     
+for unc in uncertaintiesSpecial:
+    sysDict = []
+    f = ROOT.TFile("result/"+unc[0]+"/"+rootFileName+".root")
+    hist = f.Get(histName).Clone()
+    hist.SetDirectory(0)
+    normalizeByBinWidth(hist)
+    print "%36s " % (unc[1]),
+    sysDict.append(nominalHist)
+    for ibin in range(4):
+        nominal = nominalHist.GetBinContent(ibin+1)
+        sysVal = hist.GetBinContent(ibin+1)
+        print "& %+10.1f " % (100.0*sysVal/nominal-100.), 
+    print "\\\\"
+    
+    hist.SetLineWidth(2)
+    sysDict.append(hist)
+    f.Close()
+    print "\\hline"
+    sysHistograms.append(sysDict)
 
-normalizeByBinWidth(nominalHist)
+
 genHist = fNominal.Get(responseName).Clone().ProjectionX("gen")
 genHist.SetDirectory(0)
-genHist.SetLineColor(ROOT.kAzure-4)
-genHist.SetLineWidth(3)
+genHist.SetLineColor(ROOT.kAzure-5)
+genHist.SetLineWidth(5)
 normalizeByBinWidth(genHist)
 N = nominalHist.GetNbinsX()
 
 
-for i,sys in enumerate(uncertainties):
+fPowheg = ROOT.TFile("result/Powheg/"+rootFileName+".root")
+genPowhegHist=fPowheg.Get(responseName).Clone().ProjectionX("gen_powheg")
+genPowhegHist.SetDirectory(0)
+genPowhegHist.SetLineColor(ROOT.kOrange+7)
+genPowhegHist.SetLineWidth(3)
+genPowhegHist.SetLineStyle(1)
+normalizeByBinWidth(genPowhegHist)
+
+fAMC5FS = ROOT.TFile("result/AMC5FS/"+rootFileName+".root")
+genAMC5FSHist=fAMC5FS.Get(responseName).Clone().ProjectionX("gen_AMC5FS")
+genAMC5FSHist.SetDirectory(0)
+genAMC5FSHist.SetLineColor(ROOT.kSpring-1)
+genAMC5FSHist.SetLineWidth(6)
+genAMC5FSHist.SetLineStyle(3)
+normalizeByBinWidth(genAMC5FSHist)
+
+fHerwig = ROOT.TFile("result/Herwig/"+rootFileName+".root")
+genHerwigHist=fHerwig.Get(responseName).Clone().ProjectionX("gen_Herwig")
+genHerwigHist.SetDirectory(0)
+genHerwigHist.SetLineColor(ROOT.kGray+1)
+genHerwigHist.SetLineWidth(4)
+genHerwigHist.SetLineStyle(2)
+normalizeByBinWidth(genHerwigHist)
+
+for i,sys in enumerate(uncertainties+uncertaintiesSpecial):
     cvSys = ROOT.TCanvas("cvSys"+str(random.random()),"",800,700)
     ymax = max([sysHistograms[i][0].GetMaximum(),sysHistograms[i][1].GetMaximum(),genHist.GetMaximum(),nominalHist.GetMaximum()])
-    #axis = ROOT.TH2F("axisUnfold",";p#lower[0.4]{#scale[0.7]{T}}#kern[-0.5]{ }(t+#bar{t}) (GeV);1 #/#sigma #times d#sigma #/d#kern[-0.5]{ }p#lower[0.4]{#scale[0.7]{T}}#kern[-0.5]{ }(t+#bar{t}) / #lower[-0.12]{#scale[0.7]{#frac{1}{GeV}}}",50,genHist.GetXaxis().GetXmin(),genHist.GetXaxis().GetXmax(),50,0,1.2*ymax)
-    axis = ROOT.TH2F("axisUnfold"+str(random.random()),";|y|#kern[-0.5]{ }(t+#bar{t}) (GeV);1 #/#sigma #times d#sigma #/d#kern[-0.5]{ }|y|#kern[-0.5]{ }(t+#bar{t})",50,genHist.GetXaxis().GetXmin(),genHist.GetXaxis().GetXmax(),50,0,1.2*ymax)
+    if rootFileName == "unfoldingPt":
+        axis = ROOT.TH2F("axisUnfold",";p#lower[0.4]{#scale[0.7]{T}}#kern[-0.5]{ }(t+#bar{t}) (GeV);1 #/#sigma #times d#sigma #/d#kern[-0.5]{ }p#lower[0.4]{#scale[0.7]{T}}#kern[-0.5]{ }(t+#bar{t}) / #lower[-0.12]{#scale[0.7]{#frac{1}{GeV}}}",50,genHist.GetXaxis().GetXmin(),genHist.GetXaxis().GetXmax(),50,0,1.2*ymax)
+    else:
+        axis = ROOT.TH2F("axisUnfold"+str(random.random()),";|y|#kern[-0.5]{ }(t+#bar{t}) (GeV);1 #/#sigma #times d#sigma #/d#kern[-0.5]{ }|y|#kern[-0.5]{ }(t+#bar{t})",50,genHist.GetXaxis().GetXmin(),genHist.GetXaxis().GetXmax(),50,0,1.2*ymax)
     axis.Draw("AXIS")
     genHist.Draw("HISTSame")
     nominalHist.Draw("PESame")
@@ -268,6 +338,8 @@ for i,sys in enumerate(uncertainties):
     cvSys.Update()
     cvSys.Print(sys[0]+".pdf")
     cvSys.Print(sys[0]+".png")
+    
+
 
 statHistData = numpy.zeros((N,3))
 totalHistData = numpy.zeros((N,3))
@@ -277,7 +349,7 @@ for ibin in range(N):
     totalHistData[ibin][2] = nominalHist.GetBinError(ibin+1)
     
 
-NTOYS = 5000
+NTOYS = 10000
 for ibin in range(N):
     n = nominalHist.GetBinContent(ibin+1)
     posterior = numpy.zeros(NTOYS)
@@ -308,12 +380,48 @@ for ibin in range(N):
         
 
 cv = ROOT.TCanvas("cv","",800,750)
-axis = ROOT.TH2F("axisUnfold",";p#lower[0.4]{#scale[0.7]{T}}#kern[-0.5]{ }(t+#bar{t}) (GeV);1 #/#sigma #times d#sigma #/d#kern[-0.5]{ }p#lower[0.4]{#scale[0.7]{T}}#kern[-0.5]{ }(t+#bar{t}) / #lower[-0.12]{#scale[0.7]{#frac{1}{GeV}}}",50,genHist.GetXaxis().GetXmin(),genHist.GetXaxis().GetXmax(),50,0,0.017)
-#axis = ROOT.TH2F("axisUnfold",";|y|#kern[-0.5]{ }(t+#bar{t}) (GeV);1 #/#sigma #times d#sigma #/d#kern[-0.5]{ }|y|#kern[-0.5]{ }(t+#bar{t})",50,genHist.GetXaxis().GetXmin(),genHist.GetXaxis().GetXmax(),50,0,1.2)
+if rootFileName == "unfoldingPt":
+    axis = ROOT.TH2F("axisUnfold",";p#lower[0.4]{#scale[0.7]{T}}#kern[-0.5]{ }(t+#bar{t}) (GeV);1 #/#sigma #times d#sigma #/d#kern[-0.5]{ }p#lower[0.4]{#scale[0.7]{T}}#kern[-0.5]{ }(t+#bar{t}) / #lower[-0.12]{#scale[0.7]{#frac{1}{GeV}}}",50,genHist.GetXaxis().GetXmin(),genHist.GetXaxis().GetXmax(),50,0,0.017)
+else:
+    axis = ROOT.TH2F("axisUnfold",";|y|#kern[-0.5]{ }(t+#bar{t}) (GeV);1 #/#sigma #times d#sigma #/d#kern[-0.5]{ }|y|#kern[-0.5]{ }(t+#bar{t})",50,genHist.GetXaxis().GetXmin(),genHist.GetXaxis().GetXmax(),50,0,1.2)
 axis.Draw("AXIS")
+
+legend=ROOT.TLegend(0.53,0.885,0.88,0.5)
+legend.SetBorderSize(0)
+legend.SetTextFont(43)
+legend.SetTextSize(30)
+legend.SetFillColor(ROOT.kWhite)
 
 
 genHist.Draw("HISTSame")
+legend.AddEntry(genHist,"aMC@NLO (4#kern[-0.5]{ }FS)","L")
+legend.AddEntry(""," + Pythia#kern[-0.5]{ }8","")
+
+genPowhegHist.Draw("HISTSame")
+legend.AddEntry(genPowhegHist,"Powheg (4#kern[-0.5]{ }FS)","L")
+legend.AddEntry(""," + Pythia#kern[-0.5]{ }8","")
+
+genAMC5FSHist.Draw("HISTSame")
+legend.AddEntry(genAMC5FSHist,"aMC@NLO (5#kern[-0.5]{ }FS)","L")
+legend.AddEntry(""," + Pythia#kern[-0.5]{ }8","")
+
+genHerwigHist.Draw("HISTSame")
+legend.AddEntry(genHerwigHist,"aMC@NLO (4#kern[-0.5]{ }FS)","L")
+legend.AddEntry(""," + Herwig#kern[-0.5]{ }","")
+
+legend.AddEntry(nominalHist,"data","P")
+
+
+
+print "%36s " % ("total Up"),
+for ibin in range(N):
+    print "& %+10.1f " % (totalHistData[ibin][2]/totalHistData[ibin][0]*100.0-100), 
+print "\\\\"
+print "%36s " % ("total Down"),
+for ibin in range(N):
+    print "& %+10.1f " % (totalHistData[ibin][1]/totalHistData[ibin][0]*100.0-100), 
+print "\\\\"
+
 
 rootObj = []
 for ibin in range(N):
@@ -324,7 +432,7 @@ for ibin in range(N):
     statDown = max(0,statHistData[ibin][1])
     statUp = max(0,statHistData[ibin][2])
     
-    print "%10i: %5.3f %+5.2f %+5.2f  %+5.2f %+5.2f" % (ibin,totalN,statDown/totalN*100.0-100,statUp/totalN*100.0-100,totalDown/totalN*100.0-100,totalUp/totalN*100.0-100)
+    #print "%10i: %5.3f %+5.2f %+5.2f  %+5.2f %+5.2f" % (ibin,totalN,statDown/totalN*100.0-100,statUp/totalN*100.0-100,totalDown/totalN*100.0-100,totalUp/totalN*100.0-100)
     
     c = genHist.GetBinCenter(ibin+1)
     w = (genHist.GetXaxis().GetXmax()-genHist.GetXaxis().GetXmin())/12.0#genHist.GetBinWidth(ibin+1)
@@ -351,7 +459,7 @@ for ibin in range(N):
     
   
 
-pCMS=ROOT.TPaveText(cv.GetLeftMargin()+0.055,0.875,cv.GetLeftMargin()+0.055,0.875,"NDC")
+pCMS=ROOT.TPaveText(cv.GetLeftMargin()+0.055,0.885,cv.GetLeftMargin()+0.055,0.885,"NDC")
 pCMS.SetFillColor(ROOT.kWhite)
 pCMS.SetBorderSize(0)
 pCMS.SetTextFont(63)
@@ -360,7 +468,7 @@ pCMS.SetTextAlign(13)
 pCMS.AddText("CMS")
 pCMS.Draw("Same")
 
-pPreliminary=ROOT.TPaveText(cv.GetLeftMargin()+0.055+0.095,0.875,cv.GetLeftMargin()+0.055+0.095,0.875,"NDC")
+pPreliminary=ROOT.TPaveText(cv.GetLeftMargin()+0.055+0.095,0.885,cv.GetLeftMargin()+0.055+0.095,0.885,"NDC")
 pPreliminary.SetFillColor(ROOT.kWhite)
 pPreliminary.SetBorderSize(0)
 pPreliminary.SetTextFont(53)
@@ -379,14 +487,7 @@ pLumi.AddText("#mu#kern[-0.5]{ }+#kern[-0.5]{ }jets, 2.3#kern[-0.5]{ }fb#lower[-
 pLumi.Draw("Same")
 
 
-legend=ROOT.TLegend(0.5,0.885,0.86,0.72)
-legend.SetBorderSize(0)
-legend.SetTextFont(43)
-legend.SetTextSize(30)
-legend.SetFillColor(ROOT.kWhite)
-legend.AddEntry(genHist,"aMC@NLO (4#kern[-0.5]{ }FS)","L")
-legend.AddEntry(""," + Pythia#kern[-0.5]{ }8","")
-legend.AddEntry(nominalHist,"pseudo data","P")
+
 legend.Draw("Same")
 
 cv.Update()

@@ -15,7 +15,7 @@ class SamplesIsoUp(Module.getClass("Samples")):
         self._logger.setLevel(logging.DEBUG)
         
     def getQCDIsoCutStr(self):
-        return "(Reconstructed_1__TightMuon_1__relIso>0.4)*(Reconstructed_1__TightMuon_1__relIso<10000.0)"
+        return "(SingleTop_1__TightMuon_1__relIso>0.4)*(SingleTop_1__TightMuon_1__relIso<10000.0)"
 
         
 class UtilsIsoUp(Module.getClass("Utils")):
@@ -25,4 +25,4 @@ class UtilsIsoUp(Module.getClass("Utils")):
         self._logger.setLevel(logging.DEBUG)
         
     def getOutputFolder(self):
-        return "/home/fynu/mkomm/Diff13/analysis/unfolding/result/IsoUp"
+        return os.path.join(os.getcwd(),"result/IsoUp")

@@ -14,19 +14,31 @@ class Utils(Module):
         self._logger.setLevel(logging.DEBUG)
         
     def getOutputFolder(self):
-        return "/home/fynu/mkomm/Diff13/analysis/unfolding/result/nominal"
+        return os.path.join(os.getcwd(),"result/nominal")
         
     def createOutputFolder(self,force=False):
         try:
-            print self.module("Utils").getOutputFolder()
+            destination = os.path.join("/home/fynu/mkomm/Diff13/analysis/unfolding/result",self.module("Utils").getOutputFolder().split("result/")[1])
+            if destination!=self.module("Utils").getOutputFolder():
+                self._logger.info("Checking results in '"+destination+"'")
+                if os.path.exists(destination):
+                    self._logger.info("Copy results from '"+destination+"' to '"+self.module("Utils").getOutputFolder()+"'")
+                    shutil.copytree(destination,self.module("Utils").getOutputFolder())
+                else:
+                    self._logger.info("No results found in '"+destination+"'")
+        
+        
             if os.path.exists(self.module("Utils").getOutputFolder()) and not force:
-                self._logger.warning("Output folder already exists!")
+                self._logger.warning("Output folder already exists!: "+self.module("Utils").getOutputFolder())
             elif os.path.exists(self.module("Utils").getOutputFolder()) and force:
-                self._logger.info("delete existing output folder")
+                self._logger.info("delete existing output folder: "+self.module("Utils").getOutputFolder())
                 shutil.rmtree(self.module("Utils").getOutputFolder())
             if not os.path.exists(self.module("Utils").getOutputFolder()):
-                self._logger.info("creating output folder")
+                self._logger.info("creating output folder: "+self.module("Utils").getOutputFolder())
                 os.makedirs(self.module("Utils").getOutputFolder())
+                
+            
+                
         except Exception,e:
             self._logger.error(str(e))
         
@@ -34,25 +46,25 @@ class Utils(Module):
         return "(TMath::TanH((Reconstructed_1__BDT_adaboost04_minnode001_maxvar3_ntree1000_invboost_binned)*3.0)>0.65)"
         
     def getLumi(self):
-        return 2299.2
+        return 2290.0
         
     def getRecoWeightStr(self):
-        return self.module("Utils").getGenWeightStr()+"*(testing==1)/splitweight*(Reconstructed_1__PU69000_weight*Reconstructed_1__btagging_nominal)"
+        return self.module("Utils").getGenWeightStr()+"*(testing==1)/splitweight*(Reconstructed_1__PU69000_weight*Reconstructed_1__btagging_nominal*SingleTop_1__TightMuon_1__id_SF_nominal*SingleTop_1__TightMuon_1__iso_SF_nominal*SingleTop_1__TightMuon_1__trigger_SF_nominal)"
     
     def getGenWeightStr(self):
         return str(self.module("Utils").getLumi())+"*mc_weight*((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)"
     
     def getRecoWeightStrPseudo(self):
-        return self.module("Utils").getGenWeightStrPseudo()+"*(testing==1)/splitweight*(Reconstructed_1__PU69000_weight*Reconstructed_1__btagging_nominal)"
+        return self.module("Utils").getGenWeightStrPseudo()+"*(testing==1)/splitweight*(Reconstructed_1__PU69000_weight*Reconstructed_1__btagging_nominal*SingleTop_1__TightMuon_1__id_SF_nominal*SingleTop_1__TightMuon_1__iso_SF_nominal*SingleTop_1__TightMuon_1__trigger_SF_nominal)"
     
     def getGenWeightStrPseudo(self):
         return str(self.module("Utils").getLumi())+"*mc_weight*((Generated_1__genweight<0)*(-1)+(Generated_1__genweight>0)*1)"
     
     def getTriggerCutMCStr(self):
-        return "((Reconstructed_1__HLT_IsoMu20_v3==1)||(Reconstructed_1__HLT_IsoTkMu20_v4==1))"
+        return "(Reconstructed_1__HLT_IsoMu20_vALL==1)"
         
     def getTriggerCutDataStr(self):
-        return "((Reconstructed_1__HLT_IsoMu20_v2==1)||(Reconstructed_1__HLT_IsoTkMu20_v3==1)||(Reconstructed_1__HLT_IsoMu20_v3==1)||(Reconstructed_1__HLT_IsoTkMu20_v4==1))"
+        return "(Reconstructed_1__HLT_IsoMu20_vALL==1)"
 
     def getCategoryCutStr(self,njets,nbtags):
         return "(Reconstructed_1__nSelectedJet=="+str(int(njets))+")*(Reconstructed_1__nSelectedBJet=="+str(int(nbtags))+")"

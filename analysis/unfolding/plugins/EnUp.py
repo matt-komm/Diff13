@@ -18,5 +18,5 @@ class UtilsEnUp(Module.getClass("Utils")):
         return "_EnUp"
         
     def getOutputFolder(self):
-        return "/home/fynu/mkomm/Diff13/analysis/unfolding/result/EnUp"
+        return os.path.join(os.getcwd(),"result/EnUp")
         

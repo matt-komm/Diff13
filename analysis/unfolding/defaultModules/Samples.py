@@ -10,7 +10,7 @@ class Samples(Module):
         self._logger.setLevel(logging.DEBUG)
         
     def getQCDIsoCutStr(self):
-        return "(Reconstructed_1__TightMuon_1__relIso>0.20)*(Reconstructed_1__TightMuon_1__relIso<10000.0)"
+        return "(SingleTop_1__TightMuon_1__relIso>0.20)*(SingleTop_1__TightMuon_1__relIso<10000.0)"
         
         
     def getSample(self,name):
@@ -47,13 +47,13 @@ class Samples(Module):
                 ],
                 "color":ROOT.gROOT.GetColor(ROOT.kOrange-3),
                 "title":"t#bar{t}",
-                "weight":mcweight
+                "weight":mcweight+"*Generated_1__top_pt_rew"
             },
             
             "WJetsAMC":
             {
                 "processes":[
-                    "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_iso"+syst
+                    "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_ext_iso"+syst
                 ],
                 "color":ROOT.gROOT.GetColor(ROOT.kGreen-2),
                 "title":"W+jets",
@@ -99,8 +99,8 @@ class Samples(Module):
                     "ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1_antiiso",
                     "ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1_antiiso",
                     "TT_TuneCUETP8M1_13TeV-powheg-pythia8_ext_antiiso",
-                    #"WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_antiiso",
-                    "WJetsToLNu_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_antiiso",
+                    "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_ext_antiiso",
+                    #"WJetsToLNu_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_antiiso",
                     "DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_antiiso"
                 ],
                 "color":ROOT.gROOT.GetColor(ROOT.kBlue-1),
@@ -174,7 +174,7 @@ class Samples(Module):
             "WJetsAMC":
             {
                 "processes":[
-                    "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_iso"+syst
+                    "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_ext_iso"+syst
                 ],
                 "color":ROOT.gROOT.GetColor(ROOT.kGreen-2),
                 "title":"W+jets",
