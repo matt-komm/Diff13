@@ -14,8 +14,6 @@ class ThetaModelTopMassDown(Module.getClass("ThetaModel")):
         self._logger = logging.getLogger(__file__)
         self._logger.setLevel(logging.DEBUG)
         
-    def getBinning(self):
-        return 10
         
 
 class SamplesTopMassDown(Module.getClass("Samples")):

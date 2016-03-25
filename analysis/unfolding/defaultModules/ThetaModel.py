@@ -27,11 +27,11 @@ class ThetaModel(Module):
         
     def getUncertaintsDict(self):
         uncertainties = {
-            "WZjets":self.module("ThetaModel").makeLogNormal(1.0,0.3),
+            "WZjets":self.module("ThetaModel").makeLogNormal(1.0,0.5),
             #"BF":{"type":"gauss","config":{"mean": "1.0", "width":"0.3", "range":"(0.0,\"inf\")"}},
             #"CF":{"type":"gauss","config":{"mean": "1.0", "width":"0.3", "range":"(0.0,\"inf\")"}},
             #"LF":{"type":"gauss","config":{"mean": "1.0", "width":"0.3", "range":"(0.0,\"inf\")"}},
-            "TopBkg":self.module("ThetaModel").makeLogNormal(1.0,0.1),
+            "TopBkg":self.module("ThetaModel").makeLogNormal(1.0,0.15),
             "tChannel":self.module("ThetaModel").makeGaus(1.0,100.0),
             "QCD_2j1t":self.module("ThetaModel").makeGaus(0.2,1.0),
             "QCD_3j1t":self.module("ThetaModel").makeGaus(0.2,1.0),
@@ -57,13 +57,13 @@ class ThetaModel(Module):
         return observables
         
     def getBinning(self):
-        return 20
+        return 15
         
     def getRange(self):
-        return [0.0,200.0]
+        return [0.0,150.0]
         
     def getFitVariableStr(self):
-        return "(SingleTop_1__mtw_beforePz<50.0)*SingleTop_1__mtw_beforePz+(SingleTop_1__mtw_beforePz>50.0)*(TMath::TanH((Reconstructed_1__BDT_adaboost04_minnode001_maxvar3_ntree1000_invboost_binned)*3.0)*75.0+75.0+50.0)"
+        return "(SingleTop_1__mtw_beforePz<50.0)*SingleTop_1__mtw_beforePz+(SingleTop_1__mtw_beforePz>50.0)*(TMath::TanH((Reconstructed_1__BDT_adaboost04_minnode001_maxvar3_ntree1000_invboost_binned-0.12)*3.2)*50.0+50.0+50.0)"
         #return "(SingleTop_1__mtw_beforePz<50.0)*SingleTop_1__mtw_beforePz+(SingleTop_1__mtw_beforePz>50.0)*(Reconstructed_1__BDT_gradboost04_minnode001_maxvar3_ntree1000_pray_binned*75.0+75.0+50.0)"
         #return "(SingleTop_1__mtw_beforePz<50.0)*SingleTop_1__mtw_beforePz+(SingleTop_1__mtw_beforePz>50.0)*(fabs(SingleTop_1__LightJet_1__Eta)/5.0*150.0+50.0)"
         #return "(SingleTop_1__mtw_beforePz<50.0)*SingleTop_1__mtw_beforePz+(SingleTop_1__mtw_beforePz>50.0)*(Reconstructed_1__C*150.0+50.0)"
@@ -388,7 +388,7 @@ class ThetaModel(Module):
         file.write("\n")
 
         file.write("myminimizer = {\n")
-
+        
         file.write("type = \"newton_minimizer\";\n")
         file.write("//par_eps = 1e-6; // optional; default is 1e-4'\n")
         file.write("//maxit = 100000; // optional; default is 10,000'\n")
@@ -401,8 +401,8 @@ class ThetaModel(Module):
         file.write("tolerance_factor = 0.1; //optional. Default is 1\n")
         file.write("max_iterations = 10000; // optional. Default as in ROOT::Minuit2\n")
         file.write("max_function_calls = 100000; //optional. Default as in ROOT::Minuit2\n")
-        file.write("n_retries = 20; // optional; the default is 2\n")
-
+        file.write("n_retries = 10; // optional; the default is 2\n")
+        
         file.write("type = \"mcmc_minimizer\";\n")
         file.write("name = \"min0\";\n")
         file.write("iterations = 10000;\n")

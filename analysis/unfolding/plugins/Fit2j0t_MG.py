@@ -35,7 +35,7 @@ class ProgramFit2j0t(Module.getClass("Program")):
             self.module("ThetaFit").run()
             fitResult = self.module("ThetaFit").readFitResult()
         self.module("Drawing").drawFitCorrelation(fitResult["correlations"])
-        
+        '''
         ###YIELDS
         histogramsAllYield = self.module("HistogramCreator").loadHistograms("yields_all")
         if not histogramsAllYield:
@@ -67,7 +67,7 @@ class ProgramFit2j0t(Module.getClass("Program")):
             )
             self.module("HistogramCreator").scaleHistogramsToFitResult(histogramsBDTYield,fitResult)
             self.module("HistogramCreator").saveHistograms(histogramsBDTYield,"yields_bdt")
-
+        '''
 
 class Fit2j0t(Module.getClass("ThetaModel")):
     def __init__(self,options=[]):

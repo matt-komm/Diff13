@@ -15,7 +15,13 @@ class UtilsBtagUp(Module.getClass("Utils")):
         self._logger.setLevel(logging.DEBUG)
         
     def getRecoWeightStr(self):
-        return self.module("Utils").getGenWeightStr()+"*(testing==1)/splitweight*(Reconstructed_1__PU69000_weight*Reconstructed_1__btagging_bc_up*SingleTop_1__TightMuon_1__id_SF_nominal*SingleTop_1__TightMuon_1__iso_SF_nominal*SingleTop_1__TightMuon_1__trigger_SF_nominal)"
+        cut =  self.module("Utils").getGenWeightStr()+"*(testing==1)/splitweight"
+        cut+="*(Reconstructed_1__PU69000_weight*Reconstructed_1__btagging_bc_up)"
+        cut+="*("
+        cut+="(Reconstructed_1__nSelectedJet==2)*(Reconstructed_1__nSelectedBJet<2)*(SingleTop_1__TightMuon_1__id_SF_nominal*SingleTop_1__TightMuon_1__iso_SF_nominal*SingleTop_1__TightMuon_1__trigger_SF_nominal-1.)"
+        cut+="+(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet<3)*(SingleTop_1__TightMuon_1__id_SF_nominal*SingleTop_1__TightMuon_1__iso_SF_nominal*SingleTop_1__TightMuon_1__trigger_SF_nominal-1.)"
+        cut+="+1.)"
+        return cut
 
         
     def getOutputFolder(self):
