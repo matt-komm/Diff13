@@ -179,17 +179,20 @@ ROOT.gStyle.SetLineScalePS(2)
 ROOT.gStyle.SetPalette(1)
 ROOT.gStyle.SetPaintTextFormat("4.2f")
 
-
+normalize =True
+'''
 outputName="unfolded_top_pt"
 rootFileName = "unfoldingPt"
 histName = "unfoldedHistPt"
 responseName = "responsePt"
+
+
 '''
 outputName="unfolded_top_y"
 rootFileName = "unfoldingY"
 histName = "unfoldedHistY"
 responseName = "responseY"
-'''
+
 
 
 fNominal = ROOT.TFile("result/nominal/"+rootFileName+".root")
@@ -205,11 +208,12 @@ norm = nominalHist.Integral()
 
 
 def normalizeByBinWidth(hist):
-    #hist.Scale(1./(hist.GetXaxis().GetXmax()-hist.GetXaxis().GetXmin())/hist.Integral())
-    hist.Scale(1./norm)
-    for ibin in range(hist.GetNbinsX()):
-        hist.SetBinError(ibin+1,hist.GetBinError(ibin+1)/hist.GetBinWidth(ibin+1))
-        hist.SetBinContent(ibin+1,hist.GetBinContent(ibin+1)/hist.GetBinWidth(ibin+1))
+    if normalize:
+        #hist.Scale(1./(hist.GetXaxis().GetXmax()-hist.GetXaxis().GetXmin())/hist.Integral())
+        hist.Scale(1./norm)
+        for ibin in range(hist.GetNbinsX()):
+            hist.SetBinError(ibin+1,hist.GetBinError(ibin+1)/hist.GetBinWidth(ibin+1))
+            hist.SetBinContent(ibin+1,hist.GetBinContent(ibin+1)/hist.GetBinWidth(ibin+1))
         
 normalizeByBinWidth(nominalHist)
 
@@ -322,12 +326,18 @@ genHerwigHist.SetLineStyle(2)
 normalizeByBinWidth(genHerwigHist)
 
 for i,sys in enumerate(uncertainties+uncertaintiesSpecial):
-    cvSys = ROOT.TCanvas("cvSys"+str(random.random()),"",800,700)
+    cvSys = ROOT.TCanvas("cvSys"+str(random.random()),"",800,750)
     ymax = max([sysHistograms[i][0].GetMaximum(),sysHistograms[i][1].GetMaximum(),genHist.GetMaximum(),nominalHist.GetMaximum()])
     if rootFileName == "unfoldingPt":
-        axis = ROOT.TH2F("axisUnfold",";p#lower[0.4]{#scale[0.7]{T}}#kern[-0.5]{ }(t+#bar{t}) (GeV);1 #/#sigma #times d#sigma #/d#kern[-0.5]{ }p#lower[0.4]{#scale[0.7]{T}}#kern[-0.5]{ }(t+#bar{t}) / #lower[-0.12]{#scale[0.7]{#frac{1}{GeV}}}",50,genHist.GetXaxis().GetXmin(),genHist.GetXaxis().GetXmax(),50,0,1.2*ymax)
+        if normalize:
+            axis = ROOT.TH2F("axisUnfold",";p#lower[0.4]{#scale[0.7]{T}}#kern[-0.5]{ }(t+#bar{t}) (GeV);1 #/#sigma #times d#sigma #/d#kern[-0.5]{ }p#lower[0.4]{#scale[0.7]{T}}#kern[-0.5]{ }(t+#bar{t}) / #lower[-0.12]{#scale[0.7]{#frac{1}{GeV}}}",50,genHist.GetXaxis().GetXmin(),genHist.GetXaxis().GetXmax(),50,0,1.3*ymax)
+        else:
+            axis = ROOT.TH2F("axisUnfold",";p#lower[0.4]{#scale[0.7]{T}}#kern[-0.5]{ }(t+#bar{t}) (GeV);a.u.",50,genHist.GetXaxis().GetXmin(),genHist.GetXaxis().GetXmax(),50,0,1.4*ymax)
     else:
-        axis = ROOT.TH2F("axisUnfold"+str(random.random()),";|y|#kern[-0.5]{ }(t+#bar{t}) (GeV);1 #/#sigma #times d#sigma #/d#kern[-0.5]{ }|y|#kern[-0.5]{ }(t+#bar{t})",50,genHist.GetXaxis().GetXmin(),genHist.GetXaxis().GetXmax(),50,0,1.2*ymax)
+        if normalize:
+            axis = ROOT.TH2F("axisUnfold"+str(random.random()),";|y|#kern[-0.5]{ }(t+#bar{t}) (GeV);1 #/#sigma #times d#sigma #/d#kern[-0.5]{ }|y|#kern[-0.5]{ }(t+#bar{t})",50,genHist.GetXaxis().GetXmin(),genHist.GetXaxis().GetXmax(),50,0,1.3*ymax)
+        else:
+            axis = ROOT.TH2F("axisUnfold"+str(random.random()),";|y|#kern[-0.5]{ }(t+#bar{t}) (GeV);a.u.",50,genHist.GetXaxis().GetXmin(),genHist.GetXaxis().GetXmax(),50,0,1.65*ymax)
     axis.Draw("AXIS")
     genHist.Draw("HISTSame")
     nominalHist.Draw("PESame")
@@ -335,6 +345,20 @@ for i,sys in enumerate(uncertainties+uncertaintiesSpecial):
     sysHistograms[i][0].Draw("HISTSame")
     sysHistograms[i][1].SetLineColor(ROOT.kTeal+5)
     sysHistograms[i][1].Draw("HISTSame")
+    
+    
+    legend=ROOT.TLegend(0.5,0.885,0.88,0.7)
+    legend.SetBorderSize(0)
+    legend.SetTextFont(43)
+    legend.SetTextSize(28)
+    legend.SetFillColor(ROOT.kWhite)
+    
+    legend.AddEntry(genHist,"signal MC","L")
+    legend.AddEntry(nominalHist,"data "+"nominal","P")
+    legend.AddEntry(sysHistograms[i][0],sys[0]+" up","L")
+    legend.AddEntry(sysHistograms[i][1],sys[0]+" down","L")
+    legend.Draw("Same")
+    
     cvSys.Update()
     cvSys.Print(sys[0]+".pdf")
     cvSys.Print(sys[0]+".png")
@@ -381,9 +405,15 @@ for ibin in range(N):
 
 cv = ROOT.TCanvas("cv","",800,750)
 if rootFileName == "unfoldingPt":
-    axis = ROOT.TH2F("axisUnfold",";p#lower[0.4]{#scale[0.7]{T}}#kern[-0.5]{ }(t+#bar{t}) (GeV);1 #/#sigma #times d#sigma #/d#kern[-0.5]{ }p#lower[0.4]{#scale[0.7]{T}}#kern[-0.5]{ }(t+#bar{t}) / #lower[-0.12]{#scale[0.7]{#frac{1}{GeV}}}",50,genHist.GetXaxis().GetXmin(),genHist.GetXaxis().GetXmax(),50,0,0.017)
+    if normalize:
+        axis = ROOT.TH2F("axisUnfold",";p#lower[0.4]{#scale[0.7]{T}}#kern[-0.5]{ }(t+#bar{t}) (GeV);1 #/#sigma #times d#sigma #/d#kern[-0.5]{ }p#lower[0.4]{#scale[0.7]{T}}#kern[-0.5]{ }(t+#bar{t}) / #lower[-0.12]{#scale[0.7]{#frac{1}{GeV}}}",50,genHist.GetXaxis().GetXmin(),genHist.GetXaxis().GetXmax(),50,0,0.02)
+    else:
+        axis = ROOT.TH2F("axisUnfold",";p#lower[0.4]{#scale[0.7]{T}}#kern[-0.5]{ }(t+#bar{t}) (GeV);a.u.",50,genHist.GetXaxis().GetXmin(),genHist.GetXaxis().GetXmax(),50,0,genHist.GetMaximum()*1.65)
 else:
-    axis = ROOT.TH2F("axisUnfold",";|y|#kern[-0.5]{ }(t+#bar{t}) (GeV);1 #/#sigma #times d#sigma #/d#kern[-0.5]{ }|y|#kern[-0.5]{ }(t+#bar{t})",50,genHist.GetXaxis().GetXmin(),genHist.GetXaxis().GetXmax(),50,0,1.2)
+    if normalize:
+        axis = ROOT.TH2F("axisUnfold",";|y|#kern[-0.5]{ }(t+#bar{t}) (GeV);1 #/#sigma #times d#sigma #/d#kern[-0.5]{ }|y|#kern[-0.5]{ }(t+#bar{t})",50,genHist.GetXaxis().GetXmin(),genHist.GetXaxis().GetXmax(),50,0,1.2)
+    else:
+        axis = ROOT.TH2F("axisUnfold",";|y|#kern[-0.5]{ }(t+#bar{t}) (GeV);a.u.",50,genHist.GetXaxis().GetXmin(),genHist.GetXaxis().GetXmax(),50,0,genHist.GetMaximum()*2.5)
 axis.Draw("AXIS")
 
 legend=ROOT.TLegend(0.53,0.885,0.88,0.5)

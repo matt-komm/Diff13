@@ -18,16 +18,15 @@ class SamplesQScaleTTbarUp(Module.getClass("Samples")):
         if name!="TTJets":
             return SamplesQScaleTTbarUp.baseClass.getSample(self,name)
         else:
-            syst = self.module("Utils").getRecoSamplePrefix()
             mcweight = self.module("Utils").getRecoWeightStr()+"*"+self.module("Utils").getTriggerCutMCStr()
             dataweight = "1"
             return {
                 "processes":[
-                    "TT_TuneCUETP8M1_13TeV-powheg-scaleup-pythia8_ext_iso"+syst
+                    "TT_TuneCUETP8M1_13TeV-powheg-scaleup-pythia8_ext_iso"
                 ],
                 "color":ROOT.gROOT.GetColor(ROOT.kOrange-3),
                 "title":"t#bar{t}",
-                "weight":mcweight+"*(Generated_1__lheweight_1005/Generated_1__lheweight_1001/0.872)"
+                "weight":mcweight+"*(Generated_1__lheweight_1005/Generated_1__lheweight_1001/0.872)"+"*Generated_1__top_pt_rew"
             }
         
         

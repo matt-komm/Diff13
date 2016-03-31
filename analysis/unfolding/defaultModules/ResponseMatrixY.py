@@ -16,9 +16,15 @@ class ResponseMatrixY(Module):
        
     def getRecoUnfoldingVariable(self):
         return "fabs(SingleTop_1__Top_1__y)"
+    
+    def getAdditionalRecoWeight(self):
+        return "1"
         
     def getGenUnfoldingVariable(self):
         return "fabs(Generated_1__top_y)"
+        
+    def getAdditionalGenWeight(self):
+        return "1"
         
     def getRecoBinning(self):
         '''
@@ -75,8 +81,8 @@ class ResponseMatrixY(Module):
         responseFiles = self.module("Files").getResponseFiles()
         efficiencyFiles = self.module("Files").getEfficiencyFiles()
         
-        genweight = self.module("Utils").getGenWeightStr()
-        recoweight = self.module("Utils").getRecoWeightStr()
+        genweight = self.module("Utils").getGenWeightStr()+"*"+self.module("ResponseMatrixPt").getAdditionalGenWeight()
+        recoweight = self.module("Utils").getRecoWeightStr()+"*"+self.module("ResponseMatrixPt").getAdditionalRecoWeight()
         
         cut += "*"+self.module("Utils").getTriggerCutMCStr()
         #cut += "*"+self.module("Utils").getCategoryCutStr(2,1)

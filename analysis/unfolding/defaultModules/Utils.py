@@ -18,7 +18,8 @@ class Utils(Module):
         
     def createOutputFolder(self,force=False):
         try:
-            destination = os.path.join("/home/fynu/mkomm/Diff13/analysis/unfolding/result",self.module("Utils").getOutputFolder().split("result/")[1])
+            destination = os.path.join("/nfs/home/fynu/mkomm/Diff13/analysis/unfolding/result",self.module("Utils").getOutputFolder().split("result/")[1])
+
             if destination!=self.module("Utils").getOutputFolder():
                 self._logger.info("Checking results in '"+destination+"'")
                 if os.path.exists(destination):
@@ -36,7 +37,6 @@ class Utils(Module):
             if not os.path.exists(self.module("Utils").getOutputFolder()):
                 self._logger.info("creating output folder: "+self.module("Utils").getOutputFolder())
                 os.makedirs(self.module("Utils").getOutputFolder())
-                
             
                 
         except Exception,e:

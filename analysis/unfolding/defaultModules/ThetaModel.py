@@ -23,15 +23,15 @@ class ThetaModel(Module):
         #return {"type":"gauss","config":{"mean": "%4.3f"%(mean), "width":"%4.3f"%(unc), "range":"(0.0,\"inf\")"}}
        
     def makeGaus(self,mean,unc):
-        return {"type":"gauss","config":{"mean": "%4.3f"%(mean), "width":"%4.3f"%(unc), "range":"(0.0,\"inf\")"}}
+        return {"type":"gauss","config":{"mean": "%4.3f"%(mean), "width":"%4.3f"%(unc), "range":"(0.02,\"inf\")"}}
         
     def getUncertaintsDict(self):
         uncertainties = {
-            "WZjets":self.module("ThetaModel").makeLogNormal(1.0,0.5),
+            "WZjets":self.module("ThetaModel").makeLogNormal(1.0,0.3),
             #"BF":{"type":"gauss","config":{"mean": "1.0", "width":"0.3", "range":"(0.0,\"inf\")"}},
             #"CF":{"type":"gauss","config":{"mean": "1.0", "width":"0.3", "range":"(0.0,\"inf\")"}},
             #"LF":{"type":"gauss","config":{"mean": "1.0", "width":"0.3", "range":"(0.0,\"inf\")"}},
-            "TopBkg":self.module("ThetaModel").makeLogNormal(1.0,0.15),
+            "TopBkg":self.module("ThetaModel").makeLogNormal(1.0,0.1),
             "tChannel":self.module("ThetaModel").makeGaus(1.0,100.0),
             "QCD_2j1t":self.module("ThetaModel").makeGaus(0.2,1.0),
             "QCD_3j1t":self.module("ThetaModel").makeGaus(0.2,1.0),
@@ -63,8 +63,8 @@ class ThetaModel(Module):
         return [0.0,150.0]
         
     def getFitVariableStr(self):
-        return "(SingleTop_1__mtw_beforePz<50.0)*SingleTop_1__mtw_beforePz+(SingleTop_1__mtw_beforePz>50.0)*(TMath::TanH((Reconstructed_1__BDT_adaboost04_minnode001_maxvar3_ntree1000_invboost_binned-0.12)*3.2)*50.0+50.0+50.0)"
-        #return "(SingleTop_1__mtw_beforePz<50.0)*SingleTop_1__mtw_beforePz+(SingleTop_1__mtw_beforePz>50.0)*(Reconstructed_1__BDT_gradboost04_minnode001_maxvar3_ntree1000_pray_binned*75.0+75.0+50.0)"
+        return "(SingleTop_1__mtw_beforePz<50.0)*SingleTop_1__mtw_beforePz+(SingleTop_1__mtw_beforePz>50.0)*(TMath::TanH((Reconstructed_1__BDT_adaboost04_minnode001_maxvar3_ntree1000_invboost_binned-0.17)*2.3)*50.0+50.0+50.0)"
+        #return "(SingleTop_1__mtw_beforePz<50.0)*SingleTop_1__mtw_beforePz+(SingleTop_1__mtw_beforePz>50.0)*(Reconstructed_1__BDT_gradboost04_minnode001_maxvar3_ntree1000_pray_binned*50.0+50.0+50.0)"
         #return "(SingleTop_1__mtw_beforePz<50.0)*SingleTop_1__mtw_beforePz+(SingleTop_1__mtw_beforePz>50.0)*(fabs(SingleTop_1__LightJet_1__Eta)/5.0*150.0+50.0)"
         #return "(SingleTop_1__mtw_beforePz<50.0)*SingleTop_1__mtw_beforePz+(SingleTop_1__mtw_beforePz>50.0)*(Reconstructed_1__C*150.0+50.0)"
     
@@ -224,7 +224,7 @@ class ThetaModel(Module):
                                 hist.setRange(ranges)
                                 file.write(hist.toConfigString())
                                 
-                                
+                                '''
                                 self.module("Utils").getHist1D(
                                     histograms[observableName][componentName][processName],
                                     f,
@@ -232,7 +232,7 @@ class ThetaModel(Module):
                                     varName,
                                     observableWeight+"*"+componentWeight+"*"+processWeight
                                 )
-                                
+                                '''
                                 componentHist.addHisto(hist.getVarname())
                                 
                             rootFile.Close()
@@ -286,7 +286,7 @@ class ThetaModel(Module):
                                     hist.setRange(ranges)
                                     file.write(hist.toConfigString())
                                     histoadd.addHisto(hist.getVarname())
-                                    
+                                    '''
                                     self.module("Utils").getHist1D(
                                         histograms[observableName][componentName][processName],
                                         f,
@@ -294,7 +294,7 @@ class ThetaModel(Module):
                                         varName,
                                         observableWeight+"*"+componentWeight+"*"+processWeight
                                     )
-
+                                    '''
                                     #break
                                 rootFile.Close()
                                 
@@ -388,29 +388,35 @@ class ThetaModel(Module):
         file.write("\n")
 
         file.write("myminimizer = {\n")
-        
+
         file.write("type = \"newton_minimizer\";\n")
-        file.write("//par_eps = 1e-6; // optional; default is 1e-4'\n")
-        file.write("//maxit = 100000; // optional; default is 10,000'\n")
-        file.write("//improve_cov = true; // optional; default is false'\n")
-        file.write("//force_cov_positive = true; // optional, default is false'\n")
-        file.write("//step_cov = 0.01; // optional; default is 0.1'\n")
-        '''
-        file.write("type = \"root_minuit\";\n")
-        file.write("method = \"migrad\"; //optional. Default is 'migrad'\n")
-        file.write("tolerance_factor = 0.1; //optional. Default is 1\n")
-        file.write("max_iterations = 10000; // optional. Default as in ROOT::Minuit2\n")
-        file.write("max_function_calls = 100000; //optional. Default as in ROOT::Minuit2\n")
-        file.write("n_retries = 10; // optional; the default is 2\n")
-        
-        file.write("type = \"mcmc_minimizer\";\n")
-        file.write("name = \"min0\";\n")
-        file.write("iterations = 10000;\n")
-        file.write("burn-in = 500; //optional. default is iterations / 10\n")
-        file.write("stepsize_factor = 0.1; //optional, default is 1.0\n")
-        '''
+        file.write("par_eps = 1e-3; // optional; default is 1e-4'\n")
+        file.write("maxit = 100000; // optional; default is 10,000'\n")
+        file.write("improve_cov = true; // optional; default is false'\n")
+        file.write("force_cov_positive = true; // optional, default is false'\n")
+        file.write("step_cov = 0.15; // optional; default is 0.1'\n")
         file.write("};\n")
 
+        
+        '''
+        file.write("\ttype = \"mcmc_minimizer\";\n")
+        file.write("\tname = \"min0\";\n")
+        file.write("\titerations = 10000;\n")
+        file.write("\tburn-in = 2000; //optional. default is iterations / 10\n")
+        file.write("\tstepsize_factor = 0.1; //optional, default is 1.0\n")
+        
+        file.write("\tafter_minimizer = {\n")
+        file.write("\t\ttype = \"newton_minimizer\";\n")
+        file.write("\t\tpar_eps = 1e-4; // optional; default is 1e-4'\n")
+        file.write("\t\tmaxit = 200000; // optional; default is 10,000'\n")
+        file.write("\t\timprove_cov = false; // optional; default is false'\n")
+        file.write("\t\tforce_cov_positive = false; // optional, default is false'\n")
+        file.write("\t\tstep_cov = 0.1; // optional; default is 0.1'\n")
+        file.write("\t};\n")
+        
+        file.write("};\n")
+        '''
+        
         file.write('pd = {\n')
         file.write('    name= "'+modelName+'";\n')
         file.write('    type = "mle";\n')

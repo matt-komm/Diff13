@@ -18,17 +18,15 @@ class SamplesQScaleTTbarDown(Module.getClass("Samples")):
         if name!="TTJets":
             return SamplesQScaleTTbarDown.baseClass.getSample(self,name)
         else:
-            syst = self.module("Utils").getRecoSamplePrefix()
             mcweight = self.module("Utils").getRecoWeightStr()+"*"+self.module("Utils").getTriggerCutMCStr()
             dataweight = "1"
             return {
                 "processes":[
-                    #"TT_TuneCUETP8M1_13TeV-powheg-pythia8_ext_iso"+syst
                     "TT_TuneCUETP8M1_13TeV-powheg-scaledown-pythia8_ext_iso"
                 ],
                 "color":ROOT.gROOT.GetColor(ROOT.kOrange-3),
                 "title":"t#bar{t}",
-                "weight":mcweight+"*(Generated_1__lheweight_1009/Generated_1__lheweight_1001/1.143)"
+                "weight":mcweight+"*(Generated_1__lheweight_1009/Generated_1__lheweight_1001/1.143)"+"*Generated_1__top_pt_rew"
             }
             
             
