@@ -27,7 +27,7 @@ class SamplesQScaleTChannelUp(Module.getClass("Samples")):
                     ],
                     "color":ROOT.gROOT.GetColor(ROOT.kRed),
                     "title":"t-channel",
-                    "weight":mcweight+"*(Generated_1__lheweight_1005/Generated_1__lheweight_1001/0.812)"
+                    "weight":mcweight+"*(Generated_1__lheweight_1005/Generated_1__lheweight_1001)*((Generated_1__genweight<0)/0.77+(Generated_1__genweight>0)/0.84)"
             }
         
 class ResponseMatrixPtTopMassUp(Module.getClass("ResponseMatrixPt")):
@@ -40,10 +40,10 @@ class ResponseMatrixPtTopMassUp(Module.getClass("ResponseMatrixPt")):
         return ["ST_t-channel_4f_scaleup_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1_ext"]
         
     def getAdditionalGenWeight(self):
-        return "(Generated_1__lheweight_1005/Generated_1__lheweight_1001/0.812)"
+        return "(Generated_1__lheweight_1005/Generated_1__lheweight_1001)*((Generated_1__genweight<0)/0.77+(Generated_1__genweight>0)/0.84)"
         
     def getAdditionalRecoWeight(self):
-        return "(Generated_1__lheweight_1005/Generated_1__lheweight_1001/0.812)"
+        return "(Generated_1__lheweight_1005/Generated_1__lheweight_1001)*((Generated_1__genweight<0)/0.77+(Generated_1__genweight>0)/0.84)"
         
 class ResponseMatrixYTopMassUp(Module.getClass("ResponseMatrixY")):
     def __init__(self,options=[]):
@@ -55,10 +55,10 @@ class ResponseMatrixYTopMassUp(Module.getClass("ResponseMatrixY")):
         return ["ST_t-channel_4f_scaleup_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1_ext"]
         
     def getAdditionalGenWeight(self):
-        return "(Generated_1__lheweight_1005/Generated_1__lheweight_1001/0.812)"
+        return "(Generated_1__lheweight_1005/Generated_1__lheweight_1001)*((Generated_1__genweight<0)/0.77+(Generated_1__genweight>0)/0.84)"
         
     def getAdditionalRecoWeight(self):
-        return "(Generated_1__lheweight_1005/Generated_1__lheweight_1001/0.812)"
+        return "(Generated_1__lheweight_1005/Generated_1__lheweight_1001)*((Generated_1__genweight<0)/0.77+(Generated_1__genweight>0)/0.84)"
         
 class UtilsQScaleTChannelUp(Module.getClass("Utils")):
     def __init__(self,options=[]):

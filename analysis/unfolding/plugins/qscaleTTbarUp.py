@@ -26,7 +26,7 @@ class SamplesQScaleTTbarUp(Module.getClass("Samples")):
                 ],
                 "color":ROOT.gROOT.GetColor(ROOT.kOrange-3),
                 "title":"t#bar{t}",
-                "weight":mcweight+"*(Generated_1__lheweight_1005/Generated_1__lheweight_1001/0.872)"+"*Generated_1__top_pt_rew"
+                "weight":mcweight+"*(Generated_1__lheweight_1005/Generated_1__lheweight_1001/0.87)"+"*Generated_1__top_pt_rew"
             }
         
         

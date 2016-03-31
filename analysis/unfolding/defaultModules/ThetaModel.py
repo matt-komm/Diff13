@@ -57,13 +57,14 @@ class ThetaModel(Module):
         return observables
         
     def getBinning(self):
-        return 15
+        return 20
         
     def getRange(self):
-        return [0.0,150.0]
+        return [0.0,200.0]
         
     def getFitVariableStr(self):
-        return "(SingleTop_1__mtw_beforePz<50.0)*SingleTop_1__mtw_beforePz+(SingleTop_1__mtw_beforePz>50.0)*(TMath::TanH((Reconstructed_1__BDT_adaboost04_minnode001_maxvar3_ntree1000_invboost_binned-0.17)*2.3)*50.0+50.0+50.0)"
+        return "(SingleTop_1__mtw_beforePz<50.0)*SingleTop_1__mtw_beforePz+(SingleTop_1__mtw_beforePz>50.0)*(TMath::TanH((Reconstructed_1__BDT_adaboost04_minnode001_maxvar3_ntree1000_invboost_binned-0.12)*3.2)*75.0+75.0+50.0)"
+        #return "(SingleTop_1__mtw_beforePz<50.0)*SingleTop_1__mtw_beforePz+(SingleTop_1__mtw_beforePz>50.0)*(TMath::TanH((Reconstructed_1__BDT_adaboost04_minnode001_maxvar3_ntree1000_invboost_binned-0.17)*2.3)*50.0+50.0+50.0)"
         #return "(SingleTop_1__mtw_beforePz<50.0)*SingleTop_1__mtw_beforePz+(SingleTop_1__mtw_beforePz>50.0)*(Reconstructed_1__BDT_gradboost04_minnode001_maxvar3_ntree1000_pray_binned*50.0+50.0+50.0)"
         #return "(SingleTop_1__mtw_beforePz<50.0)*SingleTop_1__mtw_beforePz+(SingleTop_1__mtw_beforePz>50.0)*(fabs(SingleTop_1__LightJet_1__Eta)/5.0*150.0+50.0)"
         #return "(SingleTop_1__mtw_beforePz<50.0)*SingleTop_1__mtw_beforePz+(SingleTop_1__mtw_beforePz>50.0)*(Reconstructed_1__C*150.0+50.0)"
@@ -390,11 +391,11 @@ class ThetaModel(Module):
         file.write("myminimizer = {\n")
 
         file.write("type = \"newton_minimizer\";\n")
-        file.write("par_eps = 1e-3; // optional; default is 1e-4'\n")
-        file.write("maxit = 100000; // optional; default is 10,000'\n")
-        file.write("improve_cov = true; // optional; default is false'\n")
-        file.write("force_cov_positive = true; // optional, default is false'\n")
-        file.write("step_cov = 0.15; // optional; default is 0.1'\n")
+        file.write("par_eps = 1e-4; // optional; default is 1e-4'\n")
+        file.write("maxit = 200000; // optional; default is 10,000'\n")
+        file.write("//improve_cov = false; // optional; default is false'\n")
+        file.write("//force_cov_positive = false; // optional, default is false'\n")
+        file.write("//step_cov = 0.05; // optional; default is 0.1'\n")
         file.write("};\n")
 
         

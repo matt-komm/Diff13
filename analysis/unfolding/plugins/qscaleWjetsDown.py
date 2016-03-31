@@ -28,7 +28,7 @@ class SamplesQScaleWjetsDown(Module.getClass("Samples")):
                 "color":ROOT.gROOT.GetColor(ROOT.kGreen-2),
                 "title":"W+jets",
                 "addtitle":"(aMC@NLO)",
-                "weight":mcweight+"*(Generated_1__lheweight_1009/Generated_1__lheweight_1001/1.028)"
+                "weight":mcweight+"*(Generated_1__lheweight_1009/Generated_1__lheweight_1001)*((Generated_1__genweight<0)/1.12+(Generated_1__genweight>0)/1.01)"
             }
             
             
