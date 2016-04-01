@@ -3,10 +3,24 @@ import math
 import numpy
 import random
 import os
+import copy
 
 from defaultModules import Module
 
 import logging
+
+class SamplesPUDown(Module.getClass("Samples")):
+    def __init__(self,options=[]):
+        SamplesPUDown.baseClass.__init__(self,options)
+        self._logger = logging.getLogger(__file__)
+        self._logger.setLevel(logging.DEBUG)
+        
+    def getSample(self,name):
+        syst = self.module("Utils").getRecoSamplePrefix()
+        sampleDict = copy.deepcopy(SamplesPUDown.baseClass.getSample(self,name))
+        if name=="WJetsAMC":
+            sampleDict["weight"]+="*((Reconstructed_1__nSelectedJet<3)*1+(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==1)/(1+0.027)+(Reconstructed_1__nSelectedJet==3)*(Reconstructed_1__nSelectedBJet==2)/(1-0.034))"
+        return sampleDict
 
 class UtilsPUDown(Module.getClass("Utils")):
     def __init__(self,options=[]):

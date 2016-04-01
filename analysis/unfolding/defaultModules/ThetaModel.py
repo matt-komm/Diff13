@@ -33,9 +33,9 @@ class ThetaModel(Module):
             #"LF":{"type":"gauss","config":{"mean": "1.0", "width":"0.3", "range":"(0.0,\"inf\")"}},
             "TopBkg":self.module("ThetaModel").makeLogNormal(1.0,0.1),
             "tChannel":self.module("ThetaModel").makeGaus(1.0,10.0),
-            "QCD_2j1t":self.module("ThetaModel").makeGaus(0.5,0.5),
-            "QCD_3j1t":self.module("ThetaModel").makeGaus(0.5,0.5),
-            "QCD_3j2t":self.module("ThetaModel").makeGaus(0.5,0.5),
+            "QCD_2j1t":self.module("ThetaModel").makeLogNormal(0.2,1.0),
+            "QCD_3j1t":self.module("ThetaModel").makeLogNormal(0.2,1.0),
+            "QCD_3j2t":self.module("ThetaModel").makeLogNormal(0.2,1.0),
             
             #"lumi":{"type":"gauss","config":{"mean": "1.0", "width":"0.1", "range":"(0.0,\"inf\")"}}
         }
@@ -209,7 +209,7 @@ class ThetaModel(Module):
                         
                         if not histograms[observableName][componentName].has_key(processName):
                             histograms[observableName][componentName][processName] = ROOT.TH1F(observableName+"_"+componentName+"_"+processName+"__"+str(random.random()),"",binning,ranges[0],ranges[1])
-
+                            histograms[observableName][componentName][processName].Sumw2()
 
                         for i,f in enumerate(rootFiles):
                             rootFile = ROOT.TFile(f)
@@ -272,7 +272,7 @@ class ThetaModel(Module):
                             
                             if not histograms[observableName][componentName].has_key(processName):
                                 histograms[observableName][componentName][processName] = ROOT.TH1F(observableName+"_"+componentName+"_"+processName+"__"+str(random.random()),"",binning,ranges[0],ranges[1])
-
+                                histograms[observableName][componentName][processName].Sumw2()
                             
                             for i,f in enumerate(rootFiles):
                                 rootFile = ROOT.TFile(f)
@@ -341,7 +341,26 @@ class ThetaModel(Module):
                                 rootFile.Close()
 
                 file.write(histoadd.toConfigString())
-            
+                
+        histFileName = os.path.join(self.module("Utils").getOutputFolder(),modelName+"_fitHists.root")
+        histFile = ROOT.TFile(histFileName,"RECREATE")
+        for cat in histograms.keys():
+            for comp in histograms[cat].keys():
+                totalHist = None
+                for process in histograms[cat][comp].keys():
+                    hist = histograms[cat][comp][process]
+                    if totalHist==None:
+                        totalHist=hist.Clone(cat+"__"+comp+"__total")
+                        totalHist.SetDirectory(histFile)
+                    else:
+                        totalHist.Add(hist)
+                    histToWrite = hist.Clone(cat+"__"+comp+"__"+process)
+                    histToWrite.SetDirectory(histFile)
+                    histToWrite.Write()
+                totalHist.Write()
+        histFile.Close()
+                    
+                    
         
         csvFileName = os.path.join(self.module("Utils").getOutputFolder(),modelName+"_prefitYields.csv")
         self._logger.info("write prefit yield csv: "+modelName+"_prefitYields.csv")
@@ -389,15 +408,15 @@ class ThetaModel(Module):
         file.write("\n")
 
         file.write("myminimizer = {\n")
-
+        
         file.write("type = \"newton_minimizer\";\n")
-        file.write("par_eps = 1e-4; // optional; default is 1e-4'\n")
+        file.write("par_eps = 1e-5; // optional; default is 1e-4'\n")
         file.write("maxit = 200000; // optional; default is 10,000'\n")
         file.write("improve_cov = true; // optional; default is false'\n")
         file.write("force_cov_positive = true; // optional, default is false'\n")
         file.write("step_cov = 0.025; // optional; default is 0.1'\n")
         file.write("};\n")
-
+        
         
         '''
         file.write("\ttype = \"mcmc_minimizer\";\n")
