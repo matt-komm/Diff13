@@ -139,6 +139,7 @@ class HistogramCreator(Module):
                         ibin+1,
                         math.sqrt(scaleFactor_unc2)*histograms[component]["hists"][sampleName].GetBinContent(ibin+1)
                     )
+                    self._logger.debug("scaling %s bin %i to %6.3f+-%6.3f"%(sampleName,ibin+1,scaleFactor,math.sqrt(scaleFactor_unc2)))
                 
     def saveHistograms(self,histograms,output):
         rootFile = ROOT.TFile(os.path.join(self.module("Utils").getOutputFolder(),output+".root"),"RECREATE")

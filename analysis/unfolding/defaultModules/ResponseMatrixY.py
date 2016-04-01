@@ -38,7 +38,7 @@ class ResponseMatrixY(Module):
         #return numpy.array([0.0,0.15,0.3,0.45,0.6,0.8,1.0,1.2,1.4,1.6,1.8,2.1,2.4])
         '''
         
-        return numpy.array([ 0.,0.20,0.45,0.7,0.95,1.2,1.5,1.85, 2.4])
+        return numpy.array([ 0.,0.20,0.45,0.7,0.95,1.2,1.5,1.7, 2.4])
         
     def getGenBinning(self):
         #return numpy.array([0.0,0.4,0.8,1.2,1.6,2.0,2.4])

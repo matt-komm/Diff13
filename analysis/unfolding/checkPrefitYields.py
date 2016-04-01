@@ -38,11 +38,11 @@ uncertainties = [
 nominal = readPrefitYield("result/nominal/fit_prefitYields.csv")
 for comp in ["tChannel","TopBkg","WZjets","QCD_2j1t"]:
     print comp
+    print "%17s: %6.2f" % ("nominal",nominal[comp]),
     print "--------------------"
     for unc in uncertainties:
         sysUp = readPrefitYield("result/"+unc[0]+"Up/fit_prefitYields.csv")
         sysDown = readPrefitYield("result/"+unc[0]+"Down/fit_prefitYields.csv")
-        
         upShift = 100.*sysUp[comp]/nominal[comp]-100.
         downShift = 100.*sysDown[comp]/nominal[comp]-100.
         

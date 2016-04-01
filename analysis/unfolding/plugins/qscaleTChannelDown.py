@@ -30,9 +30,9 @@ class SamplesQScaleTChannelDown(Module.getClass("Samples")):
                     "weight":mcweight+"*(Generated_1__lheweight_1009/Generated_1__lheweight_1001)*((Generated_1__genweight<0)/1.33+(Generated_1__genweight>0)/1.23)"
             }
         
-class ResponseMatrixPtTopMassUp(Module.getClass("ResponseMatrixPt")):
+class ResponseMatrixPtQScaleTChannelDown(Module.getClass("ResponseMatrixPt")):
     def __init__(self,options=[]):
-        ResponseMatrixPtTopMassUp.baseClass.__init__(self,options)
+        ResponseMatrixPtQScaleTChannelDown.baseClass.__init__(self,options)
         self._logger = logging.getLogger(__file__)
         self._logger.setLevel(logging.DEBUG)
         
@@ -45,9 +45,9 @@ class ResponseMatrixPtTopMassUp(Module.getClass("ResponseMatrixPt")):
     def getAdditionalRecoWeight(self):
         return "(Generated_1__lheweight_1009/Generated_1__lheweight_1001)*((Generated_1__genweight<0)/1.33+(Generated_1__genweight>0)/1.23)"
         
-class ResponseMatrixYTopMassUp(Module.getClass("ResponseMatrixY")):
+class ResponseMatrixYQScaleTChannelDown(Module.getClass("ResponseMatrixY")):
     def __init__(self,options=[]):
-        ResponseMatrixYTopMassUp.baseClass.__init__(self,options)
+        ResponseMatrixYQScaleTChannelDown.baseClass.__init__(self,options)
         self._logger = logging.getLogger(__file__)
         self._logger.setLevel(logging.DEBUG)
         

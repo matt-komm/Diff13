@@ -32,10 +32,10 @@ class ThetaModel(Module):
             #"CF":{"type":"gauss","config":{"mean": "1.0", "width":"0.3", "range":"(0.0,\"inf\")"}},
             #"LF":{"type":"gauss","config":{"mean": "1.0", "width":"0.3", "range":"(0.0,\"inf\")"}},
             "TopBkg":self.module("ThetaModel").makeLogNormal(1.0,0.1),
-            "tChannel":self.module("ThetaModel").makeGaus(1.0,100.0),
-            "QCD_2j1t":self.module("ThetaModel").makeGaus(0.2,1.0),
-            "QCD_3j1t":self.module("ThetaModel").makeGaus(0.2,1.0),
-            "QCD_3j2t":self.module("ThetaModel").makeGaus(0.2,1.0),
+            "tChannel":self.module("ThetaModel").makeGaus(1.0,10.0),
+            "QCD_2j1t":self.module("ThetaModel").makeGaus(0.5,0.5),
+            "QCD_3j1t":self.module("ThetaModel").makeGaus(0.5,0.5),
+            "QCD_3j2t":self.module("ThetaModel").makeGaus(0.5,0.5),
             
             #"lumi":{"type":"gauss","config":{"mean": "1.0", "width":"0.1", "range":"(0.0,\"inf\")"}}
         }
@@ -225,7 +225,7 @@ class ThetaModel(Module):
                                 hist.setRange(ranges)
                                 file.write(hist.toConfigString())
                                 
-                                '''
+                                
                                 self.module("Utils").getHist1D(
                                     histograms[observableName][componentName][processName],
                                     f,
@@ -233,7 +233,7 @@ class ThetaModel(Module):
                                     varName,
                                     observableWeight+"*"+componentWeight+"*"+processWeight
                                 )
-                                '''
+                                
                                 componentHist.addHisto(hist.getVarname())
                                 
                             rootFile.Close()
@@ -287,7 +287,7 @@ class ThetaModel(Module):
                                     hist.setRange(ranges)
                                     file.write(hist.toConfigString())
                                     histoadd.addHisto(hist.getVarname())
-                                    '''
+                                    
                                     self.module("Utils").getHist1D(
                                         histograms[observableName][componentName][processName],
                                         f,
@@ -295,7 +295,7 @@ class ThetaModel(Module):
                                         varName,
                                         observableWeight+"*"+componentWeight+"*"+processWeight
                                     )
-                                    '''
+                                    
                                     #break
                                 rootFile.Close()
                                 
@@ -393,9 +393,9 @@ class ThetaModel(Module):
         file.write("type = \"newton_minimizer\";\n")
         file.write("par_eps = 1e-4; // optional; default is 1e-4'\n")
         file.write("maxit = 200000; // optional; default is 10,000'\n")
-        file.write("//improve_cov = false; // optional; default is false'\n")
-        file.write("//force_cov_positive = false; // optional, default is false'\n")
-        file.write("//step_cov = 0.05; // optional; default is 0.1'\n")
+        file.write("improve_cov = true; // optional; default is false'\n")
+        file.write("force_cov_positive = true; // optional, default is false'\n")
+        file.write("step_cov = 0.025; // optional; default is 0.1'\n")
         file.write("};\n")
 
         

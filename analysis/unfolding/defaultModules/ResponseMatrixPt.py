@@ -36,7 +36,7 @@ class ResponseMatrixPt(Module):
         b[-1]=genBinning[-1]
         return b
         '''
-        return numpy.array([0.,35,50.,70.,85.,110.,140.,180.0,300.0])
+        return numpy.array([0.,40.,50.,70.,85.,110.,140.,180.0,300.0])
         
     def getGenBinning(self):
         #return numpy.array([0.,42.5, 70.0,  110.,300.])

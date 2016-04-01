@@ -158,6 +158,7 @@ class Program(Module):
                 pseudo=False
             )
         self.module("HistogramCreator").saveHistograms(histogramsPt,"reco_top_pt")
+        self._logger.info("scaling reco top pt")
         self.module("HistogramCreator").scaleHistogramsToMultiFitResult(histogramsPt,multiFitResultsPt)
         #self.module("HistogramCreator").scaleHistogramsToFitResult(histogramsPt,fitResultInc)
         self.module("HistogramCreator").saveHistograms(histogramsPt,"reco_top_pt_scaled")
@@ -193,6 +194,7 @@ class Program(Module):
                 pseudo=False
             )
         self.module("HistogramCreator").saveHistograms(histogramsY,"reco_top_y")
+        self._logger.info("scaling reco top y")
         self.module("HistogramCreator").scaleHistogramsToMultiFitResult(histogramsY,multiFitResultsY)
         #self.module("HistogramCreator").scaleHistogramsToFitResult(histogramsY,fitResultInc)
         self.module("HistogramCreator").saveHistograms(histogramsY,"reco_top_y_scaled")
