@@ -33,9 +33,9 @@ class ThetaModel(Module):
             #"LF":{"type":"gauss","config":{"mean": "1.0", "width":"0.3", "range":"(0.0,\"inf\")"}},
             "TopBkg":self.module("ThetaModel").makeLogNormal(1.0,0.1),
             "tChannel":self.module("ThetaModel").makeGaus(1.0,10.0),
-            "QCD_2j1t":self.module("ThetaModel").makeLogNormal(0.2,1.0),
-            "QCD_3j1t":self.module("ThetaModel").makeLogNormal(0.2,1.0),
-            "QCD_3j2t":self.module("ThetaModel").makeLogNormal(0.2,1.0),
+            "QCD_2j1t":self.module("ThetaModel").makeGaus(0.2,0.5),
+            "QCD_3j1t":self.module("ThetaModel").makeGaus(0.2,0.5),
+            "QCD_3j2t":self.module("ThetaModel").makeGaus(0.2,0.5),
             
             #"lumi":{"type":"gauss","config":{"mean": "1.0", "width":"0.1", "range":"(0.0,\"inf\")"}}
         }
@@ -57,16 +57,16 @@ class ThetaModel(Module):
         return observables
         
     def getBinning(self):
-        return 20
+        return 15
         
     def getRange(self):
-        return [0.0,200.0]
+        return [0.0,150.0]
         
     def getFitVariableStr(self):
-        return "(SingleTop_1__mtw_beforePz<50.0)*SingleTop_1__mtw_beforePz+(SingleTop_1__mtw_beforePz>50.0)*(TMath::TanH((Reconstructed_1__BDT_adaboost04_minnode001_maxvar3_ntree1000_invboost_binned-0.12)*3.2)*75.0+75.0+50.0)"
+        return "(SingleTop_1__mtw_beforePz<50.0)*SingleTop_1__mtw_beforePz+(SingleTop_1__mtw_beforePz>50.0)*(TMath::TanH((Reconstructed_1__BDT_adaboost04_minnode001_maxvar3_ntree1000_invboost_binned-0.12)*3.2)*50.0+50.0+50.0)"
         #return "(SingleTop_1__mtw_beforePz<50.0)*SingleTop_1__mtw_beforePz+(SingleTop_1__mtw_beforePz>50.0)*(TMath::TanH((Reconstructed_1__BDT_adaboost04_minnode001_maxvar3_ntree1000_invboost_binned-0.17)*2.3)*50.0+50.0+50.0)"
         #return "(SingleTop_1__mtw_beforePz<50.0)*SingleTop_1__mtw_beforePz+(SingleTop_1__mtw_beforePz>50.0)*(Reconstructed_1__BDT_gradboost04_minnode001_maxvar3_ntree1000_pray_binned*50.0+50.0+50.0)"
-        #return "(SingleTop_1__mtw_beforePz<50.0)*SingleTop_1__mtw_beforePz+(SingleTop_1__mtw_beforePz>50.0)*(fabs(SingleTop_1__LightJet_1__Eta)/5.0*150.0+50.0)"
+        #return "(SingleTop_1__mtw_beforePz<50.0)*SingleTop_1__mtw_beforePz+(SingleTop_1__mtw_beforePz>50.0)*(fabs(SingleTop_1__absLEta_binned)/5.0*100.0+50.0)"
         #return "(SingleTop_1__mtw_beforePz<50.0)*SingleTop_1__mtw_beforePz+(SingleTop_1__mtw_beforePz>50.0)*(Reconstructed_1__C*150.0+50.0)"
     
     
@@ -139,6 +139,8 @@ class ThetaModel(Module):
     def makeModel(self,modelName="fit",pseudo=False,addCut="1"):
         self._logger.info("Creating model: "+modelName)
         
+        histFileName = os.path.join(self.module("Utils").getOutputFolder(),modelName+"_fitHists.root")
+        
         histograms={}
         #20MB buffer
         file = open(os.path.join(self.module("Utils").getOutputFolder(),modelName+".cfg"),"w",20971520)
@@ -184,11 +186,18 @@ class ThetaModel(Module):
                     histograms[observableName][componentName] = {}
                 
                 self._logger.debug("Creating model: "+observableName+" "+componentName)
-                
+                '''
                 componentHist = HistoAdd(observableName+"__"+componentName,{
                     "zerobin_fillfactor": 0.0001,
                     "allow_negative":"false",
                 })
+                '''
+                componentHist = RootHistogram(observableName+"__"+componentName,{
+                    "zerobin_fillfactor":0.001,
+                    "use_errors":"true"
+                })
+                componentHist.setFileName(histFileName)
+                componentHist.setHistoName(observableName+"__"+componentName+"__total")
                     
                 component=ObservableComponent(observableName+"__"+componentName+"__"+str(icomp))
                 coeff=CoefficientMultiplyFunction()
@@ -216,6 +225,7 @@ class ThetaModel(Module):
                             tree = rootFile.Get(processName)
                             
                             if (tree):
+                                '''
                                 hist=RootProjectedHistogram(observableName+"__"+componentName+"__"+componentSetName+"__"+processName+"__"+str(i),{"use_errors":"true"})
                                 hist.setFileName(f)
                                 hist.setVariableString(varName)
@@ -224,7 +234,7 @@ class ThetaModel(Module):
                                 hist.setBinning(binning)
                                 hist.setRange(ranges)
                                 file.write(hist.toConfigString())
-                                
+                                '''
                                 
                                 self.module("Utils").getHist1D(
                                     histograms[observableName][componentName][processName],
@@ -234,8 +244,7 @@ class ThetaModel(Module):
                                     observableWeight+"*"+componentWeight+"*"+processWeight
                                 )
                                 
-                                componentHist.addHisto(hist.getVarname())
-                                
+                                #break
                             rootFile.Close()
                             
                         self._logger.debug("\t-> "+processName+" with events: "+str(round(histograms[observableName][componentName][processName].Integral(),1)))
@@ -250,7 +259,17 @@ class ThetaModel(Module):
 
 
             if not pseudo:
-                histoadd = HistoAdd(observableName+"__data")
+                dataHist = RootHistogram(observableName+"__data",{
+                    "zerobin_fillfactor":0.001,
+                    "use_errors":"true"
+                })
+                dataHist.setFileName(histFileName)
+                dataHist.setHistoName(observableName+"__data__total")
+                
+                if not histograms[observableName].has_key("data"):
+                    histograms[observableName]["data"] = {"data":ROOT.TH1F(observableName+"_data__"+str(random.random()),"",binning,ranges[0],ranges[1])}
+                    histograms[observableName]["data"]["data"].Sumw2()
+                
                 data = self.module("ThetaModel").getDataDict()
                 for componentName in data.keys():
                     componentWeight=data[componentName]["weight"]
@@ -260,8 +279,6 @@ class ThetaModel(Module):
                       
                     self._logger.debug("Creating model: "+observableName+" "+componentName)
                     
-                    totalEntries = 0.0
-                    totalIntegral = 0.0
                     
                     for componentSetName in data[componentName]["sets"]:
                         sampleDict = self.module("Samples").getSample(componentSetName)
@@ -270,14 +287,11 @@ class ThetaModel(Module):
                         for processName in sampleDict["processes"]:
                             processWeight = sampleDict["weight"]
                             
-                            if not histograms[observableName][componentName].has_key(processName):
-                                histograms[observableName][componentName][processName] = ROOT.TH1F(observableName+"_"+componentName+"_"+processName+"__"+str(random.random()),"",binning,ranges[0],ranges[1])
-                                histograms[observableName][componentName][processName].Sumw2()
-                            
                             for i,f in enumerate(rootFiles):
                                 rootFile = ROOT.TFile(f)
                                 tree = rootFile.Get(processName)
                                 if (tree):
+                                    '''
                                     hist=RootProjectedHistogram(observableName+"__"+componentName+"__"+componentSetName+"__"+processName+"__"+str(i),{"use_errors":"true"})
                                     hist.setFileName(f)
                                     hist.setVariableString(varName)
@@ -287,9 +301,9 @@ class ThetaModel(Module):
                                     hist.setRange(ranges)
                                     file.write(hist.toConfigString())
                                     histoadd.addHisto(hist.getVarname())
-                                    
+                                    '''
                                     self.module("Utils").getHist1D(
-                                        histograms[observableName][componentName][processName],
+                                        histograms[observableName]["data"]["data"],
                                         f,
                                         processName,
                                         varName,
@@ -299,12 +313,9 @@ class ThetaModel(Module):
                                     #break
                                 rootFile.Close()
                                 
-                            self._logger.debug("\t-> "+processName+" with events: "+str(round(histograms[observableName][componentName][processName].Integral(),1)))
-                            totalEntries += histograms[observableName][componentName][processName].GetEntries()
-                            totalIntegral += histograms[observableName][componentName][processName].Integral()
-                    self._logger.debug("-> total events: "+str(round(totalIntegral,1)))
+                self._logger.debug("\t-> data with events: "+str(round(histograms[observableName]["data"]["data"].Integral(),1)))
 
-                file.write(histoadd.toConfigString())
+                file.write(dataHist.toConfigString())
                 
             else:
                 histoadd = HistoAdd(observableName+"__data",{"dice_stat":"true","rnd":7*(iobs*3+11)})
@@ -342,7 +353,7 @@ class ThetaModel(Module):
 
                 file.write(histoadd.toConfigString())
                 
-        histFileName = os.path.join(self.module("Utils").getOutputFolder(),modelName+"_fitHists.root")
+
         histFile = ROOT.TFile(histFileName,"RECREATE")
         for cat in histograms.keys():
             for comp in histograms[cat].keys():
@@ -468,7 +479,7 @@ class ThetaModel(Module):
         file.write('        type="histo_source";\n')
         file.write('        name="data";\n')
         for obs in self.module("ThetaModel").getObservablesDict().keys():
-            file.write('        obs_'+obs+'="@histoadd_'+obs+'__data";\n')
+            file.write('        obs_'+obs+'="@hist_'+obs+'__data";\n')
         file.write('    };\n')
 
             

@@ -286,7 +286,6 @@ class ObservableBB:
                 const double bb = TMath::Gaus(lambda[ibin],0,std::sqrt(prediction.uncertainty2[ibin]));
                 const double p = prediction.entries[ibin]+bb;
                 
-                nll-=std::log(bb);
                 
                 //using log of poisson distribution: x*log(lambda)-lambda
                 //skip bins with no prediction

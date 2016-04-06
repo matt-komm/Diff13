@@ -67,7 +67,7 @@ class Unfolding(Module):
         genHist = responseMatrix.ProjectionX(responseMatrix.GetName()+"genX")
 
         responseMatrixReweighted = responseMatrix.Clone(responseMatrix.GetName()+"Reweighted")
-        
+
         for ibin in range(responseMatrix.GetNbinsX()):
             w = 1.0/genHist.GetBinContent(ibin+1)*genHist.Integral()/genHist.GetNbinsX()
             responseMatrixReweighted.SetBinContent(
@@ -75,7 +75,7 @@ class Unfolding(Module):
                     0,
                     responseMatrix.GetBinContent(ibin+1,0)*w
             )
-        
+
         
         tunfold = ROOT.PyUnfold(responseMatrixReweighted)
         tunfold.setData(data)
@@ -86,7 +86,6 @@ class Unfolding(Module):
             bestTau = tunfold.scanTau()
         else:
             bestTau=fixedTau
-            
 
         self._logger.info("Found tau for regularization: "+str(bestTau))
         
@@ -95,7 +94,7 @@ class Unfolding(Module):
         unfoldedHist = ROOT.TH1D("unfoldedHist","",len(genBinning)-1,genBinning)
         unfoldedHist.Sumw2()
         tunfold.doUnfolding(bestTau,unfoldedHist,covariance,True,False,False)
-        
+
         for ibin in range(unfoldedHist.GetNbinsX()):
             w = 1.0/genHist.GetBinContent(ibin+1)*genHist.Integral()/genHist.GetNbinsX()
             unfoldedHist.SetBinContent(
@@ -106,6 +105,6 @@ class Unfolding(Module):
                 ibin+1,
                 unfoldedHist.GetBinError(ibin+1)/w
             )
-        
+
         return unfoldedHist,covariance,bestTau
         

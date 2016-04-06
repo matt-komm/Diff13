@@ -180,7 +180,7 @@ ROOT.gStyle.SetPalette(1)
 ROOT.gStyle.SetPaintTextFormat("4.2f")
 
 normalize =True
-'''
+
 outputName="unfolded_top_pt"
 rootFileName = "unfoldingPt"
 histName = "unfoldedHistPt"
@@ -192,7 +192,7 @@ outputName="unfolded_top_y"
 rootFileName = "unfoldingY"
 histName = "unfoldedHistY"
 responseName = "responseY"
-
+'''
 
 
 fNominal = ROOT.TFile("result/nominal/"+rootFileName+".root")
@@ -247,26 +247,33 @@ uncertaintiesSpecial = [
     ["Herwig","hadronization modeling"]
 ]
 
-print "%36s & %10s & %10s & %10s & %10s" % ("systematic source","bin 1 / \\%", "bin 2 / \\%","bin 3 / \\%", "bin 4 / \\%")
+print "%36s & %10s & %10s & %10s & %10s" % ("systematic source","$\\Delta$bin 1 / \\$10^{-2}$", "$\\Delta$bin 2 / \\$10^{-2}$","$\\Delta$bin 3 / \\$10^{-2}$", "$\\Delta$bin 4 / \\$10^{-2}$")
 print "%36s " % ("statistical"),
 for ibin in range(4):
-    print "& %10.1f " % (100.0*nominalHist.GetBinError(ibin+1)/nominalHist.GetBinContent(ibin+1)), 
+    print "& %10.1f " % (100.0*(nominalHist.GetBinError(ibin+1))), 
 print "\\\\"
 print "\\hline"
 
+averageShifts={}
+
 for unc in uncertainties:
     sysDict = []
+    averageShifts[unc[0]]=[]
     for shift in ["Up","Down"]:
         f = ROOT.TFile("result/"+unc[0]+shift+"/"+rootFileName+".root")
         hist = f.Get(histName).Clone()
         hist.SetDirectory(0)
         normalizeByBinWidth(hist)
         print "%36s " % (unc[1]+" "+shift),
+        
+        avgShift = 0.0
         for ibin in range(4):
             nominal = nominalHist.GetBinContent(ibin+1)
             sysVal = hist.GetBinContent(ibin+1)
-            print "& %+10.1f " % (100.0*sysVal/nominal-100.), 
+            print "& %+10.1f " % ((sysVal-nominal)*100.),
+            avgShift+=sysVal/nominal
         print "\\\\"
+        averageShifts[unc[0]].append(avgShift/4.0)
         
         hist.SetLineWidth(2)
         #hist.SetLineStyle(2)
@@ -277,17 +284,21 @@ for unc in uncertainties:
     
 for unc in uncertaintiesSpecial:
     sysDict = []
+    averageShifts[unc[0]]=[]
     f = ROOT.TFile("result/"+unc[0]+"/"+rootFileName+".root")
     hist = f.Get(histName).Clone()
     hist.SetDirectory(0)
     normalizeByBinWidth(hist)
     print "%36s " % (unc[1]),
     sysDict.append(nominalHist)
+    avgShift = 0.0
     for ibin in range(4):
         nominal = nominalHist.GetBinContent(ibin+1)
         sysVal = hist.GetBinContent(ibin+1)
-        print "& %+10.1f " % (100.0*sysVal/nominal-100.), 
+        print "& %+10.1f " % ((sysVal-nominal)*100.), 
+        avgShift+=sysVal/nominal
     print "\\\\"
+    averageShifts[unc[0]].append(avgShift/4.0)
     
     hist.SetLineWidth(2)
     sysDict.append(hist)
@@ -448,11 +459,11 @@ legend.AddEntry(nominalHist,"data","P")
 
 print "%36s " % ("total Up"),
 for ibin in range(N):
-    print "& %+10.1f " % (totalHistData[ibin][2]/totalHistData[ibin][0]*100.0-100), 
+    print "& %+10.1f " % ((totalHistData[ibin][2]-totalHistData[ibin][0])*100.0), 
 print "\\\\"
 print "%36s " % ("total Down"),
 for ibin in range(N):
-    print "& %+10.1f " % (totalHistData[ibin][1]/totalHistData[ibin][0]*100.0-100), 
+    print "& %+10.1f " % ((totalHistData[ibin][1]-totalHistData[ibin][0])*100.0), 
 print "\\\\"
 
 
@@ -527,3 +538,18 @@ cv.Update()
 cv.Print(outputName+".pdf")
 cv.Print(outputName+".png")
 
+
+
+
+'''
+for unc in sorted(uncertainties+uncertaintiesSpecial):
+    print "%36s " % (unc[1]),
+    if len(averageShifts[unc[0]])==2:
+        if (math.fabs(averageShifts[unc[0]][0])<0.01) and (math.fabs(averageShifts[unc[0]][1])<0.01):
+            print "$%8s\\%%$" % ("<1"),
+        else if averageShifts[unc[0]][0]*averageShifts[unc[0]][1]<0:
+            if math.fabs(math.fabs(averageShifts[unc[0]][0])-math.fabs(averageShifts[unc[0]][1]))<0.05:
+                print "$\\pm %8.0f\\%%$" % (averageShifts[unc[0]][0]),
+            else:
+                print "$\\pm %8.0f\\%%$" % (averageShifts[unc[0]][0]),
+'''
