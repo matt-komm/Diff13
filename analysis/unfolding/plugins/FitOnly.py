@@ -41,10 +41,14 @@ class ProgramFitOnly(Module.getClass("Program")):
                     self.module("ThetaModel").makeMCDicedHistograms("fit","fit_diced")
                     
                     self.module("ThetaFit").run(modelName='fit')
-                    fitResultNominalNew = self.module("ThetaFit").readFitResult(
-                        modelName="fit",
-                        fileName="fit_diced"
-                    )
+                    try:
+                        fitResultNominalNew = self.module("ThetaFit").readFitResult(
+                            modelName="fit",
+                            fileName="fit_diced"
+                        )
+                    except Exception, e:
+                        self._logger.error("theta did not produced a valid fit result: "+str(e))
+                        continue
                     if (fitResultNominal==None) or (fitResultNominal["nll"]>fitResultNominalNew["nll"]):
                         fitResultNominal=fitResultNominalNew
                         self.module("ThetaFit").printFitResult(fitResultNominal)
@@ -83,10 +87,14 @@ class ProgramFitOnly(Module.getClass("Program")):
                         )
                         
                         self.module("ThetaFit").run(modelName="fit_pt"+str(ipt))
-                        fitResultByPtNew = self.module("ThetaFit").readFitResult(
-                            modelName="fit_pt"+str(ipt),
-                            fileName="fit_pt"+str(ipt)+'_diced',
-                        )
+                        try:
+                            fitResultByPtNew = self.module("ThetaFit").readFitResult(
+                                modelName="fit_pt"+str(ipt),
+                                fileName="fit_pt"+str(ipt)+'_diced',
+                            )
+                        except Exception, e:
+                            self._logger.error("theta did not produced a valid fit result: "+str(e))
+                            continue
                         if (fitResultByPt==None) or (fitResultByPt["nll"]>fitResultByPtNew["nll"]):
                             fitResultByPt=fitResultByPtNew
                             self.module("ThetaFit").printFitResult(fitResultByPt)
@@ -124,10 +132,14 @@ class ProgramFitOnly(Module.getClass("Program")):
                         )
                         
                         self.module("ThetaFit").run(modelName="fit_y"+str(iy))
-                        fitResultByYNew = self.module("ThetaFit").readFitResult(
-                            modelName="fit_y"+str(iy),
-                            fileName="fit_y"+str(iy)+'_diced',
-                        )
+                        try:
+                            fitResultByYNew = self.module("ThetaFit").readFitResult(
+                                modelName="fit_y"+str(iy),
+                                fileName="fit_y"+str(iy)+'_diced',
+                            )
+                        except Exception, e:
+                            self._logger.error("theta did not produced a valid fit result: "+str(e))
+                            continue
                         if (fitResultByY==None) or (fitResultByY["nll"]>fitResultByYNew["nll"]):
                             fitResultByY=fitResultByYNew
                             self.module("ThetaFit").printFitResult(fitResultByY)

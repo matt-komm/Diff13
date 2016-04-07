@@ -27,7 +27,6 @@ class Program(Module):
         ### FITTING
         fitResultInc = self.module("ThetaFit").checkFitResult(modelName='fit')
         if fitResultInc==None:
-            #self.module("ThetaModel").makeModel(pseudo=True,addCut="(Reconstructed_1__isBarrel==1)")
             self.module("ThetaModel").makeFitHists(
                 pseudo=False, 
                 histFile='fit'
@@ -35,25 +34,76 @@ class Program(Module):
             self.module("ThetaModel").makeModel(
                 pseudo=False, 
                 modelName='fit',
-                histFile='fit'
+                histFile='fit_diced',
+                outputFile='fit_diced'
             )
-            self.module("ThetaFit").run(modelName='fit')
-            fitResultInc = self.module("ThetaFit").readFitResult()
+            for i in range(self.module("Utils").getNumberOfPseudoExp()):
+                self.module("ThetaModel").makeMCDicedHistograms("fit","fit_diced")
+                
+                self.module("ThetaFit").run(modelName='fit')
+                try:
+                    fitResultIncNew = self.module("ThetaFit").readFitResult(
+                        modelName="fit",
+                        fileName="fit_diced"
+                    )
+                except Exception, e:
+                    self._logger.error("theta did not produced a valid fit result: "+str(e))
+                    continue
+                if (fitResultInc==None) or (fitResultInc["nll"]>fitResultIncNew["nll"]):
+                    fitResultInc=fitResultIncNew
+                    self.module("ThetaFit").printFitResult(fitResultInc)
+                    os.rename(
+                        os.path.join(self.module("Utils").getOutputFolder(),"fit_diced.root"),
+                        os.path.join(self.module("Utils").getOutputFolder(),"fit.root")
+                    )
+        else:
+            self.module("ThetaFit").printFitResult(fitResultInc)
             
         self.module("Drawing").drawFitCorrelation(fitResultInc["correlations"])
         
         ptRecoBinning = self.module("ResponseMatrixPt").getRecoBinning()
         ptRecoVariable = self.module("ResponseMatrixPt").getRecoUnfoldingVariable()
         for ipt in range(len(ptRecoBinning)-1):
-            fitResultByPt = self.module("ThetaFit").checkFitResult(modelName="fit_pt"+str(ipt))
+            fitResultByPt = self.module("ThetaFit").checkFitResult(
+                modelName="fit_pt"+str(ipt),
+                fileName="fit_pt"+str(ipt)
+            )
             if fitResultByPt==None:
-                self.module("ThetaModel").makeModel(
-                    pseudo=False,
-                    modelName="fit_pt"+str(ipt),
+                self.module("ThetaModel").makeFitHists(
+                    pseudo=False, 
+                    histFile="fit_pt"+str(ipt),
                     addCut="("+ptRecoVariable+">"+str(ptRecoBinning[ipt])+")*("+ptRecoVariable+"<"+str(ptRecoBinning[ipt+1])+")"
                 )
-                self.module("ThetaFit").run(modelName="fit_pt"+str(ipt))
-                fitResultByPt = self.module("ThetaFit").readFitResult(modelName="fit_pt"+str(ipt))
+                self.module("ThetaModel").makeModel(
+                    pseudo=False, 
+                    modelName="fit_pt"+str(ipt),
+                    histFile="fit_pt"+str(ipt)+'_diced',
+                    outputFile="fit_pt"+str(ipt)+'_diced'
+                )
+                for i in range(self.module("Utils").getNumberOfPseudoExp()):
+                    self.module("ThetaModel").makeMCDicedHistograms(
+                        "fit_pt"+str(ipt),
+                        "fit_pt"+str(ipt)+"_diced"
+                    )
+                    
+                    self.module("ThetaFit").run(modelName="fit_pt"+str(ipt))
+                    try:
+                        fitResultByPtNew = self.module("ThetaFit").readFitResult(
+                            modelName="fit_pt"+str(ipt),
+                            fileName="fit_pt"+str(ipt)+'_diced',
+                        )
+                    except Exception, e:
+                        self._logger.error("theta did not produced a valid fit result: "+str(e))
+                        continue
+                    if (fitResultByPt==None) or (fitResultByPt["nll"]>fitResultByPtNew["nll"]):
+                        fitResultByPt=fitResultByPtNew
+                        self.module("ThetaFit").printFitResult(fitResultByPt)
+                        os.rename(
+                            os.path.join(self.module("Utils").getOutputFolder(),"fit_pt"+str(ipt)+"_diced.root"),
+                            os.path.join(self.module("Utils").getOutputFolder(),"fit_pt"+str(ipt)+".root")
+                        )
+            else:
+                self.module("ThetaFit").printFitResult(fitResultByPt)
             multiFitResultsPt.append({
                 "range":[ptRecoBinning[ipt],ptRecoBinning[ipt+1]],
                 "res":fitResultByPt
@@ -81,15 +131,46 @@ class Program(Module):
         yRecoBinning = self.module("ResponseMatrixY").getRecoBinning()
         yRecoVariable = self.module("ResponseMatrixY").getRecoUnfoldingVariable()
         for iy in range(len(yRecoBinning)-1):
-            fitResultByY = self.module("ThetaFit").checkFitResult(modelName="fit_y"+str(iy))
+            fitResultByY = self.module("ThetaFit").checkFitResult(
+                modelName="fit_y"+str(iy),
+                fileName="fit_y"+str(iy),
+            )
             if fitResultByY==None:
+                self.module("ThetaModel").makeFitHists(
+                    pseudo=False, 
+                    histFile="fit_y"+str(iy),
+                    addCut="("+yRecoVariable+">"+str(yRecoBinning[iy])+")*("+yRecoVariable+"<"+str(yRecoBinning[iy+1])+")"
+                )
                 self.module("ThetaModel").makeModel(
                     pseudo=False, 
                     modelName="fit_y"+str(iy),
-                    addCut="("+yRecoVariable+">"+str(yRecoBinning[iy])+")*("+yRecoVariable+"<"+str(yRecoBinning[iy+1])+")"
+                    histFile="fit_y"+str(iy)+'_diced',
+                    outputFile="fit_y"+str(iy)+'_diced'
                 )
-                self.module("ThetaFit").run(modelName="fit_y"+str(iy))
-                fitResultByY = self.module("ThetaFit").readFitResult(modelName="fit_y"+str(iy))
+                for i in range(self.module("Utils").getNumberOfPseudoExp()):
+                    self.module("ThetaModel").makeMCDicedHistograms(
+                        "fit_y"+str(iy),
+                        "fit_y"+str(iy)+"_diced"
+                    )
+                    
+                    self.module("ThetaFit").run(modelName="fit_y"+str(iy))
+                    try:
+                        fitResultByYNew = self.module("ThetaFit").readFitResult(
+                            modelName="fit_y"+str(iy),
+                            fileName="fit_y"+str(iy)+'_diced',
+                        )
+                    except Exception, e:
+                        self._logger.error("theta did not produced a valid fit result: "+str(e))
+                        continue
+                    if (fitResultByY==None) or (fitResultByY["nll"]>fitResultByYNew["nll"]):
+                        fitResultByY=fitResultByYNew
+                        self.module("ThetaFit").printFitResult(fitResultByY)
+                        os.rename(
+                            os.path.join(self.module("Utils").getOutputFolder(),"fit_y"+str(iy)+"_diced.root"),
+                            os.path.join(self.module("Utils").getOutputFolder(),"fit_y"+str(iy)+".root")
+                        )
+            else:
+                self.module("ThetaFit").printFitResult(fitResultByY)
             multiFitResultsY.append({
                 "range":[yRecoBinning[iy],yRecoBinning[iy+1]],
                 "res":fitResultByY

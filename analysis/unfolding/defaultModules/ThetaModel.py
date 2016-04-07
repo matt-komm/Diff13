@@ -401,7 +401,7 @@ class ThetaModel(Module):
                                 if math.fabs(binEntries)<1.0:
                                     histograms[observableName][componentName][processName].SetBinError(
                                         ibin+1,
-                                        0.3812*weight
+                                        ROOT.TEfficiency.ClopperPearson(entries,0.0,0.683,True)*weight
                                     )
                                     self._logger.debug("\t\tassign uncertainty of "+str(0.3812*weight)+" for bin "+str(ibin+1))
                             

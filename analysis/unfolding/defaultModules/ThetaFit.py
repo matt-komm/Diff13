@@ -52,17 +52,24 @@ class ThetaFit(Module):
         fullPath = os.path.join(self.module("Utils").getOutputFolder(),fileName+".root")
         f = ROOT.TFile(fullPath)
         tree = f.Get("products")
+        if tree==None or tree.GetEntries()==0:
+            raise Exception("No fit result produced")
         tree.GetEntry(0)
         
         uncertainties = self.module("ThetaModel").getUncertaintsDict()
         
         result = {}
         for sysName in uncertainties.keys():
+            if (not hasattr(tree,modelName+"__"+sysName)) or (not hasattr(tree,modelName+"__"+sysName+"_error")):
+                raise Exception("No fitted values found for '"+modelName+"__"+sysName+"'")
             result[sysName]={
                 "mean":getattr(tree,modelName+"__"+sysName),
                 "unc":getattr(tree,modelName+"__"+sysName+"_error")
             }
             
+        if (not hasattr(tree,modelName+"__covariance")):
+            raise Exception("No fitted covariance matrix found for '"+modelName+"__covariance'")
+
         cov = getattr(tree,modelName+"__covariance")
         
         covariances = ROOT.TH2D("covariance","",len(uncertainties.keys()),0,len(uncertainties.keys()),len(uncertainties.keys()),0,len(uncertainties.keys()))
@@ -90,6 +97,8 @@ class ThetaFit(Module):
         result["covariances"]=covariances
         result["correlations"]=correlations
         
+        if (not hasattr(tree,modelName+"__nll")):
+            raise Exception("No NLL value found for '"+modelName+"__nll'")
         result["nll"]=getattr(tree,modelName+"__nll")
 
         f.Close()

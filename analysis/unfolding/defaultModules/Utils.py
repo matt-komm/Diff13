@@ -88,8 +88,8 @@ class Utils(Module):
         return ""
         
     def getNumberOfPseudoExp(self):
-        return 10
-            
+        return 1000
+        
     def getHist1D(self,hist,fileName,processName,variableName,weight):
         hist.SetDirectory(0)
         rootFile = ROOT.TFile(fileName)
