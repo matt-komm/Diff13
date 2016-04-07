@@ -28,7 +28,15 @@ class Program(Module):
         fitResultInc = self.module("ThetaFit").checkFitResult(modelName='fit')
         if fitResultInc==None:
             #self.module("ThetaModel").makeModel(pseudo=True,addCut="(Reconstructed_1__isBarrel==1)")
-            self.module("ThetaModel").makeModel(pseudo=False, modelName='fit')
+            self.module("ThetaModel").makeFitHists(
+                pseudo=False, 
+                histFile='fit'
+            )
+            self.module("ThetaModel").makeModel(
+                pseudo=False, 
+                modelName='fit',
+                histFile='fit'
+            )
             self.module("ThetaFit").run(modelName='fit')
             fitResultInc = self.module("ThetaFit").readFitResult()
             
@@ -40,7 +48,7 @@ class Program(Module):
             fitResultByPt = self.module("ThetaFit").checkFitResult(modelName="fit_pt"+str(ipt))
             if fitResultByPt==None:
                 self.module("ThetaModel").makeModel(
-                    pseudo=False, 
+                    pseudo=False,
                     modelName="fit_pt"+str(ipt),
                     addCut="("+ptRecoVariable+">"+str(ptRecoBinning[ipt])+")*("+ptRecoVariable+"<"+str(ptRecoBinning[ipt+1])+")"
                 )

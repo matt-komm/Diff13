@@ -86,6 +86,9 @@ class Utils(Module):
         
     def getRecoSamplePrefixPseudo(self):
         return ""
+        
+    def getNumberOfPseudoExp(self):
+        return 10
             
     def getHist1D(self,hist,fileName,processName,variableName,weight):
         hist.SetDirectory(0)
@@ -100,6 +103,7 @@ class Utils(Module):
             tempHist.SetDirectory(0)
             tempHist.SetBinContent(0,0)
             tempHist.SetBinContent(tempHist.GetNbinsX()+1,0)
+            tempHist.SetEntries(tempHist.GetEntries()-2)
             hist.Add(tempHist)
         rootFile.Close()
         
@@ -116,9 +120,11 @@ class Utils(Module):
             for ibin in range(tempHist.GetNbinsX()+2):
                 tempHist.SetBinContent(ibin,0,0)
                 tempHist.SetBinContent(ibin,tempHist.GetNbinsY()+1,0)
+                tempHist.SetEntries(tempHist.GetEntries()-2)
             for jbin in range(tempHist.GetNbinsY()+2):
                 tempHist.SetBinContent(0,jbin,0)
                 tempHist.SetBinContent(tempHist.GetNbinsX()+1,jbin,0)
+                tempHist.SetEntries(tempHist.GetEntries()-2)
             hist.Add(tempHist)
         rootFile.Close()
         

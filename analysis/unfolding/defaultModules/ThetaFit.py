@@ -28,22 +28,28 @@ class ThetaFit(Module):
             if nextline == '' and p.poll() != None:
                 break
             #self._logger.debug(nextline.replace("\n","").replace("\r",""))
-        
+            '''
             if nextline.find("errors:")!=-1:
                 self._logger.info("run fit: "+nextline.replace("\n","").replace("\r","").replace(" ",""))
             if nextline.find("warnings:")!=-1:
                 self._logger.info("run fit: "+nextline.replace("\n","").replace("\r","").replace(" ",""))
-
-    def checkFitResult(self,modelName="fit"):
-        fullPath = os.path.join(self.module("Utils").getOutputFolder(),modelName+".root")
+            '''
+    def checkFitResult(self,modelName="fit",fileName="fit"):
+        fullPath = os.path.join(self.module("Utils").getOutputFolder(),fileName+".root")
         if os.path.exists(fullPath):
             self._logger.info("fit result already exists: "+fullPath)
-            return self.module("ThetaFit").readFitResult(modelName)
+            return self.module("ThetaFit").readFitResult(modelName,fileName)
         return None
         
-    def readFitResult(self,modelName="fit"):
-        fullPath = os.path.join(self.module("Utils").getOutputFolder(),modelName+".root")
-        self._logger.info("read fit result: "+fullPath)
+    def printFitResult(self,result):
+        
+        uncertainties = self.module("ThetaModel").getUncertaintsDict()
+        for sysName in uncertainties.keys():
+            self._logger.info("Fit: "+sysName+": "+str(round(result[sysName]["mean"],2))+"+-"+str(round(result[sysName]["unc"],2)))
+        self._logger.info("Fit: NLL: %+6.4e"%(result["nll"]))
+        
+    def readFitResult(self,modelName="fit",fileName="fit"):
+        fullPath = os.path.join(self.module("Utils").getOutputFolder(),fileName+".root")
         f = ROOT.TFile(fullPath)
         tree = f.Get("products")
         tree.GetEntry(0)
@@ -57,7 +63,6 @@ class ThetaFit(Module):
                 "unc":getattr(tree,modelName+"__"+sysName+"_error")
             }
             
-            self._logger.info("Fit: "+sysName+": "+str(round(result[sysName]["mean"],2))+"+-"+str(round(result[sysName]["unc"],2)))
         cov = getattr(tree,modelName+"__covariance")
         
         covariances = ROOT.TH2D("covariance","",len(uncertainties.keys()),0,len(uncertainties.keys()),len(uncertainties.keys()),0,len(uncertainties.keys()))
@@ -84,6 +89,8 @@ class ThetaFit(Module):
             correlations.GetYaxis().SetBinLabel(ibin+1,uncertainties.keys()[ibin])
         result["covariances"]=covariances
         result["correlations"]=correlations
+        
+        result["nll"]=getattr(tree,modelName+"__nll")
 
         f.Close()
         
