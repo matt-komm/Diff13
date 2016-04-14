@@ -105,8 +105,8 @@ ROOT.gStyle.SetStatBorderSize(1)
 ROOT.gStyle.SetStatH(0.1)
 ROOT.gStyle.SetStatW(0.15)
 
-ROOT.gStyle.SetHatchesSpacing(1)
-ROOT.gStyle.SetHatchesLineWidth(2)
+ROOT.gStyle.SetHatchesSpacing(0.6)
+ROOT.gStyle.SetHatchesLineWidth(1)
 
 # ROOT.gStyle.SetStaROOT.TStyle(Style_t style = 1001)
 # ROOT.gStyle.SetStatX(Float_t x = 0)
@@ -140,7 +140,7 @@ ROOT.gStyle.SetTitleYOffset(1.45)
 
 ROOT.gStyle.SetLabelColor(1, "XYZ")
 ROOT.gStyle.SetLabelFont(43, "XYZ")
-ROOT.gStyle.SetLabelOffset(0.0077, "XYZ")
+ROOT.gStyle.SetLabelOffset(0.008, "XYZ")
 ROOT.gStyle.SetLabelSize(34, "XYZ")
 #ROOT.gStyle.SetLabelSize(0.04, "XYZ")
 
@@ -203,7 +203,7 @@ def getDarkerColor(color):
 sets = {
     "tChannel": {
         "hists": ["tChannel__tChannel"],
-        "color":ROOT.gROOT.GetColor(ROOT.kRed),
+        "color":newColor(0.83,0.05,0.0),
         "title":"#it{t}-channel",
     },
     "TopBkg": {
@@ -213,7 +213,7 @@ sets = {
     },
     "WZjets": {
         "hists": ["WZjets__WJetsAMC","WZjets__DY"],
-        "color":ROOT.gROOT.GetColor(ROOT.kTeal+4),
+        "color":newColor(0.2,0.8,0.2),
         "title":"W/Z+jets",
     },
     "QCD": {
@@ -295,7 +295,7 @@ plotSetups = [
         "resDown": 0.6,
         "normalizeByBin": False,
         "scale": 0,
-        "variableTitle": "|#eta(j')|",
+        "variableTitle": "|#eta(j#it{'})|",
         "inputFileName": "reco_etaj"
     },
     {
@@ -499,7 +499,7 @@ for plotSetup in plotSetups:
                 setHist = h.Clone()
                 setHist.SetMarkerColor(sets[setName]["color"].GetNumber())
                 setHist.SetMarkerStyle(20)
-                setHist.SetMarkerSize(1.2)
+                setHist.SetMarkerSize(1.4)
                 setHist.SetFillStyle(0)
                 setHist.SetLineStyle(1)
                 setHist.SetLineWidth(1)
@@ -655,9 +655,9 @@ for plotSetup in plotSetups:
             axis.GetYaxis().SetTitle("#lower[-0.1]{#LT}#kern[-0.5]{ }Events / "+scaleText+unit+"#kern[-0.5]{ }#lower[-0.1]{#GT}")
     else:
         if unit=="":
-            axis.GetYaxis().SetTitle("Events / "+scaleText+"units")
+            axis.GetYaxis().SetTitle("Events / "+scaleText+"bin")
         else:
-            axis.GetYaxis().SetTitle("Events / "+scaleText+unit)
+            axis.GetYaxis().SetTitle("Events / "+scaleText+"bin")
 
 
 
@@ -674,7 +674,7 @@ for plotSetup in plotSetups:
     legend.SetFillColor(ROOT.kWhite)
     legend.SetBorderSize(0)
     legend.SetTextFont(43)
-    legend.SetTextSize(31)
+    legend.SetTextSize(30)
     for entry in reversed(legendEntries):
         legend.AddEntry(entry[0],entry[1],entry[2])
     '''
@@ -710,7 +710,7 @@ for plotSetup in plotSetups:
     pCat.SetFillColor(ROOT.kWhite)
     pCat.SetBorderSize(0)
     pCat.SetTextFont(63)
-    pCat.SetTextSize(29)
+    pCat.SetTextSize(31)
     pCat.SetTextAlign(13)
     pCat.AddText(category)
     pCat.Draw("Same")
@@ -724,11 +724,11 @@ for plotSetup in plotSetups:
     pAdd.AddText("(scaled to incl. fit result)")
     pAdd.Draw("Same")
     '''
-    pCut=ROOT.TPaveText(cvxmin+0.03,cvymax-0.08,cvxmin+0.03,cvymax-0.08,"NDC")
+    pCut=ROOT.TPaveText(cvxmin+0.03,cvymax-0.085,cvxmin+0.03,cvymax-0.085,"NDC")
     pCut.SetFillColor(ROOT.kWhite)
     pCut.SetBorderSize(0)
     pCut.SetTextFont(43)
-    pCut.SetTextSize(29)
+    pCut.SetTextSize(31)
     pCut.SetTextAlign(13)
     pCut.AddText(cut)
     pCut.Draw("Same")
@@ -793,19 +793,18 @@ for plotSetup in plotSetups:
 
         
         box = ROOT.TBox(c-0.5*w,hDown,c+0.5*w,hUp)
-        box.SetFillStyle(3445)
+        box.SetFillStyle(3345)
         box.SetLineColor(boxGray)
-        box.SetFillColor(ROOT.kGray)
+        box.SetFillColor(boxGray)
         box.SetLineWidth(2)
         rootObj.append(box)
         box.Draw("SameF")
         
         box2 = ROOT.TBox(c-0.5*w,hDown,c+0.5*w,hUp)
-        box2.SetFillStyle(0)
+        box2.SetFillStyle(3345)
         box2.SetLineColor(boxGray)
         box2.SetFillColor(ROOT.kGray)
         box2.SetLineWidth(2)
-        box2.SetLineStyle(2)
         rootObj.append(box2)
         #box2.Draw("SameL")
         
@@ -824,7 +823,7 @@ for plotSetup in plotSetups:
             #hDown = max((sumHistMC.GetBinContent(ibin+1)-sumHistMC.GetBinError(ibin+1))/sumHistMC.GetBinContent(ibin+1),resDown)
             #hUp = min((sumHistMC.GetBinContent(ibin+1)+sumHistMC.GetBinError(ibin+1))/sumHistMC.GetBinContent(ibin+1),resUp)
             boxRes = ROOT.TBox(c-0.5*w,hDown,c+0.5*w,hUp)
-            boxRes.SetFillStyle(3345)
+            boxRes.SetFillStyle(3445)
             boxRes.SetLineColor(boxGray)
             boxRes.SetFillColor(ROOT.kGray)
             boxRes.SetLineWidth(2)
@@ -845,7 +844,7 @@ for plotSetup in plotSetups:
 
 
     if len(rootObj)>0:
-        legend.AddEntry(rootObj[-2],"Total syst.","F")
+        legend.AddEntry(rootObj[1],"Total syst.","F")
 
 
     axisLine = ROOT.TF1("axisLine"+str(random.random()),"1",sumHistData.GetXaxis().GetXmin(),sumHistData.GetXaxis().GetXmax())

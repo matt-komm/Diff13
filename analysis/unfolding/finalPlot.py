@@ -131,7 +131,7 @@ ROOT.gStyle.SetTitleYOffset(1.2)
 
 ROOT.gStyle.SetLabelColor(1, "XYZ")
 ROOT.gStyle.SetLabelFont(43, "XYZ")
-ROOT.gStyle.SetLabelOffset(0.0077, "XYZ")
+ROOT.gStyle.SetLabelOffset(0.008, "XYZ")
 ROOT.gStyle.SetLabelSize(34, "XYZ")
 #ROOT.gStyle.SetLabelSize(0.04, "XYZ")
 
@@ -197,7 +197,7 @@ nominalHist=fNominal.Get(histName).Clone()
 nominalHist.SetDirectory(0)
 nominalHist.SetMarkerColor(ROOT.kBlack)
 nominalHist.SetMarkerStyle(20)
-nominalHist.SetMarkerSize(1.1)
+nominalHist.SetMarkerSize(1.4)
 norm = nominalHist.Integral()
 
 
@@ -364,7 +364,7 @@ for i,sys in enumerate(uncertainties+uncertaintiesSpecial):
     sysHistograms[i][1].Draw("HISTSame")
     
     
-    legend=ROOT.TLegend(0.5,0.885,0.88,0.7)
+    legend=ROOT.TLegend(0.5,0.885,0.88,0.885-0.067*4)
     legend.SetBorderSize(0)
     legend.SetTextFont(43)
     legend.SetTextSize(28)
@@ -436,12 +436,11 @@ axis.GetXaxis().SetTickLength(0.015/(1-cv.GetLeftMargin()-cv.GetRightMargin()))
 axis.GetYaxis().SetTickLength(0.015/(1-cv.GetTopMargin()-cv.GetBottomMargin()))
 axis.Draw("AXIS")
 
-legend=ROOT.TLegend(0.55,0.885,0.88,0.5)
+legend=ROOT.TLegend(0.55,0.89,0.88,0.49)
 legend.SetBorderSize(0)
 legend.SetTextFont(43)
 legend.SetTextSize(30)
-legend.SetFillColor(ROOT.kWhite)
-
+legend.SetFillStyle(0)
 
 genHist.Draw("HISTSame")
 legend.AddEntry(nominalHist,"Data","P")
