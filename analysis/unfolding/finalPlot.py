@@ -329,8 +329,8 @@ normalizeByBinWidth(genPowhegHist)
 fAMC5FS = ROOT.TFile("result/AMC5FS/"+rootFileName+".root")
 genAMC5FSHist=fAMC5FS.Get(responseName).Clone().ProjectionX("gen_AMC5FS")
 genAMC5FSHist.SetDirectory(0)
-genAMC5FSHist.SetLineColor(ROOT.kSpring-1)
-genAMC5FSHist.SetLineWidth(4)
+genAMC5FSHist.SetLineColor(ROOT.kTeal+4)
+genAMC5FSHist.SetLineWidth(5)
 genAMC5FSHist.SetLineStyle(3)
 normalizeByBinWidth(genAMC5FSHist)
 
@@ -370,8 +370,8 @@ for i,sys in enumerate(uncertainties+uncertaintiesSpecial):
     legend.SetTextSize(28)
     legend.SetFillColor(ROOT.kWhite)
     
-    legend.AddEntry(genHist,"signal MC","L")
-    legend.AddEntry(nominalHist,"data "+"nominal","P")
+    legend.AddEntry(genHist,"Signal MC","L")
+    legend.AddEntry(nominalHist,"Data "+"nominal","P")
     legend.AddEntry(sysHistograms[i][0],sys[0]+" up","L")
     legend.AddEntry(sysHistograms[i][1],sys[0]+" down","L")
     legend.Draw("Same")
@@ -444,7 +444,7 @@ legend.SetFillColor(ROOT.kWhite)
 
 
 genHist.Draw("HISTSame")
-legend.AddEntry(nominalHist,"data","P")
+legend.AddEntry(nominalHist,"Data","P")
 
 legend.AddEntry(genHist,"aMC@NLO (4#kern[-0.5]{ }FS)","L")
 legend.AddEntry(""," + Pythia#kern[-0.5]{ }8","")
