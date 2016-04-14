@@ -290,7 +290,7 @@ class Program(Module):
             histograms_toppt_bdt = self.module("HistogramCreator").makeHistograms(
                 "SingleTop_1__Top_1__Pt",
                 self.module("Utils").getCategoryCutStr(2,1)+"*"+self.module("Utils").getMTWCutStr()+"*"+self.module("Utils").getBDTCutStr(),
-                numpy.linspace(0,300,11),
+                self.module("ResponseMatrixPt").getRecoBinning(),
                 pseudo=False,
                 addUnderOverflows=True
             )
@@ -302,7 +302,7 @@ class Program(Module):
             histograms_topy_bdt = self.module("HistogramCreator").makeHistograms(
                 "fabs(SingleTop_1__Top_1__y)",
                 self.module("Utils").getCategoryCutStr(2,1)+"*"+self.module("Utils").getMTWCutStr()+"*"+self.module("Utils").getBDTCutStr(),
-                numpy.linspace(0,2.5,11),
+                self.module("ResponseMatrixY").getRecoBinning(),
                 pseudo=False,
                 addUnderOverflows=True
             )

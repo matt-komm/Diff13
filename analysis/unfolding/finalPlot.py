@@ -16,8 +16,8 @@ ROOT.gROOT.SetStyle("Plain")
 ROOT.gStyle.SetOptStat(0)
 ROOT.gStyle.SetOptFit(1111)
 ROOT.gStyle.SetPadTopMargin(0.08)
-ROOT.gStyle.SetPadLeftMargin(0.14)
-ROOT.gStyle.SetPadRightMargin(0.06)
+ROOT.gStyle.SetPadLeftMargin(0.15)
+ROOT.gStyle.SetPadRightMargin(0.04)
 ROOT.gStyle.SetPadBottomMargin(0.12)
 ROOT.gStyle.SetMarkerSize(0.16)
 ROOT.gStyle.SetHistLineWidth(1)
@@ -158,10 +158,7 @@ ROOT.gStyle.SetOptLogz(0)
 # another top group addition
 
 # Postscript options:
-#ROOT.gStyle.SetPaperSize(20., 20.)
-#ROOT.gStyle.SetPaperSize(ROOT.TStyle.kA4)
-#ROOT.gStyle.SetPaperSize(27., 29.7)
-#ROOT.gStyle.SetPaperSize(27., 29.7)
+ROOT.gStyle.SetPaperSize(8.0*1.3,7.5*1.3)
 ROOT.TGaxis.SetMaxDigits(3)
 ROOT.gStyle.SetLineScalePS(2)
 
@@ -180,7 +177,7 @@ ROOT.gStyle.SetPalette(1)
 ROOT.gStyle.SetPaintTextFormat("4.2f")
 
 normalize =True
-
+'''
 outputName="unfolded_top_pt"
 rootFileName = "unfoldingPt"
 histName = "unfoldedHistPt"
@@ -192,7 +189,7 @@ outputName="unfolded_top_y"
 rootFileName = "unfoldingY"
 histName = "unfoldedHistY"
 responseName = "responseY"
-'''
+
 
 
 fNominal = ROOT.TFile("result/nominal/"+rootFileName+".root")
@@ -325,7 +322,7 @@ fPowheg = ROOT.TFile("result/Powheg/"+rootFileName+".root")
 genPowhegHist=fPowheg.Get(responseName).Clone().ProjectionX("gen_powheg")
 genPowhegHist.SetDirectory(0)
 genPowhegHist.SetLineColor(ROOT.kOrange+7)
-genPowhegHist.SetLineWidth(3)
+genPowhegHist.SetLineWidth(2)
 genPowhegHist.SetLineStyle(1)
 normalizeByBinWidth(genPowhegHist)
 
@@ -333,7 +330,7 @@ fAMC5FS = ROOT.TFile("result/AMC5FS/"+rootFileName+".root")
 genAMC5FSHist=fAMC5FS.Get(responseName).Clone().ProjectionX("gen_AMC5FS")
 genAMC5FSHist.SetDirectory(0)
 genAMC5FSHist.SetLineColor(ROOT.kSpring-1)
-genAMC5FSHist.SetLineWidth(6)
+genAMC5FSHist.SetLineWidth(4)
 genAMC5FSHist.SetLineStyle(3)
 normalizeByBinWidth(genAMC5FSHist)
 
@@ -341,7 +338,7 @@ fHerwig = ROOT.TFile("result/Herwig/"+rootFileName+".root")
 genHerwigHist=fHerwig.Get(responseName).Clone().ProjectionX("gen_Herwig")
 genHerwigHist.SetDirectory(0)
 genHerwigHist.SetLineColor(ROOT.kGray+1)
-genHerwigHist.SetLineWidth(4)
+genHerwigHist.SetLineWidth(3)
 genHerwigHist.SetLineStyle(2)
 normalizeByBinWidth(genHerwigHist)
 
@@ -350,14 +347,14 @@ for i,sys in enumerate(uncertainties+uncertaintiesSpecial):
     ymax = max([sysHistograms[i][0].GetMaximum(),sysHistograms[i][1].GetMaximum(),genHist.GetMaximum(),nominalHist.GetMaximum()])
     if rootFileName == "unfoldingPt":
         if normalize:
-            axis = ROOT.TH2F("axisUnfold",";p#lower[0.4]{#scale[0.7]{T}}#kern[-0.5]{ }(t+#bar{t}) (GeV);1 #/#sigma #times d#sigma #/d#kern[-0.5]{ }p#lower[0.4]{#scale[0.7]{T}}#kern[-0.5]{ }(t+#bar{t}) / #lower[-0.12]{#scale[0.7]{#frac{10#scale[0.8]{#lower[-0.4]{-3}}}{GeV}}}",50,genHist.GetXaxis().GetXmin(),genHist.GetXaxis().GetXmax(),50,0,1.3*ymax)
+            axis = ROOT.TH2F("axisUnfold",";p#lower[0.4]{#scale[0.7]{T}}#kern[-0.5]{ }(t+t#lower[-0.87]{#kern[-0.91]{-}}) (GeV);1 #/#sigma #times d#sigma #/d#kern[-0.5]{ }p#lower[0.4]{#scale[0.7]{T}}#kern[-0.5]{ }(t+t#lower[-0.87]{#kern[-0.89]{-}}) / #lower[-0.12]{#scale[0.7]{#frac{10#scale[0.8]{#lower[-0.4]{-3}}}{GeV}}}",50,genHist.GetXaxis().GetXmin(),genHist.GetXaxis().GetXmax(),50,0,1.3*ymax)
         else:
-            axis = ROOT.TH2F("axisUnfold",";p#lower[0.4]{#scale[0.7]{T}}#kern[-0.5]{ }(t+#bar{t}) (GeV);a.u.",50,genHist.GetXaxis().GetXmin(),genHist.GetXaxis().GetXmax(),50,0,1.4*ymax)
+            axis = ROOT.TH2F("axisUnfold",";p#lower[0.4]{#scale[0.7]{T}}#kern[-0.5]{ }(t+t#lower[-0.87]{#kern[-0.91]{-}}) (GeV);a.u.",50,genHist.GetXaxis().GetXmin(),genHist.GetXaxis().GetXmax(),50,0,1.4*ymax)
     else:
         if normalize:
-            axis = ROOT.TH2F("axisUnfold"+str(random.random()),";|y|#kern[-0.5]{ }(t+#bar{t}) (GeV);1 #/#sigma #times d#sigma #/d#kern[-0.5]{ }|y|#kern[-0.5]{ }(t+#bar{t})",50,genHist.GetXaxis().GetXmin(),genHist.GetXaxis().GetXmax(),50,0,1.3*ymax)
+            axis = ROOT.TH2F("axisUnfold"+str(random.random()),";|y|#kern[-0.5]{ }(t+t#lower[-0.87]{#kern[-0.91]{-}}) (GeV);1 #/#sigma #times d#sigma #/d#kern[-0.5]{ }|y|#kern[-0.5]{ }(t+t#lower[-0.87]{#kern[-0.89]{-}})",50,genHist.GetXaxis().GetXmin(),genHist.GetXaxis().GetXmax(),50,0,1.3*ymax)
         else:
-            axis = ROOT.TH2F("axisUnfold"+str(random.random()),";|y|#kern[-0.5]{ }(t+#bar{t}) (GeV);a.u.",50,genHist.GetXaxis().GetXmin(),genHist.GetXaxis().GetXmax(),50,0,1.65*ymax)
+            axis = ROOT.TH2F("axisUnfold"+str(random.random()),";|y|#kern[-0.5]{ }(t+t#lower[-0.87]{#kern[-0.91]{-}}) (GeV);a.u.",50,genHist.GetXaxis().GetXmin(),genHist.GetXaxis().GetXmax(),50,0,1.65*ymax)
     axis.Draw("AXIS")
     genHist.Draw("HISTSame")
     nominalHist.Draw("PESame")
@@ -426,17 +423,20 @@ for ibin in range(N):
 cv = ROOT.TCanvas("cv","",800,750)
 if rootFileName == "unfoldingPt":
     if normalize:
-        axis = ROOT.TH2F("axisUnfold",";p#lower[0.4]{#scale[0.7]{T}}#kern[-0.5]{ }(t+#bar{t}) (GeV);1 #/#sigma #times d#sigma #/d#kern[-0.5]{ }p#lower[0.4]{#scale[0.7]{T}}#kern[-0.5]{ }(t+#bar{t}) / #lower[-0.12]{#scale[0.7]{#frac{10#scale[0.8]{#lower[-0.4]{-3}}}{GeV}}}",50,genHist.GetXaxis().GetXmin(),genHist.GetXaxis().GetXmax(),50,0,15)
+        axis = ROOT.TH2F("axisUnfold",";p#lower[0.4]{#scale[0.7]{T}}#kern[-0.5]{ }(t+t#lower[-0.87]{#kern[-0.91]{-}}) (GeV);1 #/#sigma #times d#sigma #/d#kern[-0.5]{ }p#lower[0.4]{#scale[0.7]{T}}#kern[-0.5]{ }(t+t#lower[-0.87]{#kern[-0.89]{-}}) / #lower[-0.12]{#scale[0.7]{#frac{10#scale[0.8]{#lower[-0.4]{-3}}}{GeV}}}",50,genHist.GetXaxis().GetXmin(),genHist.GetXaxis().GetXmax(),50,0,15)
     else:
-        axis = ROOT.TH2F("axisUnfold",";p#lower[0.4]{#scale[0.7]{T}}#kern[-0.5]{ }(t+#bar{t}) (GeV);a.u.",50,genHist.GetXaxis().GetXmin(),genHist.GetXaxis().GetXmax(),50,0,genHist.GetMaximum()*1.65)
+        axis = ROOT.TH2F("axisUnfold",";p#lower[0.4]{#scale[0.7]{T}}#kern[-0.5]{ }(t+t#lower[-0.87]{#kern[-0.91]{-}}) (GeV);a.u.",50,genHist.GetXaxis().GetXmin(),genHist.GetXaxis().GetXmax(),50,0,genHist.GetMaximum()*1.65)
 else:
     if normalize:
-        axis = ROOT.TH2F("axisUnfold",";|y|#kern[-0.5]{ }(t+#bar{t}) (GeV);1 #/#sigma #times d#sigma #/d#kern[-0.5]{ }|y|#kern[-0.5]{ }(t+#bar{t})",50,genHist.GetXaxis().GetXmin(),genHist.GetXaxis().GetXmax(),50,0,1.2)
+        axis = ROOT.TH2F("axisUnfold",";|y|#kern[-0.5]{ }(t+t#lower[-0.87]{#kern[-0.91]{-}}) (GeV);1 #/#sigma #times d#sigma #/d#kern[-0.5]{ }|y|#kern[-0.5]{ }(t+t#lower[-0.87]{#kern[-0.89]{-}})",50,genHist.GetXaxis().GetXmin(),genHist.GetXaxis().GetXmax(),50,0,1.2)
     else:
-        axis = ROOT.TH2F("axisUnfold",";|y|#kern[-0.5]{ }(t+#bar{t}) (GeV);a.u.",50,genHist.GetXaxis().GetXmin(),genHist.GetXaxis().GetXmax(),50,0,genHist.GetMaximum()*2.5)
+        axis = ROOT.TH2F("axisUnfold",";|y|#kern[-0.5]{ }(t+t#lower[-0.87]{#kern[-0.91]{-}}) (GeV);a.u.",50,genHist.GetXaxis().GetXmin(),genHist.GetXaxis().GetXmax(),50,0,genHist.GetMaximum()*2.5)
+
+axis.GetXaxis().SetTickLength(0.015/(1-cv.GetLeftMargin()-cv.GetRightMargin()))
+axis.GetYaxis().SetTickLength(0.015/(1-cv.GetTopMargin()-cv.GetBottomMargin()))
 axis.Draw("AXIS")
 
-legend=ROOT.TLegend(0.53,0.885,0.88,0.5)
+legend=ROOT.TLegend(0.55,0.885,0.88,0.5)
 legend.SetBorderSize(0)
 legend.SetTextFont(43)
 legend.SetTextSize(30)
@@ -444,6 +444,8 @@ legend.SetFillColor(ROOT.kWhite)
 
 
 genHist.Draw("HISTSame")
+legend.AddEntry(nominalHist,"data","P")
+
 legend.AddEntry(genHist,"aMC@NLO (4#kern[-0.5]{ }FS)","L")
 legend.AddEntry(""," + Pythia#kern[-0.5]{ }8","")
 
@@ -459,7 +461,7 @@ genHerwigHist.Draw("HISTSame")
 legend.AddEntry(genHerwigHist,"aMC@NLO (4#kern[-0.5]{ }FS)","L")
 legend.AddEntry(""," + Herwig#kern[-0.5]{ }","")
 
-legend.AddEntry(nominalHist,"data","P")
+
 
 
 print "%36s " % ("total"),
@@ -497,17 +499,17 @@ for ibin in range(N):
 
     hLine = ROOT.TLine(c,totalDown,c,totalUp)
     rootObj.append(hLine)
-    hLine.SetLineWidth(2)
+    hLine.SetLineWidth(1)
     hLine.Draw("Same")
     
     statUpLine = ROOT.TLine(c-w*0.22,statUp,c+w*0.22,statUp)
     rootObj.append(statUpLine)
-    statUpLine.SetLineWidth(3)
+    statUpLine.SetLineWidth(2)
     statUpLine.Draw("Same")
     
     statDownLine = ROOT.TLine(c-w*0.22,statDown,c+w*0.22,statDown)
     rootObj.append(statDownLine)
-    statDownLine.SetLineWidth(3)
+    statDownLine.SetLineWidth(2)
     statDownLine.Draw("Same")
     
   
@@ -536,7 +538,7 @@ pLumi.SetBorderSize(0)
 pLumi.SetTextFont(43)
 pLumi.SetTextSize(35)
 pLumi.SetTextAlign(31)
-pLumi.AddText("#mu#kern[-0.5]{ }+#kern[-0.5]{ }jets, 2.3#kern[-0.5]{ }fb#lower[-0.7]{#scale[0.7]{-1}} (13TeV)")
+pLumi.AddText("#mu#kern[-0.5]{ }+#kern[-0.5]{ }jets, 2.3#kern[-0.5]{ }fb#lower[-0.7]{#scale[0.7]{-1}} (13#kern[-0.5]{ }TeV)")
 pLumi.Draw("Same")
 
 
