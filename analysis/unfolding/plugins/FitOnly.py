@@ -34,11 +34,11 @@ class ProgramFitOnly(Module.getClass("Program")):
                 self.module("ThetaModel").makeModel(
                     pseudo=False, 
                     modelName='fit',
-                    histFile='fit_diced',
+                    histFile='fit',
                     outputFile='fit_diced'
                 )
                 for i in range(self.module("Utils").getNumberOfPseudoExp()):
-                    self.module("ThetaModel").makeMCDicedHistograms("fit","fit_diced")
+                    nll = self.module("ThetaModel").makeMCDicedHistograms("fit","fit_diced")
                     
                     self.module("ThetaFit").run(modelName='fit')
                     try:
@@ -46,6 +46,8 @@ class ProgramFitOnly(Module.getClass("Program")):
                             modelName="fit",
                             fileName="fit_diced"
                         )
+                        fitResultNominalNew["nll"]+=nll #need to correct likelihood in case dicing was far away
+                        
                     except Exception, e:
                         self._logger.error("theta did not produced a valid fit result: "+str(e))
                         continue
@@ -56,6 +58,7 @@ class ProgramFitOnly(Module.getClass("Program")):
                             os.path.join(self.module("Utils").getOutputFolder(),"fit_diced.root"),
                             os.path.join(self.module("Utils").getOutputFolder(),"fit.root")
                         )
+                    break
             else:
                 self.module("ThetaFit").printFitResult(fitResultNominal)
             
@@ -77,11 +80,11 @@ class ProgramFitOnly(Module.getClass("Program")):
                     self.module("ThetaModel").makeModel(
                         pseudo=False, 
                         modelName="fit_pt"+str(ipt),
-                        histFile="fit_pt"+str(ipt)+'_diced',
+                        histFile="fit_pt"+str(ipt),
                         outputFile="fit_pt"+str(ipt)+'_diced'
                     )
                     for i in range(self.module("Utils").getNumberOfPseudoExp()):
-                        self.module("ThetaModel").makeMCDicedHistograms(
+                        nll=self.module("ThetaModel").makeMCDicedHistograms(
                             "fit_pt"+str(ipt),
                             "fit_pt"+str(ipt)+"_diced"
                         )
@@ -92,6 +95,8 @@ class ProgramFitOnly(Module.getClass("Program")):
                                 modelName="fit_pt"+str(ipt),
                                 fileName="fit_pt"+str(ipt)+'_diced',
                             )
+                            fitResultByPtNew["nll"]+=nll #need to correct likelihood in case dicing was far away
+                            
                         except Exception, e:
                             self._logger.error("theta did not produced a valid fit result: "+str(e))
                             continue
@@ -102,6 +107,7 @@ class ProgramFitOnly(Module.getClass("Program")):
                                 os.path.join(self.module("Utils").getOutputFolder(),"fit_pt"+str(ipt)+"_diced.root"),
                                 os.path.join(self.module("Utils").getOutputFolder(),"fit_pt"+str(ipt)+".root")
                             )
+                        break
                 else:
                     self.module("ThetaFit").printFitResult(fitResultByPt)
 
@@ -122,11 +128,11 @@ class ProgramFitOnly(Module.getClass("Program")):
                     self.module("ThetaModel").makeModel(
                         pseudo=False, 
                         modelName="fit_y"+str(iy),
-                        histFile="fit_y"+str(iy)+'_diced',
+                        histFile="fit_y"+str(iy),
                         outputFile="fit_y"+str(iy)+'_diced'
                     )
                     for i in range(self.module("Utils").getNumberOfPseudoExp()):
-                        self.module("ThetaModel").makeMCDicedHistograms(
+                        nll=self.module("ThetaModel").makeMCDicedHistograms(
                             "fit_y"+str(iy),
                             "fit_y"+str(iy)+"_diced"
                         )
@@ -137,6 +143,8 @@ class ProgramFitOnly(Module.getClass("Program")):
                                 modelName="fit_y"+str(iy),
                                 fileName="fit_y"+str(iy)+'_diced',
                             )
+                            fitResultByYNew["nll"]+=nll #need to correct likelihood in case dicing was far away
+                        
                         except Exception, e:
                             self._logger.error("theta did not produced a valid fit result: "+str(e))
                             continue
@@ -147,6 +155,7 @@ class ProgramFitOnly(Module.getClass("Program")):
                                 os.path.join(self.module("Utils").getOutputFolder(),"fit_y"+str(iy)+"_diced.root"),
                                 os.path.join(self.module("Utils").getOutputFolder(),"fit_y"+str(iy)+".root")
                             )
+                        break
                 else:
                     self.module("ThetaFit").printFitResult(fitResultByY)
                     

@@ -14,7 +14,7 @@ class HistogramCreator(Module):
         self._logger = logging.getLogger(__file__)
         self._logger.setLevel(logging.DEBUG)
         
-    def makeHistograms(self, varName, weight, binningScheme, pseudo=False):
+    def makeHistograms(self, varName, weight, binningScheme, pseudo=False,addUnderOverflows=False):
         self._logger.info("Creating histograms: "+varName)
         
         uncertainties = self.module("ThetaModel").getUncertaintsDict()
@@ -49,7 +49,13 @@ class HistogramCreator(Module):
                     processWeight = sampleDict["weight"]
                     
                     for i,f in enumerate(rootFiles):
-                        self.module("Utils").getHist1D(histograms[componentName]["hists"][componentSetName],f,processName,varName,weight+"*"+componentWeight+"*"+processWeight)
+                        self.module("Utils").getHist1D(
+                            histograms[componentName]["hists"][componentSetName],
+                            f,
+                            processName,
+                            varName,weight+"*"+componentWeight+"*"+processWeight,
+                            addUnderOverflows=addUnderOverflows
+                        )
                         #break
                         
                 self._logger.debug("projected "+componentName+" "+componentSetName+": "+str(round(histograms[componentName]["hists"][componentSetName].Integral(),2)))
@@ -74,7 +80,14 @@ class HistogramCreator(Module):
                         processWeight = sampleDict["weight"]
 
                         for i,f in enumerate(rootFiles):
-                            self.module("Utils").getHist1D(dataHist,f,processName,varName,weight+"*"+componentWeight+"*"+processWeight)
+                            self.module("Utils").getHist1D(
+                                dataHist,
+                                f,
+                                processName,
+                                varName,
+                                weight+"*"+componentWeight+"*"+processWeight,
+                                addUnderOverflows=addUnderOverflows
+                            )
                             #break
         
             for ibin in range(dataHist.GetNbinsX()):
@@ -106,7 +119,14 @@ class HistogramCreator(Module):
                     for processName in sampleDict["processes"]:
                         processWeight = sampleDict["weight"]
                         for i,f in enumerate(rootFiles):
-                            self.module("Utils").getHist1D(histograms["data"]["hists"]["data"],f,processName,varName,weight+"*"+componentWeight+"*"+processWeight)
+                            self.module("Utils").getHist1D(
+                                histograms["data"]["hists"]["data"],
+                                f,
+                                processName,
+                                varName,
+                                weight+"*"+componentWeight+"*"+processWeight,
+                                addUnderOverflows=addUnderOverflows
+                            )
                             #break
                 self._logger.debug("projected "+componentName+" data: "+str(round(histograms["data"]["hists"]["data"].Integral(),2)))
             
@@ -118,7 +138,7 @@ class HistogramCreator(Module):
             scaleFactor = 1.0
             for uncName in histograms[component]["unc"]:
                 scaleFactor*=fitResult[uncName]["mean"]
-                
+            #self._logger.debug("Scale "+component+" to "+str(scaleFactor))
             for sampleName in histograms[component]["hists"].keys():
                 histograms[component]["hists"][sampleName].Scale(scaleFactor)
                 

@@ -247,10 +247,16 @@ uncertaintiesSpecial = [
     ["Herwig","hadronization modeling"]
 ]
 
-print "%36s & %10s & %10s & %10s & %10s" % ("systematic source","$\\Delta$bin 1 / \\$10^{-2}$", "$\\Delta$bin 2 / \\$10^{-2}$","$\\Delta$bin 3 / \\$10^{-2}$", "$\\Delta$bin 4 / \\$10^{-2}$")
+print "%36s & %11s & %11s & %11s & %11s" % ("systematic source","bin 1 / \\$10^{-2}$", "bin 2 / \\$10^{-2}$","bin 3 / \\$10^{-2}$", "bin 4 / \\$10^{-2}$")
+
+print "%36s " % ("nominal"),
+for ibin in range(4):
+    print "& %11.1f " % (100.0*(nominalHist.GetBinContent(ibin+1))),
+print "\\\\"
+print "\\hline"
 print "%36s " % ("statistical"),
 for ibin in range(4):
-    print "& %10.1f " % (100.0*(nominalHist.GetBinError(ibin+1))), 
+    print "& $\\pm$%6.1f " % (100.0*(nominalHist.GetBinError(ibin+1))), 
 print "\\\\"
 print "\\hline"
 
@@ -270,7 +276,7 @@ for unc in uncertainties:
         for ibin in range(4):
             nominal = nominalHist.GetBinContent(ibin+1)
             sysVal = hist.GetBinContent(ibin+1)
-            print "& %+10.1f " % ((sysVal-nominal)*100.),
+            print "& %+11.1f " % ((sysVal-nominal)*100.),
             avgShift+=sysVal/nominal
         print "\\\\"
         averageShifts[unc[0]].append(avgShift/4.0)
@@ -295,7 +301,7 @@ for unc in uncertaintiesSpecial:
     for ibin in range(4):
         nominal = nominalHist.GetBinContent(ibin+1)
         sysVal = hist.GetBinContent(ibin+1)
-        print "& %+10.1f " % ((sysVal-nominal)*100.), 
+        print "& %+11.1f " % ((sysVal-nominal)*100.), 
         avgShift+=sysVal/nominal
     print "\\\\"
     averageShifts[unc[0]].append(avgShift/4.0)
@@ -456,14 +462,17 @@ legend.AddEntry(""," + Herwig#kern[-0.5]{ }","")
 legend.AddEntry(nominalHist,"data","P")
 
 
-
+print "%36s " % ("total"),
+for ibin in range(N):
+    print "& %11.1f " % (totalHistData[ibin][0]*100.0), 
+print "\\\\"
 print "%36s " % ("total Up"),
 for ibin in range(N):
-    print "& %+10.1f " % ((totalHistData[ibin][2]-totalHistData[ibin][0])*100.0), 
+    print "& %+11.1f " % ((totalHistData[ibin][2]-totalHistData[ibin][0])*100.0), 
 print "\\\\"
 print "%36s " % ("total Down"),
 for ibin in range(N):
-    print "& %+10.1f " % ((totalHistData[ibin][1]-totalHistData[ibin][0])*100.0), 
+    print "& %+11.1f " % ((totalHistData[ibin][1]-totalHistData[ibin][0])*100.0), 
 print "\\\\"
 
 

@@ -235,6 +235,104 @@ class Program(Module):
         self.module("HistogramCreator").saveHistograms(histogramsBDTYield,"yields_bdt_scaled")
         '''
         
+        ### ADDITIONAL DISTS
+        histograms_etaj = self.module("HistogramCreator").loadHistograms("reco_etaj")
+        if not histograms_etaj:
+            histograms_etaj = self.module("HistogramCreator").makeHistograms(
+                "fabs(SingleTop_1__LightJet_1__Eta)",
+                self.module("Utils").getCategoryCutStr(2,1),
+                numpy.linspace(0,5,21),
+                pseudo=False,
+                addUnderOverflows=True
+            )
+            self.module("HistogramCreator").scaleHistogramsToFitResult(histograms_etaj,fitResultInc)
+        self.module("HistogramCreator").saveHistograms(histograms_etaj,"reco_etaj")
+        
+        histograms_topmass = self.module("HistogramCreator").loadHistograms("reco_topmass")
+        if not histograms_topmass:
+            histograms_topmass = self.module("HistogramCreator").makeHistograms(
+                "SingleTop_1__Top_1__Mass",
+                self.module("Utils").getCategoryCutStr(2,1),
+                numpy.linspace(100,450,21),
+                pseudo=False,
+                addUnderOverflows=True
+            )
+            self.module("HistogramCreator").scaleHistogramsToFitResult(histograms_topmass,fitResultInc)
+        self.module("HistogramCreator").saveHistograms(histograms_topmass,"reco_topmass")        
+
+        histograms_mtw = self.module("HistogramCreator").loadHistograms("reco_mtw")
+        if not histograms_mtw:
+            histograms_mtw = self.module("HistogramCreator").makeHistograms(
+                "SingleTop_1__mtw_beforePz",
+                self.module("Utils").getCategoryCutStr(2,1),
+                numpy.linspace(0,200,21),
+                pseudo=False,
+                addUnderOverflows=True
+            )
+            self.module("HistogramCreator").scaleHistogramsToFitResult(histograms_mtw,fitResultInc)
+        self.module("HistogramCreator").saveHistograms(histograms_mtw,"reco_mtw")   
+        
+        histograms_BDT = self.module("HistogramCreator").loadHistograms("reco_BDT")
+        if not histograms_BDT:
+            histograms_BDT = self.module("HistogramCreator").makeHistograms(
+                "TMath::TanH((Reconstructed_1__BDT_adaboost04_minnode001_maxvar3_ntree1000_invboost_binned-0.12)*3.2)",
+                self.module("Utils").getCategoryCutStr(2,1)+"*"+self.module("Utils").getMTWCutStr(),
+                numpy.linspace(-1,1,21),
+                pseudo=False,
+                addUnderOverflows=True
+            )
+            self.module("HistogramCreator").scaleHistogramsToFitResult(histograms_BDT,fitResultInc)
+        self.module("HistogramCreator").saveHistograms(histograms_BDT,"reco_BDT")   
+        
+        
+        histograms_toppt_bdt = self.module("HistogramCreator").loadHistograms("reco_toppt_bdt")
+        if not histograms_toppt_bdt:
+            histograms_toppt_bdt = self.module("HistogramCreator").makeHistograms(
+                "SingleTop_1__Top_1__Pt",
+                self.module("Utils").getCategoryCutStr(2,1)+"*"+self.module("Utils").getMTWCutStr()+"*"+self.module("Utils").getBDTCutStr(),
+                numpy.linspace(0,300,11),
+                pseudo=False,
+                addUnderOverflows=True
+            )
+            self.module("HistogramCreator").scaleHistogramsToFitResult(histograms_toppt_bdt,fitResultInc)
+        self.module("HistogramCreator").saveHistograms(histograms_toppt_bdt,"reco_toppt_bdt")  
+        
+        histograms_topy_bdt = self.module("HistogramCreator").loadHistograms("reco_topy_bdt")
+        if not histograms_topy_bdt:
+            histograms_topy_bdt = self.module("HistogramCreator").makeHistograms(
+                "fabs(SingleTop_1__Top_1__y)",
+                self.module("Utils").getCategoryCutStr(2,1)+"*"+self.module("Utils").getMTWCutStr()+"*"+self.module("Utils").getBDTCutStr(),
+                numpy.linspace(0,2.5,11),
+                pseudo=False,
+                addUnderOverflows=True
+            )
+            self.module("HistogramCreator").scaleHistogramsToFitResult(histograms_topy_bdt,fitResultInc)
+        self.module("HistogramCreator").saveHistograms(histograms_topy_bdt,"reco_topy_bdt")
+        
+        histograms_toppt_bdtinv = self.module("HistogramCreator").loadHistograms("reco_toppt_bdtinv")
+        if not histograms_toppt_bdtinv:
+            histograms_toppt_bdtinv = self.module("HistogramCreator").makeHistograms(
+                "SingleTop_1__Top_1__Pt",
+                self.module("Utils").getCategoryCutStr(2,1)+"*"+self.module("Utils").getMTWCutStr()+"*"+self.module("Utils").getBDTinvCutStr(),
+                numpy.linspace(0,300,21),
+                pseudo=False,
+                addUnderOverflows=True
+            )
+            self.module("HistogramCreator").scaleHistogramsToFitResult(histograms_toppt_bdtinv,fitResultInc)
+        self.module("HistogramCreator").saveHistograms(histograms_toppt_bdtinv,"reco_toppt_bdtinv")  
+        
+        histograms_topy_bdtinv = self.module("HistogramCreator").loadHistograms("reco_topy_bdtinv")
+        if not histograms_topy_bdtinv:
+            histograms_topy_bdtinv = self.module("HistogramCreator").makeHistograms(
+                "fabs(SingleTop_1__Top_1__y)",
+                self.module("Utils").getCategoryCutStr(2,1)+"*"+self.module("Utils").getMTWCutStr()+"*"+self.module("Utils").getBDTinvCutStr(),
+                numpy.linspace(0,2.5,21),
+                pseudo=False,
+                addUnderOverflows=True
+            )
+            self.module("HistogramCreator").scaleHistogramsToFitResult(histograms_topy_bdtinv,fitResultInc)
+        self.module("HistogramCreator").saveHistograms(histograms_topy_bdtinv,"reco_topy_bdtinv")
+        
         
         
         ### RECO HIST AND SCALING

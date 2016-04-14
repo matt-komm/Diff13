@@ -43,7 +43,10 @@ class Utils(Module):
             self._logger.error(str(e))
         
     def getBDTCutStr(self):
-        return "(TMath::TanH((Reconstructed_1__BDT_adaboost04_minnode001_maxvar3_ntree1000_invboost_binned)*3.0)>0.65)"
+        return "(TMath::TanH((Reconstructed_1__BDT_adaboost04_minnode001_maxvar3_ntree1000_invboost_binned-0.12)*3.2)>0.6)"
+        
+    def getBDTinvCutStr(self):
+        return "(TMath::TanH((Reconstructed_1__BDT_adaboost04_minnode001_maxvar3_ntree1000_invboost_binned-0.12)*3.2)<0.0)"
         
     def getLumi(self):
         return 2290.0
@@ -90,7 +93,15 @@ class Utils(Module):
     def getNumberOfPseudoExp(self):
         return 1000
         
-    def getHist1D(self,hist,fileName,processName,variableName,weight):
+    def addUnderflowOverflow(self,hist):
+        hist.SetBinContent(1,hist.GetBinContent(0)+hist.GetBinContent(1))
+        N=hist.GetNbinsX()
+        hist.SetBinContent(N,hist.GetBinContent(N)+hist.GetBinContent(N+1))
+        hist.SetBinContent(0,0)
+        hist.SetBinContent(N+1,0)
+        hist.SetEntries(hist.GetEntries()-4)
+        
+    def getHist1D(self,hist,fileName,processName,variableName,weight,addUnderOverflows=False):
         hist.SetDirectory(0)
         rootFile = ROOT.TFile(fileName)
         tree = rootFile.Get(processName)
@@ -101,9 +112,12 @@ class Utils(Module):
         if (tree):
             tree.Project(tempHist.GetName(),variableName,weight)
             tempHist.SetDirectory(0)
-            tempHist.SetBinContent(0,0)
-            tempHist.SetBinContent(tempHist.GetNbinsX()+1,0)
-            tempHist.SetEntries(tempHist.GetEntries()-2)
+            if addUnderOverflows:
+                self.module("Utils").addUnderflowOverflow(tempHist)
+            else:
+                tempHist.SetBinContent(0,0)
+                tempHist.SetBinContent(tempHist.GetNbinsX()+1,0)
+                tempHist.SetEntries(tempHist.GetEntries()-2)
             hist.Add(tempHist)
         rootFile.Close()
         

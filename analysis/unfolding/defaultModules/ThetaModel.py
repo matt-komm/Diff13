@@ -146,16 +146,21 @@ class ThetaModel(Module):
         rootFileOut = ROOT.TFile(histFileNameOutput,"RECREATE")
         for histName in histograms:
             newHist = rootFileIn.Get(histName).Clone()
+            nll = 0.0
             if histName.find("data")<0:
                 for ibin in range(newHist.GetNbinsX()):
+                    x = ROOT.gRandom.Gaus(0.0,1.0)
                     newHist.SetBinContent(ibin+1,
                         max(0.0001,newHist.GetBinContent(ibin+1)+
-                        ROOT.gRandom.Gaus(0.0,newHist.GetBinError(ibin+1)))
+                        x*newHist.GetBinError(ibin+1))
                     )
+                    
+                    nll+=0.5*x*x
             newHist.SetDirectory(rootFileOut)
             newHist.Write()
         rootFileOut.Close()
         rootFileIn.Close()
+        return nll
     
     def makeModel(self,modelName="fit",histFile="fit",outputFile="fit",pseudo=False):
         self._logger.info("Creating model: "+modelName)
@@ -242,7 +247,15 @@ class ThetaModel(Module):
         file.write("step_cov = 0.025; // optional; default is 0.1'\n")
         file.write("};\n")
         
-        
+        '''
+        file.write("type = \"root_minuit\";\n")
+        file.write("method = \"migrad\"; // optional; default is migrad'\n")
+        file.write("tolerance_factor = 10.0; // optional; default is 1'\n")
+        file.write("n_retries = 20; // optional; default is 2'\n")
+        file.write("max_iterations = 100000;\n")
+        file.write("max_function_calls = 100000;\n")
+        file.write("};\n")
+        '''
         '''
         file.write("\ttype = \"mcmc_minimizer\";\n")
         file.write("\tname = \"min0\";\n")
@@ -401,7 +414,7 @@ class ThetaModel(Module):
                                 if math.fabs(binEntries)<1.0:
                                     histograms[observableName][componentName][processName].SetBinError(
                                         ibin+1,
-                                        ROOT.TEfficiency.ClopperPearson(entries,0.0,0.683,True)*weight
+                                        ROOT.TEfficiency.ClopperPearson(int(entries),0,0.683,True)*weight
                                     )
                                     self._logger.debug("\t\tassign uncertainty of "+str(0.3812*weight)+" for bin "+str(ibin+1))
                             

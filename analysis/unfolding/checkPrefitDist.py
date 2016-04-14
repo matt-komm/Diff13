@@ -190,12 +190,14 @@ def readPrefitYield(f):
                 result[cat]={}
             result[cat][comp]=rootFile.Get(k.GetName()).Clone(k.GetName()+str(random.random()))
             result[cat][comp].SetDirectory(0)
+            if comp.find("QCD")>=0:
+                result[cat][comp].Scale(0.2)
     rootFile.Close()
     return result
 
 uncertainties = [
-    ["DY","\\zjets yield"],
-    ["TW","\\tw yield"],
+    ["DY","Z+jets yield"],
+    ["TW","tW yield"],
     ["Btag","b-tagging efficiency"],
     ["Ltag","mis-tagging efficiency"],
     ["PU","pileup reweighting"],
@@ -205,99 +207,193 @@ uncertainties = [
     ["Muon","muon selection"],
     ["PDF","PDF"],
     #["UnclEn","unclustered energy"],
-    ["QScaleTChannel","\\tch Q scale"], 
-    ["QScaleTTbar","\\ttbar Q scale"],
-    ["QScaleTW","\\tw Q scale"],
-    ["QScaleWjets","\\wjets Q scale"],
+    ["QScaleTChannel","t-ch. Q scale"], 
+    ["QScaleTTbar","t#bar{t} Q scale"],
+    ["QScaleTW","tW Q scale"],
+    ["QScaleWjets","W+jets Q scale"],
     ["TopMass","top quark mass"]
 ]
 
 uncertaintiesSpecial = [
-    ["NoTopPt","top quark \\pt reweighting"],
-    ["Powheg","signal modeling"],
+    ["NoTopPt","top quark pt rew."],
+    ["Powheg","generator modeling"],
     ["Herwig","hadronization modeling"]
 ]
 
-nominal = readPrefitYield("result/nominal/fit_fitHists.root")
+
+fitSetup = "fit_pt0"
+
+nominal = readPrefitYield("result/nominal/"+fitSetup+"_fitHists.root")
 
 sysUp={}
 sysDown={}
 for unc in uncertainties:
-    sysUp[unc[0]] = readPrefitYield("result/"+unc[0]+"Up/fit_fitHists.root")
-    sysDown[unc[0]] = readPrefitYield("result/"+unc[0]+"Down/fit_fitHists.root")
+    sysUp[unc[0]] = readPrefitYield("result/"+unc[0]+"Up/"+fitSetup+"_fitHists.root")
+    sysDown[unc[0]] = readPrefitYield("result/"+unc[0]+"Down/"+fitSetup+"_fitHists.root")
 
 for unc in uncertaintiesSpecial:
-    sysUp[unc[0]] = readPrefitYield("result/"+unc[0]+"/fit_fitHists.root")
+    sysUp[unc[0]] = readPrefitYield("result/"+unc[0]+"/"+fitSetup+"_fitHists.root")
     sysDown[unc[0]] = nominal
 
+for cat in ["2j1t","3j1t","3j2t"]:
+    for unc in uncertainties+uncertaintiesSpecial:
+        totalHist = None
+        totalHistUp = None
+        totalHistDown = None
+        
+        stackedNominal = []
+        stackedUp = []
+        stackedDown = []
+        
+        legend=ROOT.TLegend(0.74,0.885,0.9,0.66)
+        legend.SetBorderSize(0)
+        legend.SetTextFont(43)
+        legend.SetTextSize(23)
+        legend.SetFillColor(ROOT.kWhite)
 
-for comp in ["tChannel","TopBkg","WZjets"]:#,"QCD"]:
-    for cat in ["2j1t","3j1t","3j2t"]:
-        if comp=="QCD":
-            comp=comp+"_"+cat
-        nominalHist = nominal[cat][comp].Clone(nominal[cat][comp].GetName()+str(random.random()))
-        nominalHist.SetLineColor(ROOT.kAzure+5)
-        nominalHist.SetLineWidth(3)
-        
-        
-        for unc in uncertainties+uncertaintiesSpecial:
-            upHist = sysUp[unc[0]][cat][comp]
-            upHist.SetLineColor(ROOT.kOrange+10)
+        for comp in [
+            ["tChannel",ROOT.kMagenta],
+            ["TopBkg",ROOT.kRed],
+            ["WZjets",ROOT.kGreen],
+            ["QCD",ROOT.kBlue]
+        ]:
+
+            if comp[0]=="QCD":
+                comp[0]+="_"+cat
+
+            nominalHist = nominal[cat][comp[0]].Clone(nominal[cat][comp[0]].GetName()+str(random.random()))
+            nominalHist.SetLineColor(comp[1]+1)
+            nominalHist.SetLineWidth(3)
+            
+            nominalHistStacked=nominalHist.Clone(nominalHist.GetName()+str(random.random()))
+                    
+            legend.AddEntry(nominalHistStacked,comp[0],"L")
+            if comp[0].find("QCD")>=0:
+                legend.AddEntry("","(#times 0.2)","")
+
+            if totalHist!=None:
+                nominalHistStacked.Add(totalHist)
+            stackedNominal.append(nominalHistStacked)
+            
+
+            upHist = sysUp[unc[0]][cat][comp[0]].Clone("upHist"+str(random.random()))
+            upHist.SetLineColor(comp[1]-9)
             upHist.SetLineWidth(2)
-            downHist = sysDown[unc[0]][cat][comp]
-            downHist.SetLineColor(ROOT.kGreen)
+            upHist.SetLineStyle(1)
+            upHist.SetMarkerColor(comp[1]-9)
+            upHist.SetMarkerStyle(22)
+            upHist.SetMarkerSize(0.9)
+            downHist = sysDown[unc[0]][cat][comp[0]].Clone("upHist"+str(random.random()))
+            downHist.SetLineColor(comp[1]-9)
             downHist.SetLineWidth(2)
+            downHist.SetLineStyle(1)
+            downHist.SetMarkerColor(comp[1]-9)
+            downHist.SetMarkerStyle(23)
+            downHist.SetMarkerSize(0.9)
             
-            cv = ROOT.TCanvas("cv"+str(random.random()),"",800,750)
-            ymax = max([nominalHist.GetMaximum(),upHist.GetMaximum(),downHist.GetMaximum()])
-            axis = ROOT.TH2F("axis"+str(random.random()),";Fit variable;MC events",50,nominalHist.GetXaxis().GetXmin(),nominalHist.GetXaxis().GetXmax(),50,0,1.4*ymax)
-            axis.Draw("AXIS")
+            upHistStacked=upHist.Clone(upHist.GetName()+str(random.random()))
+            downHistStacked=downHist.Clone(downHist.GetName()+str(random.random()))
+            if totalHistUp!=None:
+                upHistStacked.Add(totalHist)
+                downHistStacked.Add(totalHist)
+            stackedUp.append(upHistStacked)
+            stackedDown.append(downHistStacked)
             
             
-            nominalHist.Draw("SameHIST")
-            upHist.Draw("SameHISTE")
-            downHist.Draw("SameHISTE")
+            if totalHist==None:
+                totalHist=nominalHist.Clone("total"+str(random.random()))
+                totalHist.SetLineColor(ROOT.kGray+1)
+            else:
+                totalHist.Add(nominalHist)
             
-            pCMS=ROOT.TPaveText(cv.GetLeftMargin()+0.1,0.94,cv.GetLeftMargin()+0.1,0.94,"NDC")
-            pCMS.SetFillColor(ROOT.kWhite)
-            pCMS.SetBorderSize(0)
-            pCMS.SetTextFont(63)
-            pCMS.SetTextSize(35)
-            pCMS.SetTextAlign(11)
-            pCMS.AddText("CMS")
-            pCMS.Draw("Same")
+            if totalHistUp==None:
+                totalHistUp=upHist.Clone("totalUp"+str(random.random()))
+                totalHistUp.SetLineColor(ROOT.kGray+1)
+                totalHistUp.SetLineStyle(3)
+                totalHistUp.SetLineWidth(3)
+                totalHistUp.SetMarkerColor(ROOT.kGray+1)
+                totalHistUp.SetMarkerStyle(22)
+                totalHistUp.SetMarkerSize(0.9)
+                
+                totalHistDown=downHist.Clone("totalDown"+str(random.random()))
+                totalHistDown.SetLineColor(ROOT.kGray+1)
+                totalHistDown.SetLineStyle(3)
+                totalHistDown.SetLineWidth(3)
+                totalHistDown.SetMarkerColor(ROOT.kGray+1)
+                totalHistDown.SetMarkerStyle(23)
+                totalHistDown.SetMarkerSize(0.9)
+            else:
+                totalHistUp.Add(upHist)
+                totalHistDown.Add(downHist)
+            
+            
+        cv = ROOT.TCanvas("cv"+str(random.random()),"",800,750)
+        ymax = nominal[cat]["data"].GetMaximum()
+        axis = ROOT.TH2F("axis"+str(random.random()),";Fit variable;MC events",50,totalHist.GetXaxis().GetXmin(),totalHist.GetXaxis().GetXmax(),50,0,1.5*ymax)
+        axis.Draw("AXIS")
+        
+        
 
-            pPreliminary=ROOT.TPaveText(cv.GetLeftMargin()+0.1+0.095,0.94,cv.GetLeftMargin()+0.1+0.095,0.94,"NDC")
-            pPreliminary.SetFillColor(ROOT.kWhite)
-            pPreliminary.SetBorderSize(0)
-            pPreliminary.SetTextFont(53)
-            pPreliminary.SetTextSize(35)
-            pPreliminary.SetTextAlign(11)
-            pPreliminary.AddText("Preliminary")
-            pPreliminary.Draw("Same")
+        
+        for upHist in stackedUp:
+            upHist.Draw("SameHist")
+            upHist.Draw("SameHistP")
             
-            pCut=ROOT.TPaveText(cv.GetLeftMargin()+0.03,0.885,cv.GetLeftMargin()+0.03,0.885,"NDC")
-            pCut.SetFillColor(ROOT.kWhite)
-            pCut.SetBorderSize(0)
-            pCut.SetTextFont(43)
-            pCut.SetTextSize(29)
-            pCut.SetTextAlign(13)
-            pCut.AddText(cat+", "+comp)
-            pCut.Draw("Same")
+        for downHist in stackedDown:
+            downHist.Draw("SameHist")
+            downHist.Draw("SameHistP")
             
-            legend=ROOT.TLegend(0.45,0.885,0.9,0.75)
-            legend.SetBorderSize(0)
-            legend.SetTextFont(43)
-            legend.SetTextSize(29)
-            legend.SetFillColor(ROOT.kWhite)
+        for nominalHist in stackedNominal:
+            nominalHist.Draw("SameHist")
+
+        legend.AddEntry(totalHistUp,"total","L")
+        
+        totalHistUp.Draw("SameHist")
+        totalHistDown.Draw("SameHist")
+        totalHistUp.Draw("SameHistP")
+        totalHistDown.Draw("SameHistP")
+        
+        nominal[cat]["data"].SetMarkerStyle(20)
+        nominal[cat]["data"].SetMarkerSize(0.9)
+        nominal[cat]["data"].Draw("SamePE")
+
+        legend.AddEntry(nominal[cat]["data"],"data","P")
+
+        #totalHist.Draw("SameHist")
+        
+        pCMS=ROOT.TPaveText(cv.GetLeftMargin()+0.1,0.94,cv.GetLeftMargin()+0.1,0.94,"NDC")
+        pCMS.SetFillColor(ROOT.kWhite)
+        pCMS.SetBorderSize(0)
+        pCMS.SetTextFont(63)
+        pCMS.SetTextSize(35)
+        pCMS.SetTextAlign(11)
+        pCMS.AddText("CMS")
+        pCMS.Draw("Same")
+
+        pPreliminary=ROOT.TPaveText(cv.GetLeftMargin()+0.1+0.095,0.94,cv.GetLeftMargin()+0.1+0.095,0.94,"NDC")
+        pPreliminary.SetFillColor(ROOT.kWhite)
+        pPreliminary.SetBorderSize(0)
+        pPreliminary.SetTextFont(53)
+        pPreliminary.SetTextSize(35)
+        pPreliminary.SetTextAlign(11)
+        pPreliminary.AddText("Preliminary")
+        pPreliminary.Draw("Same")
+        
+        pCut=ROOT.TPaveText(cv.GetLeftMargin()+0.03,0.885,cv.GetLeftMargin()+0.03,0.885,"NDC")
+        pCut.SetFillColor(ROOT.kWhite)
+        pCut.SetBorderSize(0)
+        pCut.SetTextFont(43)
+        pCut.SetTextSize(29)
+        pCut.SetTextAlign(13)
+        pCut.AddText(cat+", "+unc[1])
+        pCut.Draw("Same")
+        
+
+
+        legend.Draw("Same")
             
-            legend.AddEntry(nominalHist,"nominal","L")
-            legend.AddEntry(upHist,unc[0]+" Up","L")
-            legend.AddEntry(downHist,unc[0]+" Down","L")  
-            legend.Draw("Same")
-            
-            cv.Update()
-            cv.Print(cat+"_"+comp+"_prefitShape_"+unc[0]+".pdf")
-            cv.Print(cat+"_"+comp+"_prefitShape_"+unc[0]+".png")
+        cv.Update()
+        cv.Print(cat+"_prefitShape_"+unc[0]+".pdf")
+        cv.Print(cat+"_prefitShape_"+unc[0]+".png")
             
  
