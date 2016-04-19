@@ -176,23 +176,25 @@ ROOT.gStyle.SetLineScalePS(2)
 ROOT.gStyle.SetPalette(1)
 ROOT.gStyle.SetPaintTextFormat("4.2f")
 
+
+inputFolder = "result_jeta"
 normalize =True
-'''
-outputName="unfolded_top_pt"
+
+outputName="unfolded_top_pt_jeta"
 rootFileName = "unfoldingPt"
 histName = "unfoldedHistPt"
 responseName = "responsePt"
 
 
 '''
-outputName="unfolded_top_y"
+outputName="unfolded_top_y_jeta"
 rootFileName = "unfoldingY"
 histName = "unfoldedHistY"
 responseName = "responseY"
+'''
 
 
-
-fNominal = ROOT.TFile("result/nominal/"+rootFileName+".root")
+fNominal = ROOT.TFile(inputFolder+"/nominal/"+rootFileName+".root")
 nominalHist=fNominal.Get(histName).Clone()
 nominalHist.SetDirectory(0)
 nominalHist.SetMarkerColor(ROOT.kBlack)
@@ -263,7 +265,7 @@ for unc in uncertainties:
     sysDict = []
     averageShifts[unc[0]]=[]
     for shift in ["Up","Down"]:
-        f = ROOT.TFile("result/"+unc[0]+shift+"/"+rootFileName+".root")
+        f = ROOT.TFile(inputFolder+"/"+unc[0]+shift+"/"+rootFileName+".root")
         hist = f.Get(histName).Clone()
         hist.SetDirectory(0)
         normalizeByBinWidth(hist)
@@ -288,7 +290,7 @@ for unc in uncertainties:
 for unc in uncertaintiesSpecial:
     sysDict = []
     averageShifts[unc[0]]=[]
-    f = ROOT.TFile("result/"+unc[0]+"/"+rootFileName+".root")
+    f = ROOT.TFile(inputFolder+"/"+unc[0]+"/"+rootFileName+".root")
     hist = f.Get(histName).Clone()
     hist.SetDirectory(0)
     normalizeByBinWidth(hist)
@@ -318,7 +320,7 @@ normalizeByBinWidth(genHist)
 N = nominalHist.GetNbinsX()
 
 
-fPowheg = ROOT.TFile("result/Powheg/"+rootFileName+".root")
+fPowheg = ROOT.TFile(inputFolder+"/Powheg/"+rootFileName+".root")
 genPowhegHist=fPowheg.Get(responseName).Clone().ProjectionX("gen_powheg")
 genPowhegHist.SetDirectory(0)
 genPowhegHist.SetLineColor(ROOT.kOrange+7)
@@ -326,7 +328,7 @@ genPowhegHist.SetLineWidth(2)
 genPowhegHist.SetLineStyle(1)
 normalizeByBinWidth(genPowhegHist)
 
-fAMC5FS = ROOT.TFile("result/AMC5FS/"+rootFileName+".root")
+fAMC5FS = ROOT.TFile(inputFolder+"/AMC5FS/"+rootFileName+".root")
 genAMC5FSHist=fAMC5FS.Get(responseName).Clone().ProjectionX("gen_AMC5FS")
 genAMC5FSHist.SetDirectory(0)
 genAMC5FSHist.SetLineColor(ROOT.kTeal+4)
@@ -334,7 +336,7 @@ genAMC5FSHist.SetLineWidth(5)
 genAMC5FSHist.SetLineStyle(3)
 normalizeByBinWidth(genAMC5FSHist)
 
-fHerwig = ROOT.TFile("result/Herwig/"+rootFileName+".root")
+fHerwig = ROOT.TFile(inputFolder+"/Herwig/"+rootFileName+".root")
 genHerwigHist=fHerwig.Get(responseName).Clone().ProjectionX("gen_Herwig")
 genHerwigHist.SetDirectory(0)
 genHerwigHist.SetLineColor(ROOT.kGray+1)

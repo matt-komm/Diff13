@@ -312,7 +312,7 @@ plotSetups = [
     {
         "category": "2#kern[-0.5]{ }jets 1#kern[-0.5]{ }b-tag",
         "cut": "",
-        "unit": "",
+        "unit": "GeV",
         "resUp": 1.4,
         "resDown": 0.6,
         "normalizeByBin": False,
@@ -352,7 +352,7 @@ plotSetups = [
         "resDown": 0.6,
         "normalizeByBin": True,
         "scale": 0,
-        "variableTitle": "top quark |y|",
+        "variableTitle": "top quark p#lower[0.4]{#scale[0.7]{T}}",
         "inputFileName": "reco_toppt_bdt"
     },    
 

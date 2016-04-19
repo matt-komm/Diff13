@@ -28,46 +28,46 @@ class ProgramFit2j0t(Module.getClass("Program")):
         ROOT.gRandom.SetSeed(123)
         
         ### FITTING
-        fitResult = self.module("ThetaFit").checkFitResult()
-        if fitResult==None:
-            self.module("ThetaModel").makeModel(pseudo=False,addCut="1")
-            #self.module("ThetaModel").makeModel(pseudo=True)
-            self.module("ThetaFit").run()
-            fitResult = self.module("ThetaFit").readFitResult()
-        self.module("Drawing").drawFitCorrelation(fitResult["correlations"])
-        '''
-        ###YIELDS
-        histogramsAllYield = self.module("HistogramCreator").loadHistograms("yields_all")
-        if not histogramsAllYield:
-            histogramsAllYield = self.module("HistogramCreator").makeHistograms(
-                "Reconstructed_1__nSelectedJet*3+Reconstructed_1__nSelectedBJet",
-                "(Reconstructed_1__nSelectedJet<4)",
-                numpy.linspace(-0.5,12.5,14),
-                pseudo=False
+        fitResultNominal = self.module("ThetaFit").checkFitResult(
+            modelName='fit',
+            fileName='fit'
+        )
+        if fitResultNominal==None:
+            self.module("ThetaModel").makeFitHists(
+                pseudo=False, 
+                histFile='fit'
             )
-            self.module("HistogramCreator").scaleHistogramsToFitResult(histogramsAllYield,fitResult)
-            self.module("HistogramCreator").saveHistograms(histogramsAllYield,"yields_all")
-        histogramsMTWYield = self.module("HistogramCreator").loadHistograms("yields_mtw")
-        if not histogramsMTWYield:
-            histogramsMTWYield = self.module("HistogramCreator").makeHistograms(
-                "Reconstructed_1__nSelectedJet*3+Reconstructed_1__nSelectedBJet",
-                "(Reconstructed_1__nSelectedJet<4)"+"*"+self.module("Utils").getMTWCutStr(),
-                numpy.linspace(-0.5,12.5,14),
-                pseudo=False
+            self.module("ThetaModel").makeModel(
+                pseudo=False, 
+                modelName='fit',
+                histFile='fit',
+                outputFile='fit_diced'
             )
-            self.module("HistogramCreator").scaleHistogramsToFitResult(histogramsMTWYield,fitResult)
-            self.module("HistogramCreator").saveHistograms(histogramsMTWYield,"yields_mtw")
-        histogramsBDTYield = self.module("HistogramCreator").loadHistograms("yields_bdt")
-        if not histogramsBDTYield:
-            histogramsBDTYield = self.module("HistogramCreator").makeHistograms(
-                "Reconstructed_1__nSelectedJet*3+Reconstructed_1__nSelectedBJet",
-                "(Reconstructed_1__nSelectedJet<4)"+"*"+self.module("Utils").getMTWCutStr()+"*"+self.module("Utils").getBDTCutStr(),
-                numpy.linspace(-0.5,12.5,14),
-                pseudo=False
-            )
-            self.module("HistogramCreator").scaleHistogramsToFitResult(histogramsBDTYield,fitResult)
-            self.module("HistogramCreator").saveHistograms(histogramsBDTYield,"yields_bdt")
-        '''
+            for i in range(self.module("Utils").getNumberOfPseudoExp()):
+                nll = self.module("ThetaModel").makeMCDicedHistograms("fit","fit_diced")
+                
+                self.module("ThetaFit").run(modelName='fit')
+                try:
+                    fitResultNominalNew = self.module("ThetaFit").readFitResult(
+                        modelName="fit",
+                        fileName="fit_diced"
+                    )
+                    fitResultNominalNew["nll"]+=nll #need to correct likelihood in case dicing was far away
+                    
+                except Exception, e:
+                    self._logger.error("theta did not produced a valid fit result: "+str(e))
+                    continue
+                if (fitResultNominal==None) or (fitResultNominal["nll"]>fitResultNominalNew["nll"]):
+                    fitResultNominal=fitResultNominalNew
+                    self.module("ThetaFit").printFitResult(fitResultNominal)
+                    os.rename(
+                        os.path.join(self.module("Utils").getOutputFolder(),"fit_diced.root"),
+                        os.path.join(self.module("Utils").getOutputFolder(),"fit.root")
+                    )
+                break
+        else:
+            self.module("ThetaFit").printFitResult(fitResultNominal)
+        self.module("Drawing").drawFitCorrelation(fitResultNominal["correlations"])
 
 class Fit2j0t(Module.getClass("ThetaModel")):
     def __init__(self,options=[]):
