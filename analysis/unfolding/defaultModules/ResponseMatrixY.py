@@ -102,6 +102,10 @@ class ResponseMatrixY(Module):
         
         for f in responseFiles:
             for processName in self.module("ResponseMatrixY").getSignalProcessNames():
+                processWeight = "1"
+                if type(processName)==type(list()):
+                    processWeight = processName[1]
+                    processName = processName[0]
                 
                 self.module("Utils").getHist2D(
                     responseMatrixSelected,
@@ -109,25 +113,29 @@ class ResponseMatrixY(Module):
                     processName+"_iso"+self.module("Utils").getRecoSamplePrefix(),
                     self.module("ResponseMatrixY").getGenUnfoldingVariable(),
                     self.module("ResponseMatrixY").getRecoUnfoldingVariable(),
-                    recoweight+"*"+cut
+                    recoweight+"*"+cut+"*"+processWeight
                 )
                 self.module("Utils").getHist1D(
                     responseMatrixUnselected,
                     f,
                     processName+"_iso"+self.module("Utils").getRecoSamplePrefix(),
                     self.module("ResponseMatrixY").getGenUnfoldingVariable(),
-                    recoweight+"*!("+cut+")"
+                    recoweight+"*!("+cut+")"+"*"+processWeight
                 )
         
         for f in efficiencyFiles:
             for processName in self.module("ResponseMatrixY").getSignalProcessNames():
+                processWeight = "1"
+                if type(processName)==type(list()):
+                    processWeight = processName[1]
+                    processName = processName[0]
                 for prefix in ["","_iso","_midiso","_antiiso"]:
                     self.module("Utils").getHist1D(
                         efficiencyHist,
                         f,
                         processName+prefix,
                         self.module("ResponseMatrixY").getGenUnfoldingVariable(),
-                        genweight
+                        genweight+"*"+processWeight
                     )
                     
                 

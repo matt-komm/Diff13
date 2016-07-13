@@ -153,7 +153,7 @@ ROOT.gStyle.SetAxisColor(1, "XYZ")
 ROOT.gStyle.SetStripDecimals(True)
 ROOT.gStyle.SetTickLength(0.025, "Y")
 ROOT.gStyle.SetTickLength(0.025, "X")
-ROOT.gStyle.SetNdivisions(505, "X")
+ROOT.gStyle.SetNdivisions(1005, "X")
 ROOT.gStyle.SetNdivisions(512, "Y")
 
 ROOT.gStyle.SetPadTickX(1)  # To get tick marks on the opposite side of the frame
@@ -281,6 +281,14 @@ def normalize(hist):
             hist.GetBinContent(ibin+1)/hist.GetBinWidth(ibin+1)
         )
 
+
+def getAllMatchingKeys(fName,match):
+    rootFile = ROOT.TFile(fName)
+    res = []
+    for k in rootFile.GetListOfKeys():
+        if k.GetName().startswith(match):
+            res.append(k.GetName())
+    return list(set(res))
         
 
 for setName in sets.keys():
@@ -312,6 +320,28 @@ plotSetups = [
     {
         "category": "2#kern[-0.5]{ }jets 1#kern[-0.5]{ }b-tag",
         "cut": "",
+        "unit": "",
+        "resUp": 1.4,
+        "resDown": 0.6,
+        "normalizeByBin": False,
+        "scale": 0,
+        "variableTitle": "#Delta#kern[-0.7]{ }R(b,#kern[-0.5]{ }j#it{'})",
+        "inputFileName": "reco_dR"
+    },
+    {
+        "category": "2#kern[-0.5]{ }jets 1#kern[-0.5]{ }b-tag",
+        "cut": "",
+        "unit": "",
+        "resUp": 1.4,
+        "resDown": 0.6,
+        "normalizeByBin": False,
+        "scale": 0,
+        "variableTitle": "|#Delta#kern[-0.7]{ }#eta(b,#kern[-0.5]{ }#mu)|",
+        "inputFileName": "reco_dEta"
+    },
+    {
+        "category": "2#kern[-0.5]{ }jets 1#kern[-0.5]{ }b-tag",
+        "cut": "",
         "unit": "GeV",
         "resUp": 1.4,
         "resDown": 0.6,
@@ -331,6 +361,30 @@ plotSetups = [
         "scale": 0,
         "variableTitle": "BDT discriminant",
         "inputFileName": "reco_BDT"
+    },
+    
+    {
+        "category": "3#kern[-0.5]{ }jets 1#kern[-0.5]{ }b-tag",
+        "cut": "",
+        "unit": "GeV",
+        "resUp": 1.4,
+        "resDown": 0.6,
+        "normalizeByBin": False,
+        "scale": 0,
+        "variableTitle": "#it{m}#lower[0.4]{#scale[0.7]{T}}(W)",
+        "inputFileName": "reco_mtw3j"
+    },
+
+    {
+        "category": "3#kern[-0.5]{ }jets 1#kern[-0.5]{ }b-tag",
+        "cut": "#it{m}#lower[0.4]{#scale[0.7]{T}}(W)#kern[-0.3]{ }>#kern[-0.3]{ }50#kern[-0.5]{ }GeV",
+        "unit": "",
+        "resUp": 1.4,
+        "resDown": 0.6,
+        "normalizeByBin": False,
+        "scale": 0,
+        "variableTitle": "BDT discriminant",
+        "inputFileName": "reco_BDT3j"
     },
 
     {
@@ -382,6 +436,7 @@ plotSetups = [
     
 ]
 
+
 for plotSetup in plotSetups:
     category=plotSetup["category"]
     cut=plotSetup["cut"]
@@ -410,8 +465,11 @@ for plotSetup in plotSetups:
     sumHistMC = None
     for setName in (["QCD","WZjets","TopBkg","tChannel"]):
         setHist = None
-        for histName in sets[setName]["hists"]:
-            rootFile = ROOT.TFile("result/nominal/"+inputFileName+".root")
+        fNameNominal = "result/nominal/"+inputFileName+".root"
+        for histName in getAllMatchingKeys(fNameNominal,setName):
+            #for histName in sets[setName]["hists"]:
+            
+            rootFile = ROOT.TFile(fNameNominal)
             hNominal = rootFile.Get(histName).Clone(histName+str(random.random()))
             hNominal.SetDirectory(0)
             if normalizeByBin:
@@ -429,10 +487,13 @@ for plotSetup in plotSetups:
                 setHist.SetDirectory(0)
             else:
                 setHist.Add(hNominal)
+
             
-            for uncertainty in uncertainties:
-                for shift in ["Up","Down"]:
-                    rootFile = ROOT.TFile("result/"+uncertainty[0]+shift+"/"+inputFileName+".root")
+        for uncertainty in uncertainties:
+            for shift in ["Up","Down"]:
+                fNameSys = "result/"+uncertainty[0]+shift+"/"+inputFileName+".root"
+                for histName in getAllMatchingKeys(fNameSys,setName):
+                    rootFile = ROOT.TFile(fNameSys)
                     hSys = rootFile.Get(histName).Clone(histName+str(random.random()))
                     hSys.SetDirectory(0)
                     if normalizeByBin:
@@ -445,8 +506,10 @@ for plotSetup in plotSetups:
                     else:
                         sysHistograms[uncertainty[0]][shift].Add(hSys)
                         
-            for uncertainty in uncertaintiesSpecial:
-                rootFile = ROOT.TFile("result/"+uncertainty[0]+"/"+inputFileName+".root")
+        for uncertainty in uncertaintiesSpecial:
+            fNameSys = "result/"+uncertainty[0]+"/"+inputFileName+".root"
+            for histName in getAllMatchingKeys(fNameSys,setName):
+                rootFile = ROOT.TFile(fNameSys)
                 hSys = rootFile.Get(histName).Clone(histName+str(random.random()))
                 hSys.SetDirectory(0)
                 if normalizeByBin:
@@ -458,11 +521,16 @@ for plotSetup in plotSetups:
                     sysHistograms[uncertainty[0]]["Up"]=hSys.Clone(histName+str(random.random()))
                 else:
                     sysHistograms[uncertainty[0]]["Up"].Add(hSys)
+                '''
                 if sysHistograms[uncertainty[0]]["Down"]==None:
-                    sysHistograms[uncertainty[0]]["Down"]=hNominal.Clone(histName+str(random.random()))
+                    sysHistograms[uncertainty[0]]["Down"]=hSys.Clone(histName+str(random.random()))
                 else:
-                    sysHistograms[uncertainty[0]]["Down"].Add(hNominal)
-                
+                    sysHistograms[uncertainty[0]]["Down"].Add(hSys)
+                '''
+            if sysHistograms[uncertainty[0]]["Down"]==None:
+                sysHistograms[uncertainty[0]]["Down"]=setHist.Clone(setHist.GetName()+str(random.random()))
+            else:
+                sysHistograms[uncertainty[0]]["Down"].Add(setHist)
         if sumHistMC==None:
             sumHistMC=setHist.Clone()
         else:
@@ -624,8 +692,8 @@ for plotSetup in plotSetups:
         1.4*max([sumHistData.GetMaximum(),sumHistMC.GetMaximum(),uncertaintyBandHistUp.GetMaximum()])
     )
 
-    axis.GetYaxis().SetNdivisions(506)
-    axis.GetXaxis().SetNdivisions(504)
+    #axis.GetYaxis().SetNdivisions(506)
+    #axis.GetXaxis().SetNdivisions(1004)
     axis.GetXaxis().SetLabelSize(0)
     axis.GetXaxis().SetTitle("")
     axis.GetXaxis().SetTickLength(0.015/(1-cv.GetPad(2).GetLeftMargin()-cv.GetPad(2).GetRightMargin()))
@@ -770,7 +838,7 @@ for plotSetup in plotSetups:
     else:
         axisRes=ROOT.TH2F("axisRes"+str(random.random()),";"+variableTitle+";Data/MC",50,sumHistData.GetXaxis().GetXmin(),sumHistData.GetXaxis().GetXmax(),50,resDown,resUp)
     axisRes.GetYaxis().SetNdivisions(406)
-    axisRes.GetXaxis().SetNdivisions(504)
+    #axisRes.GetXaxis().SetNdivisions(1004)
     axisRes.GetXaxis().SetTickLength(0.025/(1-cv.GetPad(1).GetLeftMargin()-cv.GetPad(1).GetRightMargin()))
     axisRes.GetYaxis().SetTickLength(0.015/(1-cv.GetPad(1).GetTopMargin()-cv.GetPad(1).GetBottomMargin()))
 

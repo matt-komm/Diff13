@@ -13,6 +13,14 @@ class ThetaModelTopMassUp(Module.getClass("ThetaModel")):
         ThetaModelTopMassUp.baseClass.__init__(self,options)
         self._logger = logging.getLogger(__file__)
         self._logger.setLevel(logging.DEBUG)
+    
+    #mixin 2/3*nominal+1/3*variation for 1GeV mass uncertainty
+    def getComponentsDict(self):
+        components=ThetaModelTopMassUp.baseClass.getComponentsDict(self)
+        components["tChannel"]["sets"].append("tChannelMass")
+        components["TopBkg"]["sets"].append("tWChannelMass")
+        components["TopBkg"]["sets"].append("TTJetsMass")
+        return components
         
         
 
@@ -32,14 +40,47 @@ class SamplesTopMassUp(Module.getClass("Samples")):
             {
                 "processes":[
                     #"ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1_iso"+syst,
+                    "ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1_ext_iso"+syst,
+                ],
+                "color":ROOT.gROOT.GetColor(ROOT.kRed),
+                "title":"t-channel",
+                "weight":mcweight+"*0.666"
+            },
+
+            "tWChannel":
+            {
+                "processes":[
+                    "ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1_iso"+syst,
+                    "ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1_iso"+syst
+                ],
+                "color":ROOT.gROOT.GetColor(ROOT.kOrange),
+                "title":"tW-channel",
+                "weight":mcweight+"*0.666"
+            },
+
+            "TTJets":
+            {
+                "processes":[
+                    "TT_TuneCUETP8M1_13TeV-powheg-pythia8_ext_iso"+syst
+                ],
+                "color":ROOT.gROOT.GetColor(ROOT.kOrange-3),
+                "title":"t#bar{t}",
+                "weight":mcweight+"*Generated_1__top_pt_rew"+"*0.666"
+            },
+        
+        
+            "tChannelMass":
+            {
+                "processes":[
+                    #"ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1_iso"+syst,
                     "ST_t-channel_4f_mtop1755_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1_iso"+syst,
                 ],
                 "color":ROOT.gROOT.GetColor(ROOT.kRed),
                 "title":"t-channel",
-                "weight":mcweight
+                "weight":mcweight+"*0.333"
             },
 
-            "tWChannel":
+            "tWChannelMass":
             {
                 "processes":[
                     "ST_tW_top_5f_mtop1755_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1_iso"+syst,
@@ -47,19 +88,18 @@ class SamplesTopMassUp(Module.getClass("Samples")):
                 ],
                 "color":ROOT.gROOT.GetColor(ROOT.kOrange),
                 "title":"tW-channel",
-                "weight":mcweight
+                "weight":mcweight+"*0.333"
             },
 
-            "TTJets":
+            "TTJetsMass":
             {
                 "processes":[
                     "TT_TuneCUETP8M1_mtop1755_13TeV-powheg-pythia8_iso"+syst
                 ],
                 "color":ROOT.gROOT.GetColor(ROOT.kOrange-3),
                 "title":"t#bar{t}",
-                "weight":mcweight+"*Generated_1__top_pt_rew"
-            },
-            
+                "weight":mcweight+"*Generated_1__top_pt_rew"+"*0.333"
+            }
         }
         
         if name not in altDict.keys():
@@ -75,7 +115,10 @@ class ResponseMatrixPtTopMassUp(Module.getClass("ResponseMatrixPt")):
         self._logger.setLevel(logging.DEBUG)
         
     def getSignalProcessNames(self):
-        return ["ST_t-channel_4f_mtop1755_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1"]
+        return [
+            ["ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1_ext","0.666"],
+            ["ST_t-channel_4f_mtop1755_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1","0.333"]
+        ]
         
 class ResponseMatrixYTopMassUp(Module.getClass("ResponseMatrixY")):
     def __init__(self,options=[]):
@@ -84,7 +127,10 @@ class ResponseMatrixYTopMassUp(Module.getClass("ResponseMatrixY")):
         self._logger.setLevel(logging.DEBUG)
         
     def getSignalProcessNames(self):
-        return ["ST_t-channel_4f_mtop1755_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1"]
+        return [
+            ["ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1_ext","0.666"],
+            ["ST_t-channel_4f_mtop1755_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1","0.333"]
+        ]
         
 class UtilsTopMassUp(Module.getClass("Utils")):
     def __init__(self,options=[]):

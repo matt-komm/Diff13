@@ -98,32 +98,41 @@ class ResponseMatrixPt(Module):
         for f in responseFiles:
             for processName in self.module("ResponseMatrixPt").getSignalProcessNames():
                 
-                
+                processWeight = "1"
+                if type(processName)==type(list()):
+                    processWeight = processName[1]
+                    processName = processName[0]
+                    
                 self.module("Utils").getHist2D(
                     responseMatrixSelected,
                     f,
                     processName+"_iso"+self.module("Utils").getRecoSamplePrefix(),
                     self.module("ResponseMatrixPt").getGenUnfoldingVariable(),
                     self.module("ResponseMatrixPt").getRecoUnfoldingVariable(),
-                    recoweight+"*"+cut
+                    recoweight+"*"+cut+"*"+processWeight
                 )
                 self.module("Utils").getHist1D(
                     responseMatrixUnselected,
                     f,
                     processName+"_iso"+self.module("Utils").getRecoSamplePrefix(),
                     self.module("ResponseMatrixPt").getGenUnfoldingVariable(),
-                    recoweight+"*!("+cut+")"
+                    recoweight+"*!("+cut+")"+"*"+processWeight
                 )
         
         for f in efficiencyFiles:
             for processName in self.module("ResponseMatrixPt").getSignalProcessNames():
+                processWeight = "1"
+                if type(processName)==type(list()):
+                    processWeight = processName[1]
+                    processName = processName[0]
+                    
                 for prefix in ["","_iso","_midiso","_antiiso"]:
                     self.module("Utils").getHist1D(
                         efficiencyHist,
                         f,
                         processName+prefix,
                         self.module("ResponseMatrixPt").getGenUnfoldingVariable(),
-                        genweight
+                        genweight+"*"+processWeight
                     )
                     
         

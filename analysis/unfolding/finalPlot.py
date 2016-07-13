@@ -142,7 +142,7 @@ ROOT.gStyle.SetAxisColor(1, "XYZ")
 ROOT.gStyle.SetStripDecimals(True)
 ROOT.gStyle.SetTickLength(0.025, "Y")
 ROOT.gStyle.SetTickLength(0.025, "X")
-ROOT.gStyle.SetNdivisions(505, "X")
+ROOT.gStyle.SetNdivisions(1005, "X")
 ROOT.gStyle.SetNdivisions(512, "Y")
 
 ROOT.gStyle.SetPadTickX(1)  # To get tick marks on the opposite side of the frame
@@ -177,21 +177,21 @@ ROOT.gStyle.SetPalette(1)
 ROOT.gStyle.SetPaintTextFormat("4.2f")
 
 
-inputFolder = "result_jeta"
+inputFolder = "result"
 normalize =True
-
-outputName="unfolded_top_pt_jeta"
+'''
+outputName="unfolded_top_pt"
 rootFileName = "unfoldingPt"
 histName = "unfoldedHistPt"
 responseName = "responsePt"
 
 
 '''
-outputName="unfolded_top_y_jeta"
+outputName="unfolded_top_y"
 rootFileName = "unfoldingY"
 histName = "unfoldedHistY"
 responseName = "responseY"
-'''
+
 
 
 fNominal = ROOT.TFile(inputFolder+"/nominal/"+rootFileName+".root")
@@ -200,24 +200,35 @@ nominalHist.SetDirectory(0)
 nominalHist.SetMarkerColor(ROOT.kBlack)
 nominalHist.SetMarkerStyle(20)
 nominalHist.SetMarkerSize(1.4)
-norm = nominalHist.Integral()
+dataNorm = nominalHist.Integral()
 
 
+genHist = fNominal.Get(responseName).Clone().ProjectionX("gen")
+genHist.SetDirectory(0)
+genHist.SetLineColor(ROOT.kAzure-5)
+genHist.SetLineWidth(5)
+N = nominalHist.GetNbinsX()
 
 
-
-def normalizeByBinWidth(hist):
+def normalizeByBinWidth(hist,isSys=False):
     if normalize:
-        #hist.Scale(1./(hist.GetXaxis().GetXmax()-hist.GetXaxis().GetXmin())/hist.Integral())
+        norm = hist.Integral()
+        if isSys:
+            norm=dataNorm
+        
         if rootFileName=="unfoldingPt":
-            hist.Scale(1000./norm)
-        else:
-            hist.Scale(1./norm)
+            hist.Scale(1000.)
         for ibin in range(hist.GetNbinsX()):
-            hist.SetBinError(ibin+1,hist.GetBinError(ibin+1)/hist.GetBinWidth(ibin+1))
-            hist.SetBinContent(ibin+1,hist.GetBinContent(ibin+1)/hist.GetBinWidth(ibin+1))
+            hist.SetBinError(ibin+1,hist.GetBinError(ibin+1)/hist.GetBinWidth(ibin+1)/norm)
+            hist.SetBinContent(ibin+1,hist.GetBinContent(ibin+1)/hist.GetBinWidth(ibin+1)/norm)
+            
+        testSum = 0.0
+        for ibin in range(hist.GetNbinsX()):
+            testSum+=hist.GetBinContent(ibin+1)*hist.GetBinWidth(ibin+1)
+        #print testSum
         
 normalizeByBinWidth(nominalHist)
+normalizeByBinWidth(genHist)
 
 sysHistograms = []
 
@@ -264,11 +275,14 @@ averageShifts={}
 for unc in uncertainties:
     sysDict = []
     averageShifts[unc[0]]=[]
+    
+    shiftMin = 1000.0
+    shiftMax = -1000.0
     for shift in ["Up","Down"]:
         f = ROOT.TFile(inputFolder+"/"+unc[0]+shift+"/"+rootFileName+".root")
         hist = f.Get(histName).Clone()
         hist.SetDirectory(0)
-        normalizeByBinWidth(hist)
+        normalizeByBinWidth(hist,isSys=True)
         print "%36s " % (unc[1]+" "+shift),
         
         avgShift = 0.0
@@ -276,6 +290,8 @@ for unc in uncertainties:
             nominal = nominalHist.GetBinContent(ibin+1)
             sysVal = hist.GetBinContent(ibin+1)
             print "& %+11.1f " % ((sysVal-nominal)*100.),
+            shiftMin = min(shiftMin,(sysVal-nominal)/nominal)
+            shiftMax = max(shiftMax,(sysVal-nominal)/nominal)
             avgShift+=sysVal/nominal
         print "\\\\"
         averageShifts[unc[0]].append(avgShift/4.0)
@@ -285,6 +301,7 @@ for unc in uncertainties:
         sysDict.append(hist)
         f.Close()
     print "\\hline"
+    print "shift range = %+5.1f - %+5.1f => %5.1f "%(100.0*shiftMin,100.0*shiftMax,0.5*(math.fabs(100.0*shiftMin)+math.fabs(100.0*shiftMax)))
     sysHistograms.append(sysDict)
     
 for unc in uncertaintiesSpecial:
@@ -293,7 +310,7 @@ for unc in uncertaintiesSpecial:
     f = ROOT.TFile(inputFolder+"/"+unc[0]+"/"+rootFileName+".root")
     hist = f.Get(histName).Clone()
     hist.SetDirectory(0)
-    normalizeByBinWidth(hist)
+    normalizeByBinWidth(hist,isSys=True)
     print "%36s " % (unc[1]),
     sysDict.append(nominalHist)
     avgShift = 0.0
@@ -312,12 +329,7 @@ for unc in uncertaintiesSpecial:
     sysHistograms.append(sysDict)
 
 
-genHist = fNominal.Get(responseName).Clone().ProjectionX("gen")
-genHist.SetDirectory(0)
-genHist.SetLineColor(ROOT.kAzure-5)
-genHist.SetLineWidth(5)
-normalizeByBinWidth(genHist)
-N = nominalHist.GetNbinsX()
+
 
 
 fPowheg = ROOT.TFile(inputFolder+"/Powheg/"+rootFileName+".root")
@@ -392,13 +404,16 @@ for ibin in range(N):
     totalHistData[ibin][2] = nominalHist.GetBinError(ibin+1)
     
 
-NTOYS = 10000
-for ibin in range(N):
-    n = nominalHist.GetBinContent(ibin+1)
-    posterior = numpy.zeros(NTOYS)
-    for itoy in range(NTOYS):
+NTOYS = 50000
+
+
+
+posterior = numpy.zeros((int(N),int(NTOYS)))
+for itoy in range(NTOYS):
+    for ibin in range(N):
+        n = nominalHist.GetBinContent(ibin+1)
     
-        posterior[itoy]+=numpy.random.normal()*nominalHist.GetBinError(ibin+1)
+        posterior[ibin][itoy]+=numpy.random.normal()*nominalHist.GetBinError(ibin+1)
         
         for sysPair in sysHistograms:
             up = sysPair[0].GetBinContent(ibin+1)-n
@@ -409,23 +424,73 @@ for ibin in range(N):
                 diced=math.fabs(diced)*down
             else:
                 diced=math.fabs(diced)*up
-            posterior[itoy]+=diced   
-            
-        
-    posteriorQuantils = numpy.percentile(posterior,[15.865,50.0,84.135])
+            posterior[ibin][itoy]+=diced   
+         
+
+         
+sumTot = 0.0
+for ibin in range(N):
+    n = nominalHist.GetBinContent(ibin+1)
+    posteriorQuantils = numpy.percentile(posterior[ibin],[15.865,50.0,84.135])
     totalHistData[ibin][0] = n+posteriorQuantils[1]
     totalHistData[ibin][1] = n+posteriorQuantils[0]
     totalHistData[ibin][2] = n+posteriorQuantils[2]
-    
+
     statHistData[ibin][0] = n+posteriorQuantils[1]
     statHistData[ibin][1] = statHistData[ibin][0]-nominalHist.GetBinError(ibin+1)
     statHistData[ibin][2] = statHistData[ibin][0]+nominalHist.GetBinError(ibin+1)
-        
+
+    sumTot+=(n+posteriorQuantils[1])*nominalHist.GetBinWidth(ibin+1)
+    
+scale =1.0
+if rootFileName == "unfoldingPt":
+    scale =1000.0
+    
+covariance = numpy.cov(posterior)*100.
+print "uncertainty from cov"
+for ibin in range(N):
+    print "\t", ibin, scale*math.sqrt(covariance[ibin][ibin])/sumTot
+
+print "bin-by-bin covariance"
+for ibin in range(N):
+    print "bin %i "%(ibin+1),
+    for jbin in range(N):
+        xy = covariance[ibin][jbin]
+        print "& %+6.3f  "%(xy),
+    print " \\\\"
+
+print "bin-by-bin correlations"
+for ibin in range(N):
+    print "bin %i "%(ibin+1),
+    for jbin in range(N):
+        xy = covariance[ibin][jbin]
+        xx = covariance[ibin][ibin]
+        yy = covariance[jbin][jbin]
+        corr = xy/math.sqrt(xx*yy)
+        print "& %+6.3f  "%(corr),
+    print " \\\\"
+    
+    
+    
+for ibin in range(N):
+    totalHistData[ibin][0]=scale*totalHistData[ibin][0]/sumTot
+    totalHistData[ibin][1]=scale*totalHistData[ibin][1]/sumTot
+    totalHistData[ibin][2]=scale*totalHistData[ibin][2]/sumTot
+    
+    statHistData[ibin][0]=scale*statHistData[ibin][0]/sumTot
+    statHistData[ibin][1]=scale*statHistData[ibin][1]/sumTot
+    statHistData[ibin][2]=scale*statHistData[ibin][2]/sumTot
+    
+testSum = 0.0
+for ibin in range(N):
+    testSum+=totalHistData[ibin][0]*nominalHist.GetBinWidth(ibin+1)
+print testSum
+
 
 cv = ROOT.TCanvas("cv","",800,750)
 if rootFileName == "unfoldingPt":
     if normalize:
-        axis = ROOT.TH2F("axisUnfold",";p#lower[0.4]{#scale[0.7]{T}}#kern[-0.5]{ }(t+t#lower[-0.87]{#kern[-0.91]{-}}) (GeV);1 #/#sigma #times d#sigma #/d#kern[-0.5]{ }p#lower[0.4]{#scale[0.7]{T}}#kern[-0.5]{ }(t+t#lower[-0.87]{#kern[-0.89]{-}}) / #lower[-0.12]{#scale[0.7]{#frac{10#scale[0.8]{#lower[-0.4]{-3}}}{GeV}}}",50,genHist.GetXaxis().GetXmin(),genHist.GetXaxis().GetXmax(),50,0,15)
+        axis = ROOT.TH2F("axisUnfold",";p#lower[0.4]{#scale[0.7]{T}}#kern[-0.5]{ }(t+t#lower[-0.87]{#kern[-0.91]{-}}) (GeV);1 #/#sigma #times d#sigma #/d#kern[-0.5]{ }p#lower[0.4]{#scale[0.7]{T}}#kern[-0.5]{ }(t+t#lower[-0.87]{#kern[-0.89]{-}}) / #lower[-0.12]{#scale[0.7]{#frac{10#scale[0.8]{#lower[-0.4]{-3}}}{GeV}}}",50,genHist.GetXaxis().GetXmin(),genHist.GetXaxis().GetXmax(),50,0,12)
     else:
         axis = ROOT.TH2F("axisUnfold",";p#lower[0.4]{#scale[0.7]{T}}#kern[-0.5]{ }(t+t#lower[-0.87]{#kern[-0.91]{-}}) (GeV);a.u.",50,genHist.GetXaxis().GetXmin(),genHist.GetXaxis().GetXmax(),50,0,genHist.GetMaximum()*1.65)
 else:
@@ -481,14 +546,36 @@ print "\\\\"
 
 rootObj = []
 for ibin in range(N):
-    totalN = max(0,totalHistData[ibin][0])
-    totalDown = max(0,totalHistData[ibin][1])
-    totalUp = max(0,totalHistData[ibin][2])
+    totalN = max(0,totalHistData[ibin][0])*10
+    totalDown = max(0,totalHistData[ibin][1])*10
+    totalUp = max(0,totalHistData[ibin][2])*10
     
-    statDown = max(0,statHistData[ibin][1])
-    statUp = max(0,statHistData[ibin][2])
+    statDown = max(0,statHistData[ibin][1])*10
+    statUp = max(0,statHistData[ibin][2])*10
     
-    #print "%10i: %5.3f %+5.2f %+5.2f  %+5.2f %+5.2f" % (ibin,totalN,statDown/totalN*100.0-100,statUp/totalN*100.0-100,totalDown/totalN*100.0-100,totalUp/totalN*100.0-100)
+    statPlus = statUp-totalN
+    statMinus = statDown-totalN
+    statUnc = (statPlus-statMinus)*.5
+    totalPlus = totalUp-totalN
+    totalMinus = totalDown-totalN
+    systPlus = math.sqrt(totalPlus**2-statPlus**2)
+    systMinus = -math.sqrt(totalMinus**2-statMinus**2)
+    
+    xdown = genHist.GetXaxis().GetBinLowEdge(ibin+1)
+    xup = genHist.GetXaxis().GetBinUpEdge(ibin+1)
+    
+    
+    print "bin %i "%(ibin+1),
+    print " & [%3.2f; %3.2f]"%(xdown,xup),
+    print " & $%5.2f$"%(totalN),
+    print " & $\\pm%5.2f$"%(statUnc),
+    print " & ${}^{%+5.2f}_{%+5.2f}$"%(systPlus,systMinus),
+    print " & ${}^{%+5.2f}_{%+5.2f}$"%(totalPlus,totalMinus),
+    print " & $%5.2f$"%(genHist.GetBinContent(ibin+1)*10), #aMCatNLO 4FS P8
+    print " & $%5.2f$"%(genPowhegHist.GetBinContent(ibin+1)*10), #powheg 4FS P8
+    print " & $%5.2f$"%(genAMC5FSHist.GetBinContent(ibin+1)*10), #aMCatNLO 5FS P8
+    print " & $%5.2f$"%(genHerwigHist.GetBinContent(ibin+1)*10), #aMCatNLO 4FS H++
+    print " \\\\"
     
     c = genHist.GetBinCenter(ibin+1)
     w = (genHist.GetXaxis().GetXmax()-genHist.GetXaxis().GetXmin())/12.0#genHist.GetBinWidth(ibin+1)
@@ -539,7 +626,7 @@ pLumi.SetBorderSize(0)
 pLumi.SetTextFont(43)
 pLumi.SetTextSize(35)
 pLumi.SetTextAlign(31)
-pLumi.AddText("#mu#kern[-0.5]{ }+#kern[-0.5]{ }jets, 2.3#kern[-0.5]{ }fb#lower[-0.7]{#scale[0.7]{-1}} (13#kern[-0.5]{ }TeV)")
+pLumi.AddText("2.3#kern[-0.5]{ }fb#lower[-0.7]{#scale[0.7]{-1}} (13#kern[-0.5]{ }TeV)")
 pLumi.Draw("Same")
 
 
