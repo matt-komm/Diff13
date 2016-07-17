@@ -184,6 +184,7 @@ outputName="unfolded_top_pt"
 rootFileName = "unfoldingPt"
 histName = "unfoldedHistPt"
 responseName = "responsePt"
+covarianceName = "covariancePt"
 
 
 '''
@@ -191,7 +192,7 @@ outputName="unfolded_top_y"
 rootFileName = "unfoldingY"
 histName = "unfoldedHistY"
 responseName = "responseY"
-
+covarianceName = "covarianceY"
 
 
 fNominal = ROOT.TFile(inputFolder+"/nominal/"+rootFileName+".root")
@@ -200,6 +201,11 @@ nominalHist.SetDirectory(0)
 nominalHist.SetMarkerColor(ROOT.kBlack)
 nominalHist.SetMarkerStyle(20)
 nominalHist.SetMarkerSize(1.4)
+nominalStatCovariance = fNominal.Get(covarianceName).Clone()
+nominalStatCovariance.SetDirectory(0)
+
+
+
 dataNorm = nominalHist.Integral()
 
 
@@ -227,7 +233,24 @@ def normalizeByBinWidth(hist,isSys=False):
             testSum+=hist.GetBinContent(ibin+1)*hist.GetBinWidth(ibin+1)
         #print testSum
         
+def normalizeByBinWidth2D(hist,isSys=False):
+    if normalize:
+        norm = nominalHist.Integral()
+        if isSys:
+            norm=dataNorm
+        
+        if rootFileName=="unfoldingPt":
+            hist.Scale(1000.*1000.)
+        for ibin in range(hist.GetNbinsX()):
+            for jbin in range(hist.GetNbinsY()):
+                hist.SetBinError(ibin+1,jbin+1,hist.GetBinError(ibin+1,jbin+1)/hist.GetXaxis().GetBinWidth(ibin+1)/hist.GetYaxis().GetBinWidth(jbin+1)/norm/norm)
+                hist.SetBinContent(ibin+1,jbin+1,hist.GetBinContent(ibin+1,jbin+1)/hist.GetXaxis().GetBinWidth(ibin+1)/hist.GetYaxis().GetBinWidth(jbin+1)/norm/norm)
+            
+        # this is the covariance matrix -> normalization does not need to be =1
+        
+normalizeByBinWidth2D(nominalStatCovariance)
 normalizeByBinWidth(nominalHist)
+
 normalizeByBinWidth(genHist)
 
 sysHistograms = []
@@ -256,6 +279,7 @@ uncertaintiesSpecial = [
     ["Powheg","signal modeling"],
     ["Herwig","hadronization modeling"]
 ]
+
 
 print "%36s & %11s & %11s & %11s & %11s" % ("systematic source","bin 1 / \\$10^{-2}$", "bin 2 / \\$10^{-2}$","bin 3 / \\$10^{-2}$", "bin 4 / \\$10^{-2}$")
 
@@ -406,20 +430,42 @@ for ibin in range(N):
 
 NTOYS = 50000
 
+covStat = numpy.zeros((N,N))
+print "stat covariance from unfolding"
+for i in range(nominalStatCovariance.GetNbinsX()):
+    print "%i:\t"%(i+1),
+    for j in range(nominalStatCovariance.GetNbinsX()):
+        xy = nominalStatCovariance.GetBinContent(i+1,j+1)
+        covStat[i,j]=xy
+        xx = nominalStatCovariance.GetBinContent(i+1,i+1)
+        yy = nominalStatCovariance.GetBinContent(j+1,j+1)
+        print "%+6.3f  "%(xy/math.sqrt(xx*yy)),
+    print
+    
+for i in range(nominalStatCovariance.GetNbinsX()):
+    print "%i: %+6.3f %+6.3f"%(i+1,math.sqrt(nominalStatCovariance.GetBinContent(i+1,i+1)), nominalHist.GetBinError(i+1))
 
 
 posterior = numpy.zeros((int(N),int(NTOYS)))
+systShifts = numpy.zeros(len(sysHistograms))
+
 for itoy in range(NTOYS):
+    
+    for isyst in range(len(sysHistograms)):
+        systShifts[isyst] = numpy.random.normal()
+        
+    means = numpy.random.multivariate_normal(numpy.zeros(N),covStat)
+        
     for ibin in range(N):
         n = nominalHist.GetBinContent(ibin+1)
-    
-        posterior[ibin][itoy]+=numpy.random.normal()*nominalHist.GetBinError(ibin+1)
+
+        posterior[ibin][itoy]+=means[ibin]
         
-        for sysPair in sysHistograms:
+        for isyst, sysPair in enumerate(sysHistograms):
             up = sysPair[0].GetBinContent(ibin+1)-n
             down = sysPair[1].GetBinContent(ibin+1)-n
             
-            diced = numpy.random.normal()
+            diced = systShifts[isyst]
             if diced<0:
                 diced=math.fabs(diced)*down
             else:
